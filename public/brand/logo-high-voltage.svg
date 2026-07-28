@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="voltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#FF8A00" />
+    </linearGradient>
+    <linearGradient id="bgGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B192C" />
+      <stop offset="100%" stop-color="#1E3E62" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#bgGrad3)" stroke="#FFD700" stroke-width="3"/>
+  <!-- High Voltage Bolt -->
+  <path d="M68 20 L35 62 H58 L52 100 L85 58 H62 Z" fill="url(#voltGrad)" />
+  <!-- Inner Glow Bolt -->
+  <path d="M66 26 L42 60 H58 L54 90 L78 58 H62 Z" fill="#FFFFFF" opacity="0.4" />
+</svg>

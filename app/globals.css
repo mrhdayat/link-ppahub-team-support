@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+@layer base {
+  :root,
+  [data-theme="glass"] {
+    --bg-primary: #060D17;
+    --bg-secondary: #0E1726;
+    --bg-card-l1: rgba(11, 25, 44, 0.90);
+    --bg-card-l2: rgba(18, 36, 62, 0.75);
+    --bg-navbar: rgba(11, 25, 44, 0.92);
+    --border-color: rgba(255, 255, 255, 0.15);
+    --border-glow: rgba(255, 101, 0, 0.5);
+    --text-main: #F4F6F9;
+    --text-muted: #94A3B8;
+    --text-sub: #CBD5E1;
+    --control-bg: rgba(0, 0, 0, 0.35);
+    --navy-pari: #0B192C;
+    --navy-corporate: #1E3E62;
+    --safety-orange: #FF6500;
+    --safety-orange-glow: #FF8A00;
+    --shadow-clay: inset 2px 2px 5px rgba(255, 255, 255, 0.45), inset -2px -2px 5px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(255, 101, 0, 0.35);
+  }
+
+  [data-theme="dark"] {
+    --bg-primary: #08101C;
+    --bg-secondary: #101B2B;
+    --bg-card-l1: #0F1B2C;
+    --bg-card-l2: #162438;
+    --bg-navbar: rgba(15, 27, 44, 0.95);
+    --border-color: #1E2D45;
+    --border-glow: rgba(255, 101, 0, 0.4);
+    --text-main: #F1F5F9;
+    --text-muted: #94A3B8;
+    --text-sub: #CBD5E1;
+    --control-bg: #152238;
+    --navy-pari: #0B192C;
+    --navy-corporate: #1E3E62;
+    --safety-orange: #FF6500;
+    --safety-orange-glow: #FF8A00;
+    --shadow-clay: inset 2px 2px 5px rgba(255, 255, 255, 0.4), inset -2px -2px 5px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(255, 101, 0, 0.25);
+  }
+
+  [data-theme="light"] {
+    --bg-primary: #F0F4F8;
+    --bg-secondary: #E2E8F0;
+    --bg-card-l1: #FFFFFF;
+    --bg-card-l2: #FFFFFF;
+    --bg-navbar: rgba(255, 255, 255, 0.95);
+    --border-color: #CBD5E1;
+    --border-glow: rgba(255, 101, 0, 0.6);
+    --text-main: #0F172A;
+    --text-muted: #334155;
+    --text-sub: #475569;
+    --control-bg: #E2E8F0;
+    --navy-pari: #0B192C;
+    --navy-corporate: #1E3E62;
+    --safety-orange: #FF6500;
+    --safety-orange-glow: #E05800;
+    --shadow-clay: inset 2px 2px 5px rgba(255, 255, 255, 0.9), inset -2px -2px 5px rgba(0, 0, 0, 0.15), 0 6px 14px rgba(255, 101, 0, 0.25);
+  }
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  min-height: 100vh;
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+/* Ambient Animated Mesh Gradient for Glass mode */
+[data-theme="glass"] body {
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(255, 101, 0, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(30, 62, 98, 0.35) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(11, 25, 44, 0.8) 0%, transparent 70%);
+  background-attachment: fixed;
+  animation: meshPulse 18s ease-in-out infinite alternate;
+}
+
+@keyframes meshPulse {
+  0% {
+    background-position: 0% 0%, 100% 100%, 50% 50%;
+  }
+  50% {
+    background-position: 15% 10%, 85% 90%, 45% 55%;
+  }
+  100% {
+    background-position: 0% 20%, 100% 80%, 55% 45%;
+  }
+}
+
+/* Subtle Noise/Grain Texture Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Navbar Solid Glass Surface with 92-95% Opacity */
+.navbar-solid {
+  background: var(--bg-navbar);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Level 1 Glass Card (Category Containers) */
+.glass-panel-l1 {
+  background: var(--bg-card-l1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.2);
+}
+
+/* Level 2 Glass Card (Individual Link Cards) */
+.glass-card-l2 {
+  background: var(--bg-card-l2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-card-l2:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 14px 28px -6px rgba(255, 101, 0, 0.2), 0 0 20px rgba(255, 101, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+/* Neumorphism Control Elements adapting to theme variables */
+.neu-input {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.neu-input:focus {
+  outline: none;
+  border-color: var(--safety-orange);
+  box-shadow: 0 0 10px rgba(255, 101, 0, 0.3);
+}
+
+.neu-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Top Performer Card Reactive Pulse Animation */
+.card-top-performer {
+  border: 1.5px solid rgba(255, 101, 0, 0.7);
+  animation: pulseGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(255, 101, 0, 0.25), inset 0 0 10px rgba(255, 101, 0, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(255, 101, 0, 0.45), inset 0 0 15px rgba(255, 101, 0, 0.2);
+  }
+}
+
+/* Enhanced 3D Clay Badges */
+.clay-badge-3d {
+  background: linear-gradient(135deg, #FF6500 0%, #FF8A00 100%);
+  color: #FFFFFF;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-clay);
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.clay-badge-navy-3d {
+  background: linear-gradient(135deg, #1E3E62 0%, #0B192C 100%);
+  color: #F4F6F9;
+  border-radius: 9999px;
+  box-shadow: 
+    inset 2px 2px 4px rgba(255, 255, 255, 0.25),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.5),
+    0 6px 12px rgba(11, 25, 44, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Category Icon Container Shapes */
+.shape-hexagon {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: linear-gradient(135deg, rgba(255, 101, 0, 0.9), rgba(255, 138, 0, 0.95));
+}
+
+.shape-squircle {
+  border-radius: 35%;
+  background: linear-gradient(135deg, #1E3E62, #0B192C);
+}
+
+.shape-industrial {
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0B192C, #1E3E62);
+  border: 1.5px solid rgba(255, 101, 0, 0.4);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--navy-corporate);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--safety-orange);
+}

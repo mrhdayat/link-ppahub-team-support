@@ -1,0 +1,94 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("ADMIN") // SUPERADMIN, ADMIN
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name_id   String
+  name_en   String
+  order     Int      @default(0)
+  icon      String   @default("folder")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  links     Link[]
+
+  @@map("categories")
+}
+
+model Link {
+  id             String     @id @default(cuid())
+  title_id       String
+  title_en       String
+  description_id String?
+  description_en String?
+  url            String
+  icon           String     @default("link")
+  categoryId     String
+  category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  order          Int        @default(0)
+  isActive       Boolean    @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  clickCount     Int        @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  clickLogs      ClickLog[]
+
+  @@index([categoryId])
+  @@index([order])
+  @@map("links")
+}
+
+model ClickLog {
+  id        String   @id @default(cuid())
+  linkId    String
+  link      Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  userAgent String?
+  referer   String?
+  ipHash    String?
+
+  @@index([linkId])
+  @@index([timestamp])
+  @@map("click_logs")
+}
+
+model SiteSettings {
+  id                  String   @id @default("default")
+  companyName         String   @default("Support Berjaya")
+  companySubtitle     String   @default("PPA Link Hub")
+  officialSlogan      String   @default("Support Berjaya, Berjaya di darat, laut dan udara")
+  logoUrl             String   @default("/brand/logo-ppa.png")
+  logoSupportTruck    String   @default("/brand/logo-support-truck.svg")
+  logoDewatering      String   @default("/brand/logo-dewatering.svg")
+  logoHighVoltage     String   @default("/brand/logo-high-voltage.svg")
+  tagline_id          String   @default("Portal Resmi Informasi & Layanan Internal PT Putra Perkasa Abadi")
+  tagline_en          String   @default("Official Portal for Internal Services & Information PT Putra Perkasa Abadi")
+  themeDefault        String   @default("glass") // glass, dark, light
+  announcementBanner  String?
+  isMaintenanceMode   Boolean  @default(false)
+  showFeaturedSection Boolean  @default(true)
+  contactEmail        String   @default("it.support@ppa.co.id")
+  contactPhone        String?  @default("+62 21 500-PPA")
+  footerCopyright     String   @default("© 2026 PT Putra Perkasa Abadi — Support Berjaya. All Rights Reserved.")
+  updatedAt           DateTime @updatedAt
+
+  @@map("site_settings")
+}
