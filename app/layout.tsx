@@ -19,7 +19,9 @@ export const metadata: Metadata = {
   title: 'Support Berjaya — Berjaya di darat, laut dan udara | PT Putra Perkasa Abadi',
   description: 'Portal Resmi Informasi & Layanan Internal Support Berjaya — Berjaya di darat, laut dan udara',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/brand/logo-ppa.png',
+    shortcut: '/brand/logo-ppa.png',
+    apple: '/brand/logo-ppa.png',
   },
   openGraph: {
     title: 'Support Berjaya — Link Hub Portal',

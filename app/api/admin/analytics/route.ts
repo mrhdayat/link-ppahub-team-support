@@ -9,14 +9,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Overall stats
-    const totalClicksResult = await prisma.link.aggregate({
+    // 1. Total real-time clicks from ClickLog table + sum of link clicks
+    const logClicksCount = await prisma.clickLog.count().catch(() => 0);
+    const sumResult = await prisma.link.aggregate({
       _sum: { clickCount: true },
-    });
-    const totalClicks = totalClicksResult._sum.clickCount || 0;
+    }).catch(() => ({ _sum: { clickCount: 0 } }));
 
-    const activeLinks = await prisma.link.count({ where: { isActive: true } });
-    const totalCategories = await prisma.category.count();
+    // Use actual recorded click log count if logs exist, or actual sum
+    const totalClicks = logClicksCount > 0 ? logClicksCount : (sumResult._sum.clickCount || 0);
+
+    const activeLinks = await prisma.link.count({ where: { isActive: true } }).catch(() => 0);
+    const totalCategories = await prisma.category.count().catch(() => 0);
 
     // 2. Top 5 clicked links
     const topLinks = await prisma.link.findMany({
@@ -27,7 +30,7 @@ export async function GET() {
         title_id: true,
         clickCount: true,
       },
-    });
+    }).catch(() => []);
 
     // 3. Daily click trends for the past 7 days
     const sevenDaysAgo = new Date();
@@ -41,7 +44,7 @@ export async function GET() {
       select: {
         timestamp: true,
       },
-    });
+    }).catch(() => []);
 
     // Group logs by day
     const dayMap: Record<string, number> = {};
