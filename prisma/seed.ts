@@ -69,7 +69,7 @@ async function main() {
   });
   console.log(`✅ Admin seeded: ${admin.email} (Password: PPA@Safety1st!)`);
 
-  // 3. Seed Categories & Real Company Links
+  // 3. Seed Categories & Real Company Links (Clean 0 Click Counts)
   const categoriesData = [
     {
       name_id: 'Operasional Pertambangan & Equipment',
@@ -85,7 +85,7 @@ async function main() {
           url: 'https://votp.my.id/app/dashboard',
           icon: 'gauge',
           order: 1,
-          clickCount: 620,
+          clickCount: 0,
         },
         {
           title_id: 'Fleet Management System (FMS)',
@@ -95,7 +95,7 @@ async function main() {
           url: 'https://fms.ppa.co.id',
           icon: 'truck',
           order: 2,
-          clickCount: 412,
+          clickCount: 0,
         },
       ],
     },
@@ -113,7 +113,7 @@ async function main() {
           url: 'https://linktr.ee/TrafficPPABIB',
           icon: 'shield-check',
           order: 1,
-          clickCount: 540,
+          clickCount: 0,
         },
         {
           title_id: 'Cek Masa Aktif MCU, Permit & Danger Tag (BJM - PPA)',
@@ -123,7 +123,7 @@ async function main() {
           url: 'https://docs.google.com/spreadsheets/d/1mntr-jgVtwXi0Yq4_lCQLK-9FtkJdlvTQVR22KMiaUs/edit?gid=1221848520#gid=1221848520',
           icon: 'heart-pulse',
           order: 2,
-          clickCount: 480,
+          clickCount: 0,
         },
       ],
     },
@@ -141,7 +141,7 @@ async function main() {
           url: 'https://shera.ppabib.com/form-visitor',
           icon: 'user-check',
           order: 1,
-          clickCount: 390,
+          clickCount: 0,
         },
         {
           title_id: 'Form Izin Visitor (Bitly Direct)',
@@ -151,7 +151,7 @@ async function main() {
           url: 'https://bit.ly/FormIzinVisitor',
           icon: 'clipboard-check',
           order: 2,
-          clickCount: 310,
+          clickCount: 0,
         },
         {
           title_id: 'Form Pengajuan Akomodasi Visitor',
@@ -161,7 +161,7 @@ async function main() {
           url: 'https://bit.ly/PENGAJUAN_AKOMODASI_VISITOR',
           icon: 'building-2',
           order: 3,
-          clickCount: 275,
+          clickCount: 0,
         },
         {
           title_id: 'Monitoring Manpower & Cek Fatigue',
@@ -171,7 +171,7 @@ async function main() {
           url: 'https://docs.google.com/spreadsheets/d/1xtNh9Lggh8kpswJJvFG6L4CG2nMsrFGxT2iZPPI6zxs/edit?usp=sharing',
           icon: 'bar-chart-3',
           order: 4,
-          clickCount: 430,
+          clickCount: 0,
         },
       ],
     },
@@ -189,7 +189,7 @@ async function main() {
           url: 'https://hris.ppa.co.id',
           icon: 'badge-check',
           order: 1,
-          clickCount: 520,
+          clickCount: 0,
         },
         {
           title_id: 'Pengajuan Cuti & Roster Kerja',
@@ -199,7 +199,7 @@ async function main() {
           url: 'https://hris.ppa.co.id/roster',
           icon: 'calendar-days',
           order: 2,
-          clickCount: 198,
+          clickCount: 0,
         },
       ],
     },

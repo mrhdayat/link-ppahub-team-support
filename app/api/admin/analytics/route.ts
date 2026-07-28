@@ -9,19 +9,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Total real-time clicks from ClickLog table + sum of link clicks
-    const logClicksCount = await prisma.clickLog.count().catch(() => 0);
-    const sumResult = await prisma.link.aggregate({
-      _sum: { clickCount: true },
-    }).catch(() => ({ _sum: { clickCount: 0 } }));
-
-    // Use actual recorded click log count if logs exist, or actual sum
-    const totalClicks = logClicksCount > 0 ? logClicksCount : (sumResult._sum.clickCount || 0);
+    // 1. Total real-time clicks from ClickLog table (pure real user clicks)
+    const totalClicks = await prisma.clickLog.count().catch(() => 0);
 
     const activeLinks = await prisma.link.count({ where: { isActive: true } }).catch(() => 0);
     const totalCategories = await prisma.category.count().catch(() => 0);
 
-    // 2. Top 5 clicked links
+    // 2. Top 5 clicked links based on real ClickLogs or DB clickCount
     const topLinks = await prisma.link.findMany({
       take: 5,
       orderBy: { clickCount: 'desc' },
