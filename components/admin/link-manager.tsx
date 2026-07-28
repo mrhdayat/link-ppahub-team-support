@@ -7,6 +7,7 @@ import { PpaIcon, IconName } from '@/components/ui/ppa-icon';
 import { ClayBadge } from '@/components/ui/clay-badge';
 import { LinkCard } from '@/components/public/link-card';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
+import { PpaToastContainer, usePpaToast } from '@/components/ui/ppa-toast';
 
 export interface AdminCategory {
   id: string;
@@ -56,6 +57,7 @@ const AVAILABLE_ICONS: IconName[] = [
 ];
 
 export function LinkManager({ links, categories, onRefresh }: LinkManagerProps) {
+  const { toasts, addToast, dismissToast } = usePpaToast();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -120,6 +122,7 @@ export function LinkManager({ links, categories, onRefresh }: LinkManagerProps) 
     setStartDate('');
     setEndDate('');
     setIsModalOpen(true);
+    addToast('info', 'Duplikasi Link', 'Draft duplikasi link berhasil disiapkan di form.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,9 +154,17 @@ export function LinkManager({ links, categories, onRefresh }: LinkManagerProps) 
         setIsModalOpen(false);
         resetForm();
         onRefresh();
+        addToast(
+          'success',
+          editingId ? 'Link Berhasil Diperbarui!' : 'Link Baru Berhasil Ditambahkan!',
+          `Perubahan pada "${title_id}" telah disimpan secara permanen di database.`
+        );
+      } else {
+        addToast('error', 'Gagal Menyimpan Link', 'Terjadi kesalahan sistem saat menyimpan link.');
       }
     } catch (err) {
       console.error(err);
+      addToast('error', 'Gagal Koneksi Server', 'Periksa koneksi jaringan Anda.');
     } finally {
       setLoading(false);
     }
@@ -168,9 +179,13 @@ export function LinkManager({ links, categories, onRefresh }: LinkManagerProps) 
       });
       if (res.ok) {
         onRefresh();
+        addToast('warning', 'Link Berhasil Dihapus', 'Link portal telah dihapus dari sistem.');
+      } else {
+        addToast('error', 'Gagal Menghapus Link', 'Sistem tidak dapat menghapus link.');
       }
     } catch (err) {
       console.error(err);
+      addToast('error', 'Gagal Koneksi Server', 'Periksa koneksi jaringan Anda.');
     } finally {
       setDeleteTargetId(null);
     }
@@ -178,6 +193,9 @@ export function LinkManager({ links, categories, onRefresh }: LinkManagerProps) 
 
   return (
     <div className="space-y-6">
+      {/* Toast Alert Stack */}
+      <PpaToastContainer toasts={toasts} onDismiss={dismissToast} />
+
       {/* Header & Add Button */}
       <div className="flex items-center justify-between">
         <div>

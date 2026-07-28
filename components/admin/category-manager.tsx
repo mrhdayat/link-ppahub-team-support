@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { NeuButton } from '@/components/ui/neu-button';
 import { PpaIcon } from '@/components/ui/ppa-icon';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
+import { PpaToastContainer, usePpaToast } from '@/components/ui/ppa-toast';
 import { AdminCategory } from './link-manager';
 
 interface CategoryManagerProps {
@@ -13,6 +14,7 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ categories, onRefresh }: CategoryManagerProps) {
+  const { toasts, addToast, dismissToast } = usePpaToast();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = React.useState<string | null>(null);
@@ -63,9 +65,17 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
         setIsModalOpen(false);
         resetForm();
         onRefresh();
+        addToast(
+          'success',
+          editingId ? 'Kategori Diperbarui!' : 'Kategori Baru Berhasil Dibuat!',
+          `Kategori "${name_id}" telah disimpan.`
+        );
+      } else {
+        addToast('error', 'Gagal Menyimpan Kategori', 'Sistem gagal menyimpan kategori.');
       }
     } catch (err) {
       console.error(err);
+      addToast('error', 'Gagal Koneksi Server', 'Periksa koneksi jaringan Anda.');
     } finally {
       setLoading(false);
     }
@@ -80,9 +90,13 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
       });
       if (res.ok) {
         onRefresh();
+        addToast('warning', 'Kategori Dihapus', 'Kategori departemen telah dihapus.');
+      } else {
+        addToast('error', 'Gagal Menghapus Kategori', 'Tidak dapat menghapus kategori ini.');
       }
     } catch (err) {
       console.error(err);
+      addToast('error', 'Gagal Koneksi Server', 'Periksa koneksi jaringan Anda.');
     } finally {
       setDeleteTargetId(null);
     }
@@ -90,6 +104,9 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
 
   return (
     <div className="space-y-6">
+      {/* Toast Alert Stack */}
+      <PpaToastContainer toasts={toasts} onDismiss={dismissToast} />
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-[var(--text-main)]">Kategori Department</h2>

@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { PpaIcon } from '@/components/ui/ppa-icon';
 import { NeuButton } from '@/components/ui/neu-button';
 import { ClayBadge } from '@/components/ui/clay-badge';
+import { PpaToastContainer, usePpaToast } from '@/components/ui/ppa-toast';
 
 export interface ReorderItem {
   id: string;
@@ -20,6 +21,7 @@ interface ReorderListProps {
 }
 
 export function ReorderList({ items, onSave }: ReorderListProps) {
+  const { toasts, addToast, dismissToast } = usePpaToast();
   const [itemList, setItemList] = React.useState<ReorderItem[]>(items);
   const [isSaving, setIsSaving] = React.useState(false);
   const [hasChanged, setHasChanged] = React.useState(false);
@@ -50,8 +52,10 @@ export function ReorderList({ items, onSave }: ReorderListProps) {
     try {
       await onSave(itemList);
       setHasChanged(false);
+      addToast('success', 'Urutan Link Berhasil Disimpan!', 'Posisi penayangan link di halaman publik telah diperbarui.');
     } catch (error) {
       console.error(error);
+      addToast('error', 'Gagal Menyimpan Urutan', 'Terjadi kesalahan sistem.');
     } finally {
       setIsSaving(false);
     }
@@ -59,6 +63,9 @@ export function ReorderList({ items, onSave }: ReorderListProps) {
 
   return (
     <div className="w-full space-y-4">
+      {/* Toast Alert Stack */}
+      <PpaToastContainer toasts={toasts} onDismiss={dismissToast} />
+
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
           <PpaIcon name="grip-vertical" size={16} className="text-[#FF6500]" />

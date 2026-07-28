@@ -7,8 +7,16 @@ import { PpaIcon } from '@/components/ui/ppa-icon';
 import { NeuButton } from '@/components/ui/neu-button';
 import { ClayBadge } from '@/components/ui/clay-badge';
 import { ThemeSwitcher } from '@/components/public/theme-switcher';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
+    signOut({ callbackUrl: '/admin/login' });
+  };
+
   return (
     <div className="min-h-screen flex flex-col antialiased bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors duration-300">
       {/* Top Admin Navigation Bar */}
@@ -37,8 +45,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <NeuButton
             variant="secondary"
             size="sm"
-            onClick={() => signOut({ callbackUrl: '/admin/login' })}
-            className="text-xs text-red-500 hover:text-red-600 font-bold"
+            onClick={() => setShowLogoutModal(true)}
+            className="text-xs text-red-500 hover:text-red-600 font-bold gap-1.5"
           >
             <PpaIcon name="logout" size={13} />
             <span className="hidden sm:inline">Keluar</span>
@@ -50,6 +58,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6">
         {children}
       </main>
+
+      {/* Animated Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        title="Konfirmasi Keluar"
+        message="Apakah Anda yakin ingin keluar dari Admin Panel Link Hub Support Berjaya?"
+        confirmText="Ya, Keluar Sekarang"
+        cancelText="Batal"
+        icon="logout"
+        isDestructive={true}
+        onConfirm={handleConfirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </div>
   );
 }

@@ -5,8 +5,10 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { NeuButton } from '@/components/ui/neu-button';
 import { PpaIcon } from '@/components/ui/ppa-icon';
 import { ClayBadge } from '@/components/ui/clay-badge';
+import { PpaToastContainer, usePpaToast } from '@/components/ui/ppa-toast';
 
 export function SiteSettingsForm() {
+  const { toasts, addToast, dismissToast } = usePpaToast();
   const [companyName, setCompanyName] = React.useState('Support Berjaya');
   const [companySubtitle, setCompanySubtitle] = React.useState('PPA Link Hub');
   const [officialSlogan, setOfficialSlogan] = React.useState('Support Berjaya, Berjaya di darat, laut dan udara');
@@ -25,7 +27,6 @@ export function SiteSettingsForm() {
   const [footerCopyright, setFooterCopyright] = React.useState('');
 
   const [loading, setLoading] = React.useState(false);
-  const [success, setSuccess] = React.useState(false);
 
   React.useEffect(() => {
     fetch('/api/admin/settings')
@@ -55,7 +56,6 @@ export function SiteSettingsForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess(false);
 
     try {
       const res = await fetch('/api/admin/settings', {
@@ -82,11 +82,13 @@ export function SiteSettingsForm() {
       });
 
       if (res.ok) {
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 4000);
+        addToast('success', 'Pengaturan Berhasil Disimpan!', 'Seluruh konfigurasi situs & 4 logo telah diperbarui secara live.');
+      } else {
+        addToast('error', 'Gagal Menyimpan Pengaturan', 'Terjadi kesalahan sistem.');
       }
     } catch (err) {
       console.error(err);
+      addToast('error', 'Gagal Koneksi Server', 'Periksa jaringan internet Anda.');
     } finally {
       setLoading(false);
     }
@@ -94,16 +96,8 @@ export function SiteSettingsForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Save Status Alert */}
-      {success && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-between shadow-lg">
-          <div className="flex items-center gap-2">
-            <PpaIcon name="check-circle" size={18} />
-            <span>Semua pengaturan portal publik & logo operasional berhasil disimpan!</span>
-          </div>
-          <ClayBadge variant="safety" className="text-[10px]">LIVE UPDATED</ClayBadge>
-        </div>
-      )}
+      {/* Toast Alert Stack */}
+      <PpaToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       {/* Section 1: Identitas Branding */}
       <GlassCard className="p-6 border border-[var(--border-color)] bg-[var(--bg-card-l1)] shadow-md">
