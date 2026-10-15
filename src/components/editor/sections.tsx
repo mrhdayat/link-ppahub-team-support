@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash, UploadSimple } from "@phosphor-icons/react";
-import { FONTS, ICONS, HANDLES, PRESETS, SOCIALS, type Site, type Theme } from "@/lib/site";
+import { FONTS, ICONS, HANDLES, PRESETS, SCENES, SOCIALS, TRIMS, type Site, type Theme } from "@/lib/site";
 import { ICON, SOCIAL_NAME } from "@/components/faceplate";
 import { Fader, Field, Segmented, Swatch, Switch, fid, wire } from "./controls";
 
@@ -21,11 +21,23 @@ const ICON_NAME: Record<(typeof ICONS)[number], string> = {
   map: "Peta", file: "Dokumen", calendar: "Kalender", briefcase: "Kerja", shop: "Toko", music: "Musik", camera: "Kamera",
 };
 
+// Display glows: the five preset glows plus a red and a plain white.
 const LEDS = [
-  { label: "Hijau", color: "#1fb46a" }, { label: "Kuning", color: "#f7c548" }, { label: "Jingga", color: "#ffb547" },
-  { label: "Merah", color: "#e8453c" }, { label: "Biru", color: "#3b82f6" }, { label: "Putih", color: "#f2f4f7" },
+  { label: "Toska", color: "#5ef2c8" }, { label: "Jingga", color: "#ffb547" }, { label: "Biru es", color: "#8fe3ff" },
+  { label: "Hijau", color: "#a6ff7a" }, { label: "Oranye", color: "#ff8a3d" }, { label: "Merah", color: "#ff5a4e" },
+  { label: "Putih", color: "#f2f4f7" },
 ];
 const HANDLE_NAME: Record<(typeof HANDLES)[number], string> = { bar: "Batang", cup: "Mangkuk", tab: "Lidah" };
+const SCENE_NAME: Record<(typeof SCENES)[number], string> = { garasi: "Garasi", malam: "Malam", polos: "Polos" };
+const TRIM_NAME: Record<(typeof TRIMS)[number], string> = { krom: "Krom", hitam: "Hitam" };
+
+/** Tiny drawings of each drawer pull, so the choice is visible before it's made. */
+const PULL: Record<(typeof HANDLES)[number], ReactNode> = {
+  bar: <><rect x="1" y="4" width="26" height="5" rx="2.5" /><rect x="4" y="8" width="3" height="5" /><rect x="21" y="8" width="3" height="5" /></>,
+  cup: <path d="M3 3h22v3a11 8 0 0 1-22 0z" />,
+  tab: <><rect x="1" y="11" width="26" height="2" /><rect x="8" y="3" width="12" height="9" rx="2" /></>,
+};
+const SOCIAL_MAX = 6;
 const FONT_NAME: Record<(typeof FONTS)[number], string> = { barlow: "Barlow", shoulders: "Shoulders", archivo: "Archivo" };
 
 const newId = () => Math.random().toString(36).slice(2, 10);
@@ -88,7 +100,7 @@ export function ProfileSection({ site, update, errors }: Props) {
 
   return (
     <section className="panel" aria-labelledby="h-profil">
-      <h2 id="h-profil">Profil</h2>
+      <h2 className="tape" id="h-profil">Profil</h2>
 
       <Field path="profile.name" label="Nama" error={errors["profile.name"]}>
         <input {...wire("profile.name", errors["profile.name"])} value={profile.name} maxLength={60} autoComplete="off"
@@ -193,7 +205,7 @@ export function LinksSection(props: Props) {
 
   return (
     <section className="panel" aria-labelledby="h-link">
-      <h2 id="h-link">Link</h2>
+      <h2 className="tape" id="h-link">Link</h2>
       {site.links.length === 0 && <p className="muted">Belum ada link. Tambahkan link pertama.</p>}
       <ol className="rows">
         {site.links.map((l, i) => {
@@ -259,8 +271,10 @@ export function SocialsSection(props: Props) {
 
   return (
     <section className="panel" aria-labelledby="h-sosial">
-      <h2 id="h-sosial">Sosial</h2>
-      {site.socials.length === 0 && <p className="muted">Belum ada akun sosial.</p>}
+      <h2 className="tape" id="h-sosial">Sosial</h2>
+      <p className="muted">
+        Tombol preset 1–6 di radio. {site.socials.length} dari {SOCIAL_MAX} terpakai.
+      </p>
       <ol className="rows">
         {site.socials.map((s, i) => {
           const p = `socials.${i}`;
@@ -269,7 +283,8 @@ export function SocialsSection(props: Props) {
           return (
             <li key={s.id}>
               <fieldset className="row">
-                <legend className="sr-only">{name}</legend>
+                <legend className="sr-only">Tombol preset {i + 1}: {name}</legend>
+                <span className="preset-no" aria-hidden>{i + 1}</span>
                 <Field path={`${p}.kind`} label="Jenis">
                   <div className="select">
                     {I && <I size={20} aria-hidden />}
@@ -290,9 +305,9 @@ export function SocialsSection(props: Props) {
           );
         })}
       </ol>
-      <button type="button" className="btn add" id={fid("socials")} disabled={site.socials.length >= 12} onClick={add}>
+      <button type="button" className="btn add" id={fid("socials")} disabled={site.socials.length >= SOCIAL_MAX} onClick={add}>
         <Plus size={18} weight="bold" aria-hidden />
-        {site.socials.length >= 12 ? "Batas 12 akun tercapai" : "Tambah akun sosial"}
+        {site.socials.length >= SOCIAL_MAX ? "Keenam tombol preset sudah terpakai" : "Tambah akun sosial"}
       </button>
     </section>
   );
@@ -308,11 +323,11 @@ export function LookSection({ site, update }: Props) {
 
   return (
     <section className="panel" aria-labelledby="h-tampilan">
-      <h2 id="h-tampilan">Tampilan</h2>
+      <h2 className="tape" id="h-tampilan">Tampilan</h2>
 
       <fieldset className="group">
-        <legend>Bahan</legend>
-        <div className="swatches">
+        <legend>Cat lemari</legend>
+        <div className="swatches chips">
           {Object.entries(PRESETS).map(([key, p]) => (
             <Swatch key={key} name="preset" label={p.label} color={p.base} checked={t.preset === key}
               onSelect={() => setTheme({ preset: key, base: p.base, led: p.led })} />
@@ -323,35 +338,44 @@ export function LookSection({ site, update }: Props) {
         <label className="color-pick">
           <input id={fid("theme.base")} type="color" value={t.base}
             onChange={(e) => setTheme({ preset: "custom", base: e.target.value })} />
-          <span>Warna bahan kustom</span>
+          <span>Campur cat sendiri</span>
         </label>
       </fieldset>
 
       <fieldset className="group">
-        <legend>Warna lampu</legend>
-        <div className="swatches">
+        <legend>Nyala layar</legend>
+        <div className="swatches glass">
           {LEDS.map((c) => (
-            <Swatch key={c.color} name="led" label={c.label} color={c.color} checked={led === c.color}
+            <Swatch key={c.color} kind="dot" name="led" label={c.label} color={c.color} checked={led === c.color}
               onSelect={() => setTheme({ led: c.color })} />
           ))}
         </div>
         <label className="color-pick">
           <input id={fid("theme.led")} type="color" value={t.led} onChange={(e) => setTheme({ led: e.target.value })} />
-          <span>Warna lampu lain</span>
+          <span>Warna nyala lain</span>
         </label>
       </fieldset>
+
+      <Segmented name="handle" label="Pegangan laci" value={t.handle}
+        options={HANDLES.map((k) => ({
+          value: k,
+          label: <><svg className="pull" viewBox="0 0 28 16" width="28" height="16" aria-hidden>{PULL[k]}</svg>{HANDLE_NAME[k]}</>,
+        }))}
+        onChange={(handle) => setTheme({ handle })} />
+      <Segmented name="scene" label="Latar" value={t.scene}
+        options={SCENES.map((k) => ({ value: k, label: SCENE_NAME[k] }))}
+        onChange={(scene) => setTheme({ scene })} />
+      <Segmented name="trim" label="Logam" value={t.trim}
+        options={TRIMS.map((k) => ({ value: k, label: TRIM_NAME[k] }))}
+        onChange={(trim) => setTheme({ trim })} />
+      <Segmented name="font" label="Huruf" value={t.font}
+        options={FONTS.map((f) => ({ value: f, label: FONT_NAME[f], style: { fontFamily: `var(--font-${f})` } }))}
+        onChange={(font) => setTheme({ font })} />
 
       <Fader id={fid("theme.radius")} label="Radius sudut" value={t.radius} min={0} max={28}
         format={(v) => `${v} px`} onChange={(radius) => setTheme({ radius })} />
       <Fader id={fid("theme.depth")} label="Kedalaman bayangan" value={Math.round(t.depth * 100)} min={0} max={100} step={5}
         format={(v) => `${v}%`} onChange={(v) => setTheme({ depth: v / 100 })} />
-
-      <Segmented name="handle" label="Pegangan laci" value={t.handle}
-        options={HANDLES.map((k) => ({ value: k, label: HANDLE_NAME[k] }))}
-        onChange={(handle) => setTheme({ handle })} />
-      <Segmented name="font" label="Huruf" value={t.font}
-        options={FONTS.map((f) => ({ value: f, label: FONT_NAME[f], style: { fontFamily: `var(--font-${f})` } }))}
-        onChange={(font) => setTheme({ font })} />
 
       <Switch id={fid("theme.radio")} label="Radio di atas lemari" checked={t.radio} onChange={(radio) => setTheme({ radio })} />
     </section>

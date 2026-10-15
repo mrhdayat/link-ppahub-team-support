@@ -29,22 +29,21 @@ export const wire = (path: string, error?: string) => ({
   "aria-describedby": error ? `${fid(path)}-err` : undefined,
 });
 
-/** Slide switch on a native checkbox. Its LED mirrors the state so on/off never relies on position alone. */
+/** Truck toggle on a native checkbox: the lever flips up for on, and an LED mirrors it so state never relies on position alone. */
 export function Switch({
   id, label, checked, onChange,
 }: { id?: string; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="switch">
       <input id={id} type="checkbox" role="switch" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="switch-track" aria-hidden>
-        <span className="switch-cap"><span className="led" /></span>
-      </span>
+      <span className="toggle" aria-hidden><span className="lever" /></span>
+      <span className="led" aria-hidden />
       <span>{label}</span>
     </label>
   );
 }
 
-/** Fader: a native range with a ridged cap and an LCD-style readout. */
+/** Mixer fader: a native range with a ridged cap over a ticked groove, and a VFD readout. */
 export function Fader({
   id, label, value, min, max, step = 1, format, onChange,
 }: {
@@ -76,7 +75,7 @@ export function Segmented<T extends string>({
   name, label, value, options, onChange, hideLabel,
 }: {
   name: string; label: string; value: T; hideLabel?: boolean;
-  options: { value: T; label: string; style?: CSSProperties }[];
+  options: { value: T; label: ReactNode; style?: CSSProperties }[];
   onChange: (v: T) => void;
 }) {
   return (
@@ -95,15 +94,15 @@ export function Segmented<T extends string>({
   );
 }
 
-/** Small preset key showing a color chip; a native radio carries the choice. */
+/** A paint sample card ("chip") or a VFD glow dot ("dot"); a native radio carries the choice. */
 export function Swatch({
-  name, label, color, checked, onSelect,
-}: { name: string; label: string; color: string; checked: boolean; onSelect: () => void }) {
+  name, label, color, checked, onSelect, kind = "chip",
+}: { name: string; label: string; color: string; checked: boolean; onSelect: () => void; kind?: "chip" | "dot" }) {
   return (
-    <label className="swatch">
+    <label className="swatch" data-kind={kind} style={{ "--c": color } as CSSProperties}>
       <input type="radio" name={name} checked={checked} onChange={onSelect} />
-      <span className="swatch-key" aria-hidden>
-        <span className="swatch-chip" style={{ background: color }} />
+      <span className="swatch-face" aria-hidden>
+        <span className="swatch-color" />
         <span className="led" />
       </span>
       <span className="swatch-label">{label}</span>
