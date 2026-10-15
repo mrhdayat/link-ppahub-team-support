@@ -113,20 +113,26 @@ export function parseSite(raw: unknown): Site {
 
 /** Every color the faceplate needs, derived from two picks so contrast can't be broken by the admin. */
 export function themeVars(t: Theme): Record<string, string> {
-  const light = luminance(t.base) > 0.18;
-  const ink = inkFor(t.base);
+  // Pure black can't cast a darker shadow or hold a darker LED cell, so lift it a hair.
+  const base = luminance(t.base) < 0.012 ? mix(t.base, "#ffffff", 0.14) : t.base;
+  const light = luminance(base) > 0.18;
+  const faceTop = mix(base, "#ffffff", light ? 0.22 : 0.06);
+  const faceBottom = mix(base, "#000000", light ? 0.03 : 0.12);
+  // Text sits on the base and on both ends of the key/plate gradient: clear AA on all three.
+  const surfaces = [base, faceTop, faceBottom];
+  const ink = inkFor(base, surfaces);
   const d = t.depth;
   return {
-    "--base": t.base,
-    "--ground": mix(t.base, "#000000", light ? 0.07 : 0.32),
+    "--base": base,
+    "--ground": mix(base, "#000000", light ? 0.07 : 0.32),
     "--ink": ink,
-    "--ink-soft": softInkFor(t.base, ink),
-    "--hi": mix(t.base, "#ffffff", (light ? 0.75 : 0.1) * d),
-    "--lo": mix(t.base, "#000000", (light ? 0.2 : 0.55) * d),
-    "--face-top": mix(t.base, "#ffffff", light ? 0.22 : 0.06),
-    "--face-bottom": mix(t.base, "#000000", light ? 0.03 : 0.12),
+    "--ink-soft": softInkFor(base, ink, surfaces),
+    "--hi": mix(base, "#ffffff", (light ? 0.75 : 0.1) * d),
+    "--lo": mix(base, "#000000", (light ? 0.2 : 0.55) * d),
+    "--face-top": faceTop,
+    "--face-bottom": faceBottom,
     "--led": t.led,
-    "--led-off": mix(t.base, "#000000", light ? 0.16 : 0.35),
+    "--led-off": mix(base, "#000000", light ? 0.16 : 0.35),
     "--radius": `${t.radius}px`,
     "--depth": String(d),
     "color-scheme": light ? "light" : "dark",
