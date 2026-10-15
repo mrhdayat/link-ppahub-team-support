@@ -4,16 +4,24 @@ import { getSite } from "@/lib/store";
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|discord|headless/i;
 
 // ponytail: per-instance limiter; a shared store if deployed multi-instance.
+// Forwarded IPs can be spoofed, so a global ceiling caps total writes whatever IP is claimed;
+// the worst case is inflated counts, never data loss. Expired entries are evicted, never the whole map.
 const seen = new Map<string, { n: number; until: number }>();
+const PER_IP = 60;
+const GLOBAL = 1200;
+let global = { n: 0, until: 0 };
 function limited(ip: string): boolean {
   const now = Date.now();
+  if (global.until < now) global = { n: 0, until: now + 60_000 };
+  if (++global.n > GLOBAL) return true;
+  if (seen.size > 5000) for (const [k, v] of seen) if (v.until < now) seen.delete(k);
+  if (seen.size > 5000) return true; // still full of live entries: refuse rather than forget them
   const s = seen.get(ip);
   if (!s || s.until < now) {
     seen.set(ip, { n: 1, until: now + 60_000 });
-    if (seen.size > 5000) seen.clear();
     return false;
   }
-  return ++s.n > 60;
+  return ++s.n > PER_IP;
 }
 
 /** Counts one tap. Body is the plain-text key (sent with navigator.sendBeacon). */
