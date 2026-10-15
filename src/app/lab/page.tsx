@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Faceplate } from "@/components/faceplate";
-import { DEFAULT_SITE, FONTS, ICONS, KEY_STYLES, PRESETS, SOCIALS, siteSchema, type Link, type Site, type Theme } from "@/lib/site";
+import { DEFAULT_SITE, FONTS, ICONS, HANDLES, PRESETS, SOCIALS, siteSchema, type Link, type Site, type Theme } from "@/lib/site";
 
 // Dev-only stress fixtures for the public faceplate. Never served in production.
 export const metadata = { robots: { index: false } };
@@ -37,13 +37,13 @@ function site(theme: Partial<Theme>, rest: Partial<Site> = {}): Site {
 const fixtures: [string, Site][] = [
   ...Object.entries(PRESETS).map(([key, p]) => [`preset ${key}`, site({ preset: key, base: p.base, led: p.led })] as [string, Site]),
   ...["#ffffff", "#000000", "#808080", "#ff0000"].map((base) => [`custom ${base}`, site({ preset: "custom", base })] as [string, Site]),
-  ...KEY_STYLES.map((keyStyle) => [`keys ${keyStyle}`, site({ keyStyle })] as [string, Site]),
+  ...HANDLES.map((handle) => [`handle ${handle}`, site({ handle })] as [string, Site]),
   ...FONTS.map((font) => [`font ${font}`, site({ font })] as [string, Site]),
-  ["grille off, radius 0, depth 0", site({ grille: false, radius: 0, depth: 0 })],
+  ["radio off, radius 0, depth 0", site({ radio: false, radius: 0, depth: 0 })],
   ["radius 28, depth 1, grafit", site({ radius: 28, depth: 1, base: PRESETS.grafit.base, led: PRESETS.grafit.led })],
   ["empty: 0 links", site({}, { links: [] })],
   ["broken avatar", site({}, { profile: { name: "Avatar Rusak", bio: "", avatar: "https://example.invalid/avatar.png" } })],
-  ["40 links, 12 socials", site({ keyStyle: "pill" }, { links: forty, socials: twelveSocials })],
+  ["40 links, 12 socials (6 kept)", site({ handle: "cup" }, { links: forty, socials: twelveSocials })],
 ];
 
 export default function Lab() {

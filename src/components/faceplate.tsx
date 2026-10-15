@@ -29,20 +29,26 @@ function initials(name: string) {
  * The hi-fi unit. Pure render: used by the public page (server) and the admin live preview (client).
  * `boot` plays the power-on LED sweep once; the preview turns it off so edits don't replay it.
  */
-export function Faceplate({ site, boot = true, className = "" }: { site: Site; boot?: boolean; className?: string }) {
+export function Faceplate({ site, boot = true, contained = false, className = "" }: {
+  site: Site;
+  boot?: boolean;
+  /** Render the scene inside its parent box (admin preview) instead of filling the viewport. */
+  contained?: boolean;
+  className?: string;
+}) {
   const { profile, socials, theme } = site;
   const links = site.links.filter((l) => l.on);
   const style = themeVars(theme) as CSSProperties;
 
   return (
-    <div className={`desk ${className}`} style={style} data-font={theme.font} data-keys={theme.keyStyle} data-boot={boot || undefined}>
+    <div className={`desk ${className}`} style={style} data-font={theme.font} data-keys="raised" data-boot={boot || undefined}>
       <article className="unit" aria-label={profile.name}>
         <span className="screw" data-pos="tl" aria-hidden />
         <span className="screw" data-pos="tr" aria-hidden />
 
         <header className="head">
-          {theme.grille && <div className="grille" aria-hidden />}
-          <div className="cone" data-grille={theme.grille || undefined}>
+          {theme.radio && <div className="grille" aria-hidden />}
+          <div className="cone" data-grille={theme.radio || undefined}>
             {profile.avatar ? (
               <ConeAvatar key={profile.avatar} src={profile.avatar} initials={initials(profile.name)} />
             ) : (

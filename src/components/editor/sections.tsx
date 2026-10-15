@@ -2,7 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash, UploadSimple } from "@phosphor-icons/react";
-import { FONTS, ICONS, KEY_STYLES, PRESETS, SOCIALS, type Site, type Theme } from "@/lib/site";
+import { FONTS, ICONS, HANDLES, PRESETS, SOCIALS, type Site, type Theme } from "@/lib/site";
 import { ICON, SOCIAL_NAME } from "@/components/faceplate";
 import { Fader, Field, Segmented, Swatch, Switch, fid, wire } from "./controls";
 
@@ -25,8 +25,8 @@ const LEDS = [
   { label: "Hijau", color: "#1fb46a" }, { label: "Kuning", color: "#f7c548" }, { label: "Jingga", color: "#ffb547" },
   { label: "Merah", color: "#e8453c" }, { label: "Biru", color: "#3b82f6" }, { label: "Putih", color: "#f2f4f7" },
 ];
-const KEY_NAME: Record<(typeof KEY_STYLES)[number], string> = { raised: "Timbul", recessed: "Cekung", pill: "Pil" };
-const FONT_NAME: Record<(typeof FONTS)[number], string> = { archivo: "Archivo", barlow: "Barlow", bricolage: "Bricolage" };
+const HANDLE_NAME: Record<(typeof HANDLES)[number], string> = { bar: "Batang", cup: "Mangkuk", tab: "Lidah" };
+const FONT_NAME: Record<(typeof FONTS)[number], string> = { barlow: "Barlow", shoulders: "Shoulders", archivo: "Archivo" };
 
 const newId = () => Math.random().toString(36).slice(2, 10);
 const focusLater = (...ids: string[]) =>
@@ -346,14 +346,14 @@ export function LookSection({ site, update }: Props) {
       <Fader id={fid("theme.depth")} label="Kedalaman bayangan" value={Math.round(t.depth * 100)} min={0} max={100} step={5}
         format={(v) => `${v}%`} onChange={(v) => setTheme({ depth: v / 100 })} />
 
-      <Segmented name="keyStyle" label="Gaya tombol" value={t.keyStyle}
-        options={KEY_STYLES.map((k) => ({ value: k, label: KEY_NAME[k] }))}
-        onChange={(keyStyle) => setTheme({ keyStyle })} />
+      <Segmented name="handle" label="Pegangan laci" value={t.handle}
+        options={HANDLES.map((k) => ({ value: k, label: HANDLE_NAME[k] }))}
+        onChange={(handle) => setTheme({ handle })} />
       <Segmented name="font" label="Huruf" value={t.font}
         options={FONTS.map((f) => ({ value: f, label: FONT_NAME[f], style: { fontFamily: `var(--font-${f})` } }))}
         onChange={(font) => setTheme({ font })} />
 
-      <Switch id={fid("theme.grille")} label="Grille speaker" checked={t.grille} onChange={(grille) => setTheme({ grille })} />
+      <Switch id={fid("theme.radio")} label="Radio di atas lemari" checked={t.radio} onChange={(radio) => setTheme({ radio })} />
     </section>
   );
 }

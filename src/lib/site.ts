@@ -20,8 +20,10 @@ export const ICONS = [
   "email", "phone", "map", "file", "calendar", "briefcase", "shop", "music", "camera",
 ] as const;
 export const SOCIALS = ["instagram", "tiktok", "youtube", "whatsapp", "linkedin", "x", "facebook", "email", "globe"] as const;
-export const FONTS = ["archivo", "barlow", "bricolage"] as const;
-export const KEY_STYLES = ["raised", "recessed", "pill"] as const;
+export const FONTS = ["barlow", "shoulders", "archivo"] as const;
+export const HANDLES = ["bar", "cup", "tab"] as const;
+export const SCENES = ["garasi", "malam", "polos"] as const;
+export const TRIMS = ["krom", "hitam"] as const;
 
 export const linkSchema = z.object({
   id,
@@ -34,15 +36,40 @@ export const linkSchema = z.object({
 
 export const socialSchema = z.object({ id, kind: z.enum(SOCIALS), url });
 
+/** Cabinet paint + display glow. Each preset is a real-world tool-chest finish. */
+export const PRESETS: Record<string, { label: string; base: string; led: string }> = {
+  merah: { label: "Merah bengkel", base: "#b0281f", led: "#5ef2c8" },
+  hitam: { label: "Hitam doff", base: "#26282c", led: "#ffb547" },
+  biru: { label: "Biru baja", base: "#2c5a86", led: "#8fe3ff" },
+  hijau: { label: "Hijau army", base: "#4f5b3c", led: "#a6ff7a" },
+  kuning: { label: "Kuning safety", base: "#d9a21b", led: "#ff8a3d" },
+};
+
+export const DEFAULT_THEME = {
+  preset: "merah",
+  base: PRESETS.merah.base,
+  led: PRESETS.merah.led,
+  radius: 10,
+  depth: 0.75,
+  font: "barlow" as (typeof FONTS)[number],
+  handle: "bar" as (typeof HANDLES)[number],
+  scene: "garasi" as (typeof SCENES)[number],
+  trim: "krom" as (typeof TRIMS)[number],
+  radio: true,
+};
+
+// Every field degrades on its own, so an old or hand-edited theme keeps whatever is still valid.
 export const themeSchema = z.object({
-  preset: z.string().max(20),
-  base: hex,
-  led: hex,
-  radius: z.number().min(0).max(28),
-  depth: z.number().min(0).max(1),
-  font: z.enum(FONTS),
-  keyStyle: z.enum(KEY_STYLES),
-  grille: z.boolean(),
+  preset: z.string().max(20).catch(DEFAULT_THEME.preset),
+  base: hex.catch(DEFAULT_THEME.base),
+  led: hex.catch(DEFAULT_THEME.led),
+  radius: z.number().min(0).max(28).catch(DEFAULT_THEME.radius),
+  depth: z.number().min(0).max(1).catch(DEFAULT_THEME.depth),
+  font: z.enum(FONTS).catch(DEFAULT_THEME.font),
+  handle: z.enum(HANDLES).catch(DEFAULT_THEME.handle),
+  scene: z.enum(SCENES).catch(DEFAULT_THEME.scene),
+  trim: z.enum(TRIMS).catch(DEFAULT_THEME.trim),
+  radio: z.boolean().catch(DEFAULT_THEME.radio),
 });
 
 // Avatar may be an https URL or a small inline image produced by the editor.
@@ -59,7 +86,8 @@ export const siteSchema = z.object({
     avatar,
   }),
   links: z.array(linkSchema).max(40),
-  socials: z.array(socialSchema).max(12),
+  // A head unit has six preset keys.
+  socials: z.preprocess((v) => (Array.isArray(v) ? v.slice(0, 6) : v), z.array(socialSchema).max(6, "Maksimal 6 tombol preset")),
   theme: themeSchema,
 });
 
@@ -68,12 +96,6 @@ export type Link = z.infer<typeof linkSchema>;
 export type Social = z.infer<typeof socialSchema>;
 export type Theme = z.infer<typeof themeSchema>;
 
-export const PRESETS: Record<string, { label: string; base: string; led: string }> = {
-  kapur: { label: "Kapur", base: "#dfe2e5", led: "#1fb46a" },
-  grafit: { label: "Grafit", base: "#2c2e33", led: "#ffb547" },
-  zaitun: { label: "Zaitun", base: "#b9bca4", led: "#f7c548" },
-  baja: { label: "Baja", base: "#a9b7c6", led: "#e8453c" },
-};
 
 export const DEFAULT_SITE: Site = {
   profile: {
@@ -92,12 +114,8 @@ export const DEFAULT_SITE: Site = {
     { id: "s2", kind: "linkedin", url: "https://linkedin.com" },
     { id: "s3", kind: "youtube", url: "https://youtube.com" },
   ],
-  theme: { preset: "kapur", ...pick(PRESETS.kapur), radius: 14, depth: 0.7, font: "archivo", keyStyle: "raised", grille: true },
+  theme: DEFAULT_THEME,
 };
-
-function pick(p: { base: string; led: string }) {
-  return { base: p.base, led: p.led };
-}
 
 /** Old or partial stored data never breaks the page: fall back per section. */
 export function parseSite(raw: unknown): Site {
@@ -135,6 +153,18 @@ export function themeVars(t: Theme): Record<string, string> {
     "--led-off": mix(base, "#000000", light ? 0.16 : 0.35),
     "--radius": `${t.radius}px`,
     "--depth": String(d),
+    // Tool chest: powder-coated paint, the gaps between drawers, the display glow, the metal trim.
+    "--paint": base,
+    "--paint-hi": mix(base, "#ffffff", light ? 0.35 : 0.2),
+    "--paint-lo": mix(base, "#000000", 0.38),
+    "--paint-edge": mix(base, "#000000", 0.62),
+    "--gap": mix(base, "#000000", 0.82),
+    "--glow": t.led,
+    "--glow-dim": mix(t.led, "#0b0d0e", 0.86),
+    "--glow-soft": mix(t.led, "#0b0d0e", 0.45),
+    ...(t.trim === "hitam"
+      ? { "--metal-1": "#5b5f66", "--metal-2": "#303338", "--metal-3": "#151618" }
+      : { "--metal-1": "#f7f8fa", "--metal-2": "#b6bdc5", "--metal-3": "#5d646d" }),
     colorScheme: light ? "light" : "dark",
   };
 }
