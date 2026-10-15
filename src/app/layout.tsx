@@ -6,6 +6,8 @@ import "./globals.css";
 const overpass = Overpass({ variable: "--font-sign", subsets: ["latin"], weight: ["600", "800", "900"] });
 const overpassMono = Overpass_Mono({ variable: "--font-hud", subsets: ["latin"], weight: ["500", "700"] });
 
+const THEME_INIT = `try{var t=localStorage.getItem("rambu-tema");if(t)document.documentElement.dataset.theme=t}catch(e){}`;
+
 export const metadata: Metadata = {
   title: "Rambu Navigasi",
   description: "Semua tautan dalam satu halaman.",
@@ -25,7 +27,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${overpass.variable} ${overpassMono.variable}`} suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        {/* Visitor's day/night choice, applied before first paint (static string, no user data). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        {children}
+      </body>
     </html>
   );
 }
