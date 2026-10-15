@@ -15,6 +15,15 @@ for (const base of bases) {
   assert.ok(contrast(v["--led-off"], v["--base"]) > 1.1, `led-off visible on ${base}`);
 }
 
+// Any glow pick stays readable on the VFD glass and visible as a focus ring in the drawer gaps.
+for (const base of bases) {
+  for (const led of ["#000000", "#202020", "#5ef2c8", "#0000ff", "#ffffff"]) {
+    const v = themeVars({ ...DEFAULT_SITE.theme, base, led });
+    assert.ok(contrast(v["--glow"], "#060708") >= 4.5, `glow ${led} on glass`);
+    assert.ok(contrast(v["--glow"], v["--gap"]) >= 3, `glow ${led} in gaps of ${base}`);
+  }
+}
+
 // Only openable schemes pass.
 assert.ok(isSafeUrl("https://wa.me/62812"));
 assert.ok(isSafeUrl("mailto:a@b.co"));

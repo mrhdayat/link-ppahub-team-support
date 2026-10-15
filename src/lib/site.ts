@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { inkFor, luminance, mix, softInkFor } from "./color";
+import { contrast, inkFor, luminance, mix, softInkFor } from "./color";
 
 // Only schemes a visitor can safely open. Blocks javascript:, data:, etc.
 const SAFE_PROTOCOLS = ["http:", "https:", "mailto:", "tel:"];
@@ -140,6 +140,10 @@ export function themeVars(t: Theme): Record<string, string> {
   const surfaces = [base, faceTop, faceBottom];
   const ink = inkFor(base, surfaces);
   const d = t.depth;
+  // The glow is VFD text, focus ring and LED: lift a dark pick toward white until it reads on the glass and in the gaps.
+  const gap = mix(base, "#000000", 0.82);
+  let glow = t.led;
+  for (let k = 0.08; (contrast(glow, "#060708") < 4.5 || contrast(glow, gap) < 3) && k <= 1; k += 0.08) glow = mix(t.led, "#ffffff", k);
   return {
     "--base": base,
     "--ground": mix(base, "#000000", light ? 0.07 : 0.32),
@@ -158,10 +162,10 @@ export function themeVars(t: Theme): Record<string, string> {
     "--paint-hi": mix(base, "#ffffff", light ? 0.35 : 0.2),
     "--paint-lo": mix(base, "#000000", 0.38),
     "--paint-edge": mix(base, "#000000", 0.62),
-    "--gap": mix(base, "#000000", 0.82),
-    "--glow": t.led,
-    "--glow-dim": mix(t.led, "#0b0d0e", 0.86),
-    "--glow-soft": mix(t.led, "#0b0d0e", 0.45),
+    "--gap": gap,
+    "--glow": glow,
+    "--glow-dim": mix(glow, "#0b0d0e", 0.86),
+    "--glow-soft": mix(glow, "#0b0d0e", 0.45),
     ...(t.trim === "hitam"
       ? { "--metal-1": "#5b5f66", "--metal-2": "#303338", "--metal-3": "#151618" }
       : { "--metal-1": "#f7f8fa", "--metal-2": "#b6bdc5", "--metal-3": "#5d646d" }),
