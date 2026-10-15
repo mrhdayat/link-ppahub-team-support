@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { updateTag } from "next/cache";
-import { checkPassword, endSession, isAdmin, startSession } from "@/lib/auth";
+import { headers } from "next/headers";
+import { checkPassword, clearFailures, endSession, isAdmin, lockedOut, recordFailure, startSession } from "@/lib/auth";
 import { saveSite } from "@/lib/store";
 import { siteSchema } from "@/lib/site";
 
@@ -11,11 +12,16 @@ export type LoginState = { error?: string };
 export async function login(_: LoginState, form: FormData): Promise<LoginState> {
   const password = String(form.get("password") ?? "");
   if (!process.env.ADMIN_PASSWORD) return { error: "ADMIN_PASSWORD belum diset di server." };
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
+  const wait = lockedOut(ip);
+  if (wait) return { error: `Terlalu banyak percobaan. Coba lagi dalam ${wait} menit.` };
   if (!checkPassword(password)) {
-    // ponytail: fixed delay slows guessing; add rate limiting per IP if the page is public-facing.
+    recordFailure(ip);
     await new Promise((r) => setTimeout(r, 600));
     return { error: "Password salah. Coba lagi." };
   }
+  clearFailures(ip);
   await startSession();
   redirect("/admin");
 }
