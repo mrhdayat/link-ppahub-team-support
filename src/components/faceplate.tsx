@@ -32,9 +32,7 @@ function initials(name: string) {
 export function Faceplate({ site, boot = true, className = "" }: { site: Site; boot?: boolean; className?: string }) {
   const { profile, socials, theme } = site;
   const links = site.links.filter((l) => l.on);
-  // React only accepts camelCase for standard properties; "color-scheme" would be dropped.
-  const { "color-scheme": colorScheme, ...vars } = themeVars(theme);
-  const style = { ...vars, colorScheme } as CSSProperties;
+  const style = themeVars(theme) as CSSProperties;
 
   return (
     <div className={`desk ${className}`} style={style} data-font={theme.font} data-keys={theme.keyStyle} data-boot={boot || undefined}>

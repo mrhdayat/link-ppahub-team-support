@@ -135,6 +135,6 @@ export function themeVars(t: Theme): Record<string, string> {
     "--led-off": mix(base, "#000000", light ? 0.16 : 0.35),
     "--radius": `${t.radius}px`,
     "--depth": String(d),
-    "color-scheme": light ? "light" : "dark",
+    colorScheme: light ? "light" : "dark",
   };
 }

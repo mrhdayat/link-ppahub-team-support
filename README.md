@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Halaman Link Tactile
 
-## Getting Started
+Halaman link-in-bio milik sendiri. Satu halaman publik di `/`, satu admin di `/admin`. Gaya visual: panel perangkat audio hi-fi (neumorphism + skeuomorphism). Detail produk ada di [PRD.md](PRD.md).
 
-First, run the development server:
+## Jalankan lokal
 
 ```bash
+cp .env.example .env.local   # isi ADMIN_PASSWORD (min. 12 karakter acak)
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Halaman publik: http://localhost:3000
+- Admin: http://localhost:3000/admin
+- Contoh data ekstrem (dev saja): http://localhost:3000/lab
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Tanpa `DATABASE_URL`, data disimpan di `data/site.json`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment
 
-## Learn More
+| Variabel | Wajib | Isi |
+|---|---|---|
+| `ADMIN_PASSWORD` | Ya | Password admin. Di production minimal 12 karakter. |
+| `SESSION_SECRET` | Tidak | Kunci tanda tangan cookie. Kalau kosong, diturunkan dari password dengan scrypt. |
+| `DATABASE_URL` | Saat deploy serverless | Connection string Neon Postgres. Tabel `site_doc` dibuat otomatis. |
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Di Vercel atau hosting serverless lain, **wajib** isi `DATABASE_URL`. Disk serverless tidak permanen, jadi `data/site.json` akan hilang. Di VPS atau server biasa, file lokal sudah cukup.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cek
 
-## Deploy on Vercel
+```bash
+npx tsx src/lib/site.check.ts   # kontras warna & validasi URL
+npm run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Struktur
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| File | Isi |
+|---|---|
+| `src/lib/site.ts` | Skema data (Zod), preset bahan, `themeVars()` yang menurunkan semua warna dari 2 pilihan |
+| `src/lib/color.ts` | Hitung kontras, pilih warna tinta yang lolos WCAG AA |
+| `src/lib/store.ts` | Baca/simpan 1 dokumen `site` (Neon atau file), di-cache dengan tag `site` |
+| `src/lib/auth.ts` | Sesi admin (cookie HMAC), batas percobaan login |
+| `src/app/actions.ts` | Server action: `login`, `logout`, `save` |
+| `src/components/faceplate.*` | Tampilan halaman publik, juga dipakai untuk preview di editor |
+| `src/components/editor/*` | Editor admin |
