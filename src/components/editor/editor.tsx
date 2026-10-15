@@ -129,13 +129,13 @@ export function Editor({ initial }: { initial: Site }) {
 
   return (
     <div className="ed" style={PANEL} data-view={view}>
-      <header className="ed-top">
+      <header className="ed-top ui">
         <h1>Editor halaman</h1>
         <Segmented name="view" label="Tampilkan" hideLabel value={view} onChange={setView}
           options={[{ value: "atur", label: "Atur" }, { value: "lihat", label: "Lihat" }]} />
       </header>
 
-      <main className="ed-controls">
+      <main className="ed-controls ui">
         <ProfileSection {...props} />
         <LinksSection {...props} />
         <SocialsSection {...props} />
@@ -145,11 +145,11 @@ export function Editor({ initial }: { initial: Site }) {
       <aside className="ed-preview" aria-label="Pratinjau halaman">
         {/* Inert: the preview is a picture of the page, so its links don't navigate away from unsaved work. */}
         <div inert>
-          <Faceplate site={draft} boot={false} />
+          <Faceplate site={draft} boot={false} contained />
         </div>
       </aside>
 
-      <div className="ed-bar">
+      <div className="ed-bar ui">
         {undo && (
           <div className="toast" ref={toast} role="status">
             <span>{undo.message}</span>
@@ -160,9 +160,10 @@ export function Editor({ initial }: { initial: Site }) {
           </div>
         )}
         <div className="bar-row">
+          {/* The VFD strip: dot-matrix glow for routine states, plain text when something needs fixing. */}
           <p className="status" data-state={state} role={failure ? "alert" : "status"}>
             <span className="led" aria-hidden />
-            {status}
+            <span key={state === "saved" ? savedAt ?? 0 : state}>{status}</span>
           </p>
           <div className="bar-actions">
             <a className="btn" href="/" target="_blank" rel="noopener">
@@ -175,7 +176,8 @@ export function Editor({ initial }: { initial: Site }) {
                 Keluar
               </button>
             </form>
-            <button type="button" className="btn primary" disabled={!dirty || pending} onClick={onSave}>
+            <button type="button" className="btn save" data-dirty={dirty || undefined} disabled={!dirty || pending} onClick={onSave}>
+              <span className="lamp" aria-hidden />
               {pending ? "Menyimpan…" : "Simpan"}
             </button>
           </div>
