@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-15T00:00:00Z",
+  "title": "Design System: Team PPA Links",
+  "extensions": {
+    "colorMeta": {
+      "base": { "role": "neutral", "displayName": "Kapur Chalk", "canonical": "#dfe2e5", "derivation": "admin pick (preset or color input); near-black (luminance < 0.012) lifted 14% toward white", "tonalRamp": ["#383939", "#646667", "#919395", "#bec0c3", "#e5e8ea", "#edeff1", "#f5f6f7", "#fbfcfc"] },
+      "ground": { "role": "neutral", "displayName": "Desk Shadow", "canonical": "#cfd2d5", "derivation": "mix(base, black, light ? 0.07 : 0.32)", "tonalRamp": ["#343535", "#5d5e60", "#87898a", "#b0b3b5", "#d9dbdd", "#e5e6e8", "#f1f2f2", "#f9fafa"] },
+      "face-top": { "role": "neutral", "displayName": "Lit Face", "canonical": "#e6e8eb", "derivation": "mix(base, white, light ? 0.22 : 0.06)", "tonalRamp": ["#3a3a3b", "#67686a", "#969799", "#c4c5c8", "#ebedef", "#f1f2f4", "#f8f8f9", "#fcfcfd"] },
+      "face-bottom": { "role": "neutral", "displayName": "Shaded Face", "canonical": "#d8dbde", "derivation": "mix(base, black, light ? 0.03 : 0.12)", "tonalRamp": ["#363738", "#616364", "#8c8e90", "#b8babd", "#e0e2e5", "#eaebed", "#f3f4f5", "#fafbfb"] },
+      "hi": { "role": "neutral", "displayName": "Highlight", "canonical": "#f0f1f3", "derivation": "mix(base, white, (light ? 0.75 : 0.10) * depth); shadow-only", "tonalRamp": ["#3c3c3d", "#6c6c6d", "#9c9d9e", "#cccdcf", "#f3f4f5", "#f7f7f8", "#fbfbfb", "#fdfdfe"] },
+      "lo": { "role": "neutral", "displayName": "Shade", "canonical": "#c0c2c5", "derivation": "mix(base, black, (light ? 0.20 : 0.55) * depth); shadow-only", "tonalRamp": ["#303131", "#565759", "#7d7e80", "#a3a5a7", "#cdced1", "#dcdddf", "#ecedee", "#f7f8f8"] },
+      "ink": { "role": "neutral", "displayName": "Engraved Ink", "canonical": "#282929", "derivation": "inkFor(base, [base, face-top, face-bottom]): base hue deepened until >= 4.5:1 on all three", "tonalRamp": ["#0a0a0a", "#121212", "#1a1b1b", "#222323", "#535454", "#898989", "#bfbfbf", "#e5e5e5"] },
+      "ink-soft": { "role": "neutral", "displayName": "Worn Ink", "canonical": "#565758", "derivation": "softInkFor: ink pulled toward base while >= 4.5:1 on all surfaces", "tonalRamp": ["#161616", "#272728", "#383939", "#494a4b", "#787979", "#a2a3a3", "#cccdcd", "#ebebeb"] },
+      "led": { "role": "primary", "displayName": "Indicator Green", "canonical": "#1fb46a", "derivation": "admin pick; used as-is", "tonalRamp": ["#082d1b", "#0e5130", "#147545", "#1a995a", "#4cc388", "#84d6ad", "#bce9d2", "#e4f6ed"] },
+      "led-off": { "role": "neutral", "displayName": "Dark LED Cell", "canonical": "#bbbec0", "derivation": "mix(base, black, light ? 0.16 : 0.35)", "tonalRamp": ["#2f3030", "#545556", "#7a7c7d", "#9fa2a3", "#c9cbcd", "#dadbdc", "#ebecec", "#f7f7f7"] },
+      "well": { "role": "neutral", "displayName": "Input Well", "canonical": "#f1f2f3", "derivation": "color-mix(base 45%, white); admin only", "tonalRamp": ["#3c3d3d", "#6c6d6d", "#9d9d9e", "#cdcecf", "#f4f5f5", "#f7f8f8", "#fbfbfb", "#fdfdfe"] },
+      "danger": { "role": "secondary", "displayName": "Fault Red", "canonical": "#a3201b", "derivation": "fixed; admin panel only", "tonalRamp": ["#290807", "#490e0c", "#6a1512", "#8b1b17", "#b54d49", "#cc8482", "#e3bcbb", "#f4e4e4"] },
+      "amber": { "role": "tertiary", "displayName": "Standby Amber", "canonical": "#e89a1c", "derivation": "fixed; admin panel only (unsaved / busy LED)", "tonalRamp": ["#3a2707", "#68450d", "#976412", "#c58318", "#edae49", "#f2c782", "#f8e1bb", "#fcf3e4"] }
+    },
+    "themeDerivation": {
+      "source": "src/lib/site.ts themeVars()",
+      "inputs": ["base", "led", "radius (0-28px)", "depth (0-1)", "font", "keyStyle", "grille"],
+      "lightTest": "luminance(base) > 0.18",
+      "presets": {
+        "kapur": { "--base": "#dfe2e5", "--ground": "#cfd2d5", "--ink": "#282929", "--ink-soft": "#565758", "--hi": "#f0f1f3", "--lo": "#c0c2c5", "--face-top": "#e6e8eb", "--face-bottom": "#d8dbde", "--led": "#1fb46a", "--led-off": "#bbbec0", "colorScheme": "light" },
+        "grafit": { "--base": "#2c2e33", "--ground": "#1e1f23", "--ink": "#eaeaeb", "--ink-soft": "#a8a8ab", "--hi": "#3b3d41", "--lo": "#1b1c1f", "--face-top": "#393b3f", "--face-bottom": "#27282d", "--led": "#ffb547", "--led-off": "#1d1e21", "colorScheme": "dark" },
+        "zaitun": { "--base": "#b9bca4", "--ground": "#acaf99", "--ink": "#21221e", "--ink-soft": "#3f4139", "--hi": "#dedfd4", "--lo": "#9fa28d", "--face-top": "#c8cbb8", "--face-bottom": "#b3b69f", "--led": "#f7c548", "--led-off": "#9b9e8a", "colorScheme": "light" },
+        "baja": { "--base": "#a9b7c6", "--ground": "#9daab8", "--ink": "#1e2124", "--ink-soft": "#3a3f44", "--hi": "#d6dde4", "--lo": "#919daa", "--face-top": "#bcc7d3", "--face-bottom": "#a4b2c0", "--led": "#e8453c", "--led-off": "#8e9aa6", "colorScheme": "light" }
+      },
+      "presetDefaults": "radius 14px, depth 0.7 (public); admin panel plate: Kapur, radius 12px, depth 0.6 (hi #edeff1, lo #c4c7ca)"
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Owner's name under the cone only." },
+      "headline": { "displayName": "Headline", "purpose": "Admin panel headings; login title 1.375rem, top-bar title 1.125rem." },
+      "title": { "displayName": "Key Legend", "purpose": "Preset-key labels." },
+      "body": { "displayName": "Body", "purpose": "Bio, soft ink, max 34ch." },
+      "label": { "displayName": "Label", "purpose": "Admin field labels, legends, buttons, switches, status." },
+      "label-sm": { "displayName": "Label Small", "purpose": "Hints, counters, readouts, errors (600)." },
+      "alternates": { "displayName": "Alternate faces", "purpose": "Barlow (400/600/700) and Bricolage Grotesque, faceplate only, lazy-loaded, chosen by admin." }
+    },
+    "shadows": [
+      { "name": "chassis-lift", "value": "-14px -14px 32px var(--hi), 18px 22px 44px var(--lo), var(--bevel)", "purpose": "The unit only." },
+      { "name": "raise", "value": "-6px -6px 14px var(--hi), 7px 8px 16px var(--lo)", "purpose": "Faceplate keys and cone." },
+      { "name": "raise-admin", "value": "-4px -4px 10px var(--hi), 5px 6px 12px var(--lo)", "purpose": "Admin panels, buttons, swatch keys." },
+      { "name": "tact-lift", "value": "-3px -3px 7px var(--hi), 4px 4px 9px var(--lo)", "purpose": "Round social tact switches." },
+      { "name": "press", "value": "inset 3px 3px 6px var(--lo), inset -3px -3px 6px var(--hi)", "purpose": "Grille, cone surround, pressed keys, empty state." },
+      { "name": "press-admin", "value": "inset 2px 2px 5px var(--lo), inset -2px -2px 5px var(--hi)", "purpose": "Inputs, wells, switch tracks, segmented tray." },
+      { "name": "bevel", "value": "inset 0 1px 0 color-mix(in srgb, var(--hi) 70%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--lo) 45%, transparent)", "purpose": "1px molded edge on every raised part." },
+      { "name": "rim", "value": "0 0 0 1px color-mix(in srgb, var(--ink) calc(max(0, 0.5 - var(--depth)) * 40%), transparent)", "purpose": "Hairline that fades in below depth 0.5." },
+      { "name": "led-glow", "value": "0 0 0 1px rgb(0 0 0 / 0.12), 0 0 6px var(--led), 0 0 14px color-mix(in srgb, var(--led) 55%, transparent)", "purpose": "Lit indicator." },
+      { "name": "led-cell", "value": "inset 0 1px 1.5px rgb(0 0 0 / 0.35)", "purpose": "Unlit indicator cell." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "All press, slide, and hover transitions." },
+      { "name": "press-key", "value": "90ms", "purpose": "Faceplate key/tact travel and shadow flip." },
+      { "name": "press-admin", "value": "120ms", "purpose": "Admin buttons, segmented, swatches." },
+      { "name": "switch-slide", "value": "140ms", "purpose": "Switch cap travel (pointer only; keyboard snaps)." },
+      { "name": "boot-led", "value": "380ms, delay 180ms + i*70ms", "purpose": "Power-on sweep per key LED; disabled under reduced motion." },
+      { "name": "boot-power", "value": "500ms, delay 260ms + n*70ms", "purpose": "Power lamp flicker-and-settle." }
+    ],
+    "breakpoints": [
+      { "name": "editor-split", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Preset Key",
+      "kind": "custom",
+      "refersTo": "preset-key",
+      "description": "Signature link key: LED cell, glyph, label, arrow. Lit variant glows; press travels 2px and flips inward.",
+      "html": "<div class=\"ds-desk\"><a class=\"ds-key\" href=\"#\" data-lit><span class=\"ds-led\"></span><svg width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" class=\"ds-glyph\"><circle cx=\"128\" cy=\"128\" r=\"96\"/><path d=\"M32 128h192M128 32c-24 26-36 58-36 96s12 70 36 96c24-26 36-58 36-96s-12-70-36-96z\"/></svg><span class=\"ds-label\">Website resmi</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"24\" stroke-linecap=\"round\" class=\"ds-go\"><path d=\"M64 192 192 64M88 64h104v104\"/></svg></a><a class=\"ds-key\" href=\"#\"><span class=\"ds-led\"></span><svg width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" class=\"ds-glyph\"><path d=\"M128 232s72-64 72-128a72 72 0 0 0-144 0c0 64 72 128 72 128z\"/><circle cx=\"128\" cy=\"104\" r=\"24\"/></svg><span class=\"ds-label\">Lokasi kantor</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"24\" stroke-linecap=\"round\" class=\"ds-go\"><path d=\"M64 192 192 64M88 64h104v104\"/></svg></a></div>",
+      "css": ".ds-desk { display: grid; gap: 14px; padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-key { display: grid; grid-template-columns: 8px 20px 1fr 16px; align-items: center; gap: 12px; min-height: 58px; padding: 10px 18px 10px 16px; border-radius: 14px; color: #282929; text-decoration: none; background: linear-gradient(175deg, #e6e8eb, #d8dbde); box-shadow: -6px -6px 14px #f0f1f3, 7px 8px 16px #c0c2c5, inset 0 1px 0 rgba(240,241,243,.7), inset 0 -1px 0 rgba(192,194,197,.45); transition: transform 90ms cubic-bezier(0.23,1,0.32,1), box-shadow 90ms cubic-bezier(0.23,1,0.32,1); } .ds-key:active { transform: translateY(2px); box-shadow: inset 3px 3px 6px #c0c2c5, inset -3px -3px 6px #f0f1f3; } .ds-key:focus-visible { outline: 2px solid #282929; outline-offset: 4px; } .ds-label { font-size: 1rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.005em; } .ds-glyph, .ds-go { color: #565758; } .ds-go { opacity: .7; transition: transform 160ms cubic-bezier(0.23,1,0.32,1), opacity 160ms; } .ds-key:hover .ds-go { opacity: 1; transform: translate(2px,-2px); } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); transition: background-color 120ms, box-shadow 120ms; } .ds-key:hover .ds-led { background: #6dbd92; } .ds-key[data-lit] .ds-led, .ds-key:active .ds-led, .ds-key:focus-visible .ds-led { background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.85) 0 1px, transparent 2.5px), #1fb46a; box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 0 6px #1fb46a, 0 0 14px rgba(31,180,106,.55); }"
+    },
+    {
+      "name": "Tact Switch",
+      "kind": "button",
+      "refersTo": "tact-switch",
+      "description": "44px round social button; icon tints toward LED on hover, presses 1px.",
+      "html": "<div class=\"ds-tact-row\"><a class=\"ds-tact\" href=\"#\" aria-label=\"Instagram\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"><rect x=\"32\" y=\"32\" width=\"192\" height=\"192\" rx=\"48\"/><circle cx=\"128\" cy=\"128\" r=\"40\"/><circle cx=\"180\" cy=\"76\" r=\"6\" fill=\"currentColor\"/></svg></a><a class=\"ds-tact\" href=\"#\" aria-label=\"YouTube\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"><rect x=\"24\" y=\"56\" width=\"208\" height=\"144\" rx=\"32\"/><path d=\"M112 100v56l48-28z\" fill=\"currentColor\"/></svg></a></div>",
+      "css": ".ds-tact-row { display: flex; gap: 12px; padding: 24px; background: #dfe2e5; } .ds-tact { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #282929; background: linear-gradient(160deg, #e6e8eb, #d8dbde); box-shadow: -3px -3px 7px #f0f1f3, 4px 4px 9px #c0c2c5, inset 0 1px 0 rgba(240,241,243,.7), inset 0 -1px 0 rgba(192,194,197,.45); transition: transform 90ms cubic-bezier(0.23,1,0.32,1), box-shadow 90ms cubic-bezier(0.23,1,0.32,1); } .ds-tact:hover { color: #253b2f; } .ds-tact:active { transform: translateY(1px); box-shadow: inset 3px 3px 6px #c0c2c5, inset -3px -3px 6px #f0f1f3; } .ds-tact:focus-visible { outline: 2px solid #282929; outline-offset: 4px; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink slab commit action (Simpan, Masuk) with status LED; disabled becomes an empty pressed well.",
+      "html": "<div class=\"ds-pad\"><button class=\"ds-btn-primary\"><span class=\"ds-led\"></span>Simpan</button><button class=\"ds-btn-primary\" disabled><span class=\"ds-led\"></span>Simpan</button></div>",
+      "css": ".ds-pad { display: flex; gap: 12px; padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 112px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: #282929; color: #dfe2e5; font: inherit; font-size: .9375rem; font-weight: 600; cursor: pointer; box-shadow: -4px -4px 10px #edeff1, 5px 6px 12px #c4c7ca, inset 0 1px 0 rgba(223,226,229,.25); transition: transform 120ms cubic-bezier(0.23,1,0.32,1), box-shadow 120ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-primary:hover:not(:disabled) { background: #3e3f40; } .ds-btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-btn-primary:focus-visible { outline: 2px solid #282929; outline-offset: 2px; } .ds-btn-primary:disabled { background: transparent; color: #565758; cursor: default; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #1fb46a; box-shadow: 0 0 6px #1fb46a; } .ds-btn-primary:disabled .ds-led { background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); }"
+    },
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Raised face-gradient key for secondary admin actions; hover deepens the raise.",
+      "html": "<div class=\"ds-pad\"><button class=\"ds-btn\">+ Tambah link</button></div>",
+      "css": ".ds-pad { padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: linear-gradient(175deg, #e6e8eb, #d8dbde); color: #282929; font: inherit; font-size: .9375rem; font-weight: 600; cursor: pointer; box-shadow: -4px -4px 10px #edeff1, 5px 6px 12px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7), inset 0 -1px 0 rgba(196,199,202,.45); transition: transform 120ms cubic-bezier(0.23,1,0.32,1), box-shadow 120ms cubic-bezier(0.23,1,0.32,1); } .ds-btn:hover { box-shadow: -5px -5px 12px #edeff1, 6px 7px 14px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7), inset 0 -1px 0 rgba(196,199,202,.45); } .ds-btn:active { transform: translateY(1px); box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-btn:focus-visible { outline: 2px solid #282929; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Pressed well with label above; error adds a red inset ring and message.",
+      "html": "<div class=\"ds-pad\"><div class=\"ds-field\"><label for=\"ds-n\">Nama</label><input id=\"ds-n\" value=\"Team PPA\"></div><div class=\"ds-field\" data-invalid><label for=\"ds-u\">Link</label><input id=\"ds-u\" value=\"example\"><p class=\"ds-err\">Link harus diawali https://</p></div></div>",
+      "css": ".ds-pad { display: grid; gap: 16px; padding: 24px; background: linear-gradient(170deg, #e6e8eb, #d8dbde); font-family: Archivo, system-ui, sans-serif; color: #282929; } .ds-field { display: grid; gap: 6px; } .ds-field label { font-size: .9375rem; font-weight: 600; } .ds-field input { min-height: 44px; padding: 10px 12px; border: 0; border-radius: 12px; background: #f1f2f3; color: #282929; font: inherit; font-size: 16px; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-field input:focus-visible { outline: 2px solid #282929; outline-offset: 2px; } .ds-field[data-invalid] input { box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1, inset 0 0 0 2px #a3201b; } .ds-err { margin: 0; font-size: .875rem; font-weight: 600; color: #a3201b; }"
+    },
+    {
+      "name": "Slide Switch",
+      "kind": "custom",
+      "refersTo": "switch",
+      "description": "Native checkbox as a pressed track with a raised LED cap.",
+      "html": "<div class=\"ds-pad\"><label class=\"ds-switch\"><input type=\"checkbox\" role=\"switch\" checked><span class=\"ds-track\"><span class=\"ds-cap\"><span class=\"ds-led\"></span></span></span><span>Tampilkan</span></label></div>",
+      "css": ".ds-pad { padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; color: #282929; } .ds-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: .9375rem; font-weight: 600; cursor: pointer; } .ds-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; } .ds-track { position: relative; width: 52px; height: 28px; border-radius: 999px; background: #dfe2e5; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-cap { position: absolute; top: 3px; left: 3px; display: grid; place-items: center; width: 26px; height: 22px; border-radius: 999px; background: linear-gradient(175deg, #e6e8eb, #d8dbde); box-shadow: 1px 2px 4px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7); transition: transform 140ms cubic-bezier(0.23,1,0.32,1); } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); } .ds-switch input:checked + .ds-track .ds-cap { transform: translateX(20px); } .ds-switch input:checked + .ds-track .ds-led { background: #1fb46a; box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 0 6px #1fb46a; } .ds-switch input:focus-visible + .ds-track { outline: 2px solid #282929; outline-offset: 2px; }"
+    },
+    {
+      "name": "Segmented Keys",
+      "kind": "nav",
+      "refersTo": "segmented",
+      "description": "Native radios in a pressed tray; the checked key rises and lights. Also the Atur | Lihat pane switch on phones.",
+      "html": "<div class=\"ds-pad\"><div class=\"ds-seg\"><label><input type=\"radio\" name=\"ds-v\" checked><span class=\"ds-led\"></span>Atur</label><label><input type=\"radio\" name=\"ds-v\"><span class=\"ds-led\"></span>Lihat</label></div></div>",
+      "css": ".ds-pad { padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-seg { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #dfe2e5; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-seg label { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 12px; font-size: .9375rem; font-weight: 600; color: #565758; cursor: pointer; transition: box-shadow 120ms cubic-bezier(0.23,1,0.32,1), color 120ms; } .ds-seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; } .ds-seg label:has(input:checked) { color: #282929; background: linear-gradient(175deg, #e6e8eb, #d8dbde); box-shadow: 2px 2px 5px #c4c7ca, -2px -2px 5px #edeff1, inset 0 1px 0 rgba(237,239,241,.7); } .ds-seg label:has(input:focus-visible) { outline: 2px solid #282929; outline-offset: 2px; } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); } .ds-seg input:checked ~ .ds-led { background: #1fb46a; box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 0 6px #1fb46a; }"
+    },
+    {
+      "name": "Admin Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Raised face-gradient section container holding a headline and fields.",
+      "html": "<div class=\"ds-ground\"><section class=\"ds-panel\"><h2>Profil</h2><p class=\"ds-muted\">Belum ada link. Tambahkan link pertama.</p></section></div>",
+      "css": ".ds-ground { padding: 24px; background: #cfd2d5; font-family: Archivo, system-ui, sans-serif; color: #282929; } .ds-panel { display: grid; gap: 16px; padding: 18px 16px 20px; border-radius: 16px; background: linear-gradient(170deg, #e6e8eb, #d8dbde); box-shadow: -4px -4px 10px #edeff1, 5px 6px 12px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7), inset 0 -1px 0 rgba(196,199,202,.45); } .ds-panel h2 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; } .ds-muted { margin: 0; color: #565758; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Hi-Fi Faceplate",
+    "overview": "The public page is one piece of audio equipment sitting on a desk. It is a single molded plastic or anodized slab, lit from the top left, with a speaker grille, the owner's avatar seated as a driver cone, four screws, a column of preset keys with indicator LEDs, small round tact switches for socials, and a power lamp at the foot. The base is neumorphic: every surface is the same material, pushed out or pressed in. Skeuomorphic hardware details give the visitor objects they recognize as buttons, so the page never looks like a stack of identical pills on a gradient.\n\nThe admin editor uses the same world as a service panel. Faders stand in for range inputs, slide switches with LEDs for checkboxes, segmented keys for radios, small preset keys for color swatches, and the live faceplate preview is pinned beside them. On the admin side clarity beats costume: the hardware vocabulary shows up as tactile shape and depth, never as decorative texture.\n\nEverything is derived at runtime. The admin picks two colors (a base material and an LED color) plus radius, depth, font, and key style. themeVars() in src/lib/site.ts computes every other shade from those picks, so a choice the admin makes cannot break contrast. The token values in this file are the default Kapur preset at depth 0.7.",
+    "keyCharacteristics": [
+      "One material per unit; every shade is a mix of the base toward white or black.",
+      "Light comes from the top left: a highlight shadow up-left, a dark shadow down-right, and a 1px bevel on raised parts.",
+      "State lives in LEDs and in press depth. Hue changes never carry state on their own.",
+      "Label-first keys: LED, glyph, label, arrow, in that order.",
+      "Text clears 4.5:1 on every surface it can sit on, enforced in code."
+    ],
+    "rules": [
+      { "name": "The One Material Rule", "body": "No color is picked by hand except base and LED. Every other value comes from themeVars(): light = luminance(base) > 0.18; face-top mixes base toward white by 22% (6% on dark bases); face-bottom mixes toward black by 3% (12% dark); ground mixes toward black by 7% (32% dark); hi mixes toward white by 75%×depth (10%×depth dark); lo mixes toward black by 20%×depth (55%×depth dark); led-off mixes toward black by 16% (35% dark). A near-black base (luminance < 0.012) is first lifted 14% toward white so it can still cast a darker shadow.", "section": "colors" },
+      { "name": "The Ink Floor Rule", "body": "Ink is the base hue darkened (or lightened, on dark plastics) until it clears 4.5:1 against base, face-top, and face-bottom together. Soft ink is ink pulled back toward the base only as far as 4.5:1 still holds. New text roles take one of these two inks. Never add a third grey.", "section": "colors" },
+      { "name": "The Panel Isolation Rule", "body": "Admin chrome uses a fixed Kapur plate (radius 12, depth 0.6). The admin's draft colors appear only inside the preview.", "section": "colors" },
+      { "name": "The Legend Rule", "body": "Every key reads label-first in sentence case. Do not use uppercase tracking, eyebrow kickers, or small caps.", "section": "typography" },
+      { "name": "The 16px Input Rule", "body": "Form controls never go below 16px (max(16px, 1em)), so iOS does not zoom the page.", "section": "typography" },
+      { "name": "The Press Flip Rule", "body": "Pressing a control moves it 1–2px down and swaps its raise shadow for press over 90ms (keys, tacts) or 120ms (admin buttons). A selected swatch key stays pressed in.", "section": "elevation" },
+      { "name": "The Top-Left Light Rule", "body": "Highlights always sit up-left and shade down-right. Never invert or rotate the light source for one component.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do derive every new color from base and LED through themeVars() and mix(). Kapur values are examples. They are not constants.",
+      "Do build new controls as raised or pressed parts of the same material, lit from the top left, with the bevel on raised parts.",
+      "Do keep a native input under every hardware-styled control, and keep every touch target at least 44px.",
+      "Do show state with an LED and with press depth, and mirror it in text or ARIA (switch LED plus checked state, lit key plus \"(utama)\").",
+      "Do honor prefers-contrast: more: add 1px soft-ink outlines to raised parts, switch soft text to full ink, and ring the lit LED.",
+      "Do keep press feedback at 90–140ms with cubic-bezier(0.23, 1, 0.32, 1), and turn transitions off under reduced motion."
+    ],
+    "donts": [
+      "Don't add borders, colored or tinted shadows, or a second accent hue on the faceplate.",
+      "Don't fill a key or put text on the LED color. LED is light only. Text stays in ink or soft ink.",
+      "Don't let the admin's draft colors leak into editor chrome.",
+      "Don't stretch the unit beyond 440px or turn the keys into a full-width list on desktop.",
+      "Don't add uppercase eyebrows or kickers above names, headings, or panels."
+    ]
+  }
+}
