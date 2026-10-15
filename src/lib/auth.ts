@@ -34,20 +34,30 @@ export function checkPassword(input: string): boolean {
   return safeEqual(h(input), h(expected));
 }
 
-// ponytail: in-memory lockout per IP, per server instance. Swap for a shared store (Neon/Redis) if deployed multi-instance.
+// ponytail: in-memory lockout, per server instance. Swap for a shared store (Neon/Redis) if deployed multi-instance.
+// The per-IP key trusts forwarded headers, which a client can spoof without a proxy in front,
+// so a global ceiling ("*") caps total guesses no matter what IP is claimed.
 const failures = new Map<string, { count: number; until: number }>();
-const LIMIT = 5;
+const LIMITS: Record<string, number> = { "*": 20 };
+const PER_IP = 5;
 const LOCK_MS = 15 * 60 * 1000;
 
+function minutesLeft(key: string): number {
+  const f = failures.get(key);
+  const limit = LIMITS[key] ?? PER_IP;
+  return f && f.count >= limit && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 60000) : 0;
+}
+
 export function lockedOut(ip: string): number {
-  const f = failures.get(ip);
-  return f && f.count >= LIMIT && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 60000) : 0;
+  return Math.max(minutesLeft(ip), minutesLeft("*"));
 }
 
 export function recordFailure(ip: string) {
-  const f = failures.get(ip);
-  const fresh = !f || f.until <= Date.now();
-  failures.set(ip, { count: fresh ? 1 : f.count + 1, until: Date.now() + LOCK_MS });
+  for (const key of [ip, "*"]) {
+    const f = failures.get(key);
+    const fresh = !f || f.until <= Date.now();
+    failures.set(key, { count: fresh ? 1 : f.count + 1, until: Date.now() + LOCK_MS });
+  }
 }
 
 export function clearFailures(ip: string) {
