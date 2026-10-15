@@ -27,6 +27,7 @@
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --focus: 4px solid var(--blue);
+  --glow-drop: 0 0 0 transparent; /* --glow for filter: drop-shadow() on the SVG signs */
 }
 
 :root[data-theme="dark"] {
@@ -34,5 +35,21 @@
   --grid: rgba(255, 255, 255, 0.06);
   --beam: #5a5a5a;
   --glow: 0 0 22px rgba(255, 255, 230, 0.18);
+  --glow-drop: 0 0 11px rgba(255, 255, 230, 0.18);
   --ink: #f7f7f2;
+  /* --blue is 2.4:1 on the night ground; this lighter blue clears 3:1 for the focus ring */
+  --focus: 4px solid #5c9bff;
+}
+/* No stored pick yet: follow the OS, as the browser chrome (layout theme-color) already does. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --ground: #1c1c1c;
+    --grid: rgba(255, 255, 255, 0.06);
+    --beam: #5a5a5a;
+    --glow: 0 0 22px rgba(255, 255, 230, 0.18);
+    --glow-drop: 0 0 11px rgba(255, 255, 230, 0.18);
+    --ink: #f7f7f2;
+    /* --blue is 2.4:1 on the night ground; this lighter blue clears 3:1 for the focus ring */
+    --focus: 4px solid #5c9bff;
+  }
 }
