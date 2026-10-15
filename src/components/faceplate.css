@@ -247,6 +247,8 @@
   box-shadow: 0 0 4px var(--glow);
   opacity: 0.12;
 }
+/* resting level: the set is on, nothing tuned */
+.vfd-meter i:nth-child(-n + 5) { opacity: 0.55; }
 
 /* Preset keys 1–6: rubber keys, number engraved, an LED under each. */
 .presets {
@@ -275,7 +277,7 @@
   transition: transform 100ms var(--ease-out), box-shadow 100ms var(--ease-out);
 }
 .preset[data-blank] { color: #6c6e73; }
-.pnum { font-size: 0.72rem; font-weight: 700; color: #8d9096; align-self: start; padding-top: 5px; }
+.pnum { font-size: 0.72rem; font-weight: 700; color: #a4a7ad; align-self: start; padding-top: 5px; }
 .pled {
   position: absolute;
   bottom: 5px;
@@ -298,10 +300,6 @@
   z-index: 1;
   width: min(100%, 460px);
   filter: drop-shadow(0 30px 30px rgb(0 0 0 / 0.55));
-}
-
-.paint {
-  background: var(--paint);
 }
 
 /* Top chest with a lid: name plate lives here. */
@@ -352,7 +350,7 @@
 .plate {
   display: grid;
   grid-template-columns: auto 1fr;
-  align-items: center;
+  align-items: start;
   gap: 14px;
   padding-top: 10px;
   padding-right: 30px;
@@ -585,7 +583,7 @@
   right: -11px;
   top: 18%;
   width: 9px;
-  height: 120px;
+  height: min(120px, 64%);
   border-radius: 5px;
   background: linear-gradient(90deg, var(--metal-3), var(--metal-1) 40%, var(--metal-2));
   box-shadow: 2px 3px 4px rgb(0 0 0 / 0.5);
@@ -667,17 +665,17 @@
 
 @media (hover: hover) and (pointer: fine) {
   /* drawer slides out a hair toward you */
-  .drawer:hover {
+  .drawer[href]:hover {
+    z-index: 1;
     transform: translateY(-1px) scale(1.012);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paint-edge) 70%, transparent), 0 8px 10px -4px rgb(0 0 0 / 0.65);
   }
-  .drawer:hover .pull-led { background: color-mix(in srgb, var(--glow) 60%, #2a2b2d); }
+  .drawer[href]:hover .pull-led { background: color-mix(in srgb, var(--glow) 60%, #2a2b2d); }
   .preset:hover { color: #fff; }
-  .knob:hover .knob-cap { rotate: 24deg; }
 }
-.knob-cap { transition: rotate 420ms var(--ease-out); }
 
-.drawer:active {
+.drawer[href]:active {
+  z-index: 1;
   transform: translateY(-2px) scale(1.03);
   transition-duration: 110ms;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paint-edge) 70%, transparent), 0 14px 14px -6px rgb(0 0 0 / 0.75);
@@ -688,24 +686,26 @@
   outline: 3px solid var(--glow);
   outline-offset: 3px;
 }
+/* the next drawer would otherwise paint over the bottom edge of the ring */
+.drawer:focus-visible { z-index: 1; }
 .drawer:focus-visible .pull-led { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
 
 /* ── Motion (macro) ── */
 
 @media (prefers-reduced-motion: no-preference) {
-  /* lamp sways on its cord */
-  .lamp { animation: sway 11s ease-in-out infinite alternate; }
+  /* lamp was just switched on: it swings on its cord and comes to rest */
+  .lamp { animation: sway 7s ease-in-out 1; }
 
-  /* VFD meter idles like a quiet station; jumps while something is tuned */
-  .vfd-meter i { animation: level 1.6s ease-in-out infinite alternate; animation-delay: calc(var(--b) * -170ms); }
-  .vfd-meter[data-hot] i { animation-duration: 0.45s; }
-  .vfd-text[data-marquee] { animation: run var(--dur) linear 1s infinite alternate; }
+  /* VFD meter sits still until a drawer or key is tuned, then jumps */
+  .vfd-meter[data-hot] i { animation: level 0.45s ease-in-out infinite alternate; animation-delay: calc(var(--b) * -170ms); }
+  /* long text scrolls across once and back, then rests on its start */
+  .vfd-text[data-marquee] { animation: run var(--dur) linear 1s 2 alternate; }
   .vfd-text { animation: tune-in 260ms var(--ease-out); }
 
   /* Opening sequence: lamp flickers on, display warms up, drawers settle home one by one. */
   .shop[data-boot] .lamp-track { animation: flicker 900ms steps(1, end) both; }
   .shop[data-boot] .vfd-face { animation: warm 900ms 350ms both; }
-  .shop[data-boot] .drawers > li { animation: settle 560ms var(--ease-drawer) calc(380ms + var(--i, 0) * 55ms) backwards; }
+  .shop[data-boot] .drawers > li { animation: settle 560ms var(--ease-drawer) calc(380ms + min(var(--i, 0), 8) * 55ms) backwards; }
   .shop[data-boot] .radio { animation: drop-in 520ms var(--ease-out) 120ms backwards; }
 
   @supports (animation-timeline: scroll()) {
@@ -717,7 +717,14 @@
   }
 }
 
-@keyframes sway { from { rotate: -2.2deg; } to { rotate: 2.2deg; } }
+@keyframes sway {
+  0% { rotate: -2.4deg; }
+  20% { rotate: 1.8deg; }
+  40% { rotate: -1.1deg; }
+  60% { rotate: 0.6deg; }
+  80% { rotate: -0.2deg; }
+  100% { rotate: 0deg; }
+}
 @keyframes level {
   0% { opacity: 0.12; }
   100% { opacity: calc(0.25 + (16 - var(--b)) * 0.045); }
@@ -726,11 +733,9 @@
 @keyframes tune-in { from { opacity: 0.2; filter: blur(1.5px); } }
 @keyframes flicker {
   0% { opacity: 0; }
-  12% { opacity: 0.7; }
-  18% { opacity: 0.1; }
-  30% { opacity: 0.9; }
-  36% { opacity: 0.35; }
-  48%, 100% { opacity: 1; }
+  14% { opacity: 0.6; }
+  24% { opacity: 0.15; }
+  44%, 100% { opacity: 1; }
 }
 @keyframes warm {
   0% { opacity: 0; }
@@ -749,7 +754,7 @@
 @keyframes turn { to { rotate: 280deg; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .drawer, .preset, .knob-cap { transition-duration: 0ms; }
+  .drawer, .preset { transition-duration: 0ms; }
 }
 
 @media (prefers-contrast: more), (forced-colors: active) {
@@ -768,3 +773,11 @@
   .sticker { width: 66px; }
   .card { width: 100%; }
 }
+@media (max-width: 359px) {
+  .presets { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Overscroll and the iOS rubber band show the canvas: keep it the colour of the scene, not white. */
+:root:has(.shop:not([data-contained])) { background: #1a1612; }
+:root:has(.shop[data-scene="malam"]:not([data-contained])) { background: #0d1117; }
+:root:has(.shop[data-scene="polos"]:not([data-contained])) { background: #111; }

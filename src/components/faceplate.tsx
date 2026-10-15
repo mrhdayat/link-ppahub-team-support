@@ -24,7 +24,7 @@ export const SOCIAL_NAME: Record<string, string> = {
 };
 
 function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("");
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => Array.from(w)[0]!.toUpperCase()).join("");
 }
 
 /**
@@ -43,6 +43,7 @@ export function Faceplate({ site, boot = true, contained = false, className = ""
   const links = site.links.filter((l) => l.on);
   const style = themeVars(theme) as CSSProperties;
   const presets = Array.from({ length: 6 }, (_, i) => socials[i]);
+  const hasSocials = socials.length > 0;
 
   return (
     <div
@@ -65,7 +66,7 @@ export function Faceplate({ site, boot = true, contained = false, className = ""
 
       <main className="rig">
         {theme.radio && (
-          <section className="radio" aria-label="Media sosial">
+          <section className="radio" aria-label={hasSocials ? "Media sosial" : undefined}>
             <div className="radio-face">
               <span className="knob" data-knob="vol" aria-hidden>
                 <span className="knob-cap" />
@@ -77,7 +78,7 @@ export function Faceplate({ site, boot = true, contained = false, className = ""
                 <span className="knob-cap" />
               </span>
 
-              <ul className="presets">
+              <ul className="presets" aria-hidden={!hasSocials || undefined}>
                 {presets.map((s, i) => {
                   if (!s) {
                     return (
