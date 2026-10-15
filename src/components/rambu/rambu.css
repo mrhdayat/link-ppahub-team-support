@@ -15,6 +15,9 @@
 .rambu ::selection { background: var(--yellow); color: var(--black); }
 .rambu :focus-visible { outline: var(--focus); outline-offset: 3px; }
 .rambu button { font: inherit; color: inherit; cursor: pointer; }
+/* Focus and anchor jumps land below the sticky header, never under it. */
+:root:has(.rambu:not([data-preview])) { scroll-padding-top: calc(148px + env(safe-area-inset-top, 0px)); }
+.hud-name:focus { outline: none; } /* programmatic target of the U-turn, not a control */
 
 .skip {
   position: absolute;
@@ -91,11 +94,11 @@
   background: var(--yellow);
   color: var(--black) !important;
   border: var(--border-small);
-  box-shadow: 3px 3px 0 var(--black);
+  box-shadow: 3px 3px 0 var(--black), var(--glow);
   transition: transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
 }
 .mode svg { width: 22px; height: 22px; }
-.mode:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--black); }
+.mode:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--black), var(--glow); }
 
 .tabs {
   display: flex;
@@ -104,7 +107,7 @@
   scroll-snap-type: x proximity;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  padding: 10px var(--space-4) 14px;
+  padding: 10px max(var(--space-4), env(safe-area-inset-right, 0px)) 14px max(var(--space-4), env(safe-area-inset-left, 0px));
   max-width: 500px;
   margin-inline: auto;
 }
@@ -123,7 +126,8 @@
   color: var(--black) !important;
   font-weight: 900;
   font-size: 15px;
-  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm), var(--glow);
   transition: transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
 }
 .tab-n {
@@ -134,7 +138,7 @@
   border-radius: 4px;
   background: rgb(0 0 0 / 0.14);
 }
-.tab[aria-pressed="true"] { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black); }
+.tab[aria-pressed="true"] { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
 .tab[aria-pressed="true"]::before {
   content: "";
   width: 8px;
@@ -150,7 +154,7 @@
 [data-warna="yellow"] { --sign: var(--yellow); --on: var(--black); }
 [data-warna="white"] { --sign: var(--white); --on: var(--black); }
 .tab[data-warna], .plate[data-warna], .sign[data-warna], .act[data-warna] { background: var(--sign); color: var(--on) !important; }
-.tab[data-warna="green"] .tab-n, .tab[data-warna="blue"] .tab-n, .tab[data-warna="red"] .tab-n { background: rgb(255 255 255 / 0.22); }
+.tab[data-warna="green"] .tab-n, .tab[data-warna="blue"] .tab-n, .tab[data-warna="red"] .tab-n { background: rgb(0 0 0 / 0.3); }
 
 /* ── Page column ── */
 
@@ -184,14 +188,13 @@
 .bracket[data-c="bl"] { bottom: 6px; left: 6px; border-bottom-width: 4px; border-left-width: 4px; }
 .bracket[data-c="br"] { bottom: 6px; right: 6px; border-bottom-width: 4px; border-right-width: 4px; }
 .scan {
+  /* full-height carrier: translateY(100%) is always the HUD's own height */
   position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: var(--blue);
-  box-shadow: 0 0 12px var(--blue);
+  inset: 0;
   opacity: 0;
   pointer-events: none;
 }
+.scan::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--blue); box-shadow: 0 0 12px var(--blue); }
 
 .hud-id { display: grid; justify-items: center; text-align: center; gap: var(--space-3); }
 .diamond { width: 92px; height: 92px; }
@@ -236,7 +239,7 @@
   color: var(--black);
   border: var(--border);
   border-radius: var(--radius-plate);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), var(--glow);
   font: 700 17px/1 var(--font-sign), sans-serif;
   -webkit-appearance: none;
   appearance: none;
@@ -277,7 +280,7 @@
   background: var(--white);
   color: var(--black);
   border: var(--border-small);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), var(--glow);
   font-size: 16px;
 }
 .link-btn { padding: 0; border: 0; background: none; color: var(--blue) !important; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; min-height: 0; }
@@ -333,14 +336,16 @@
 .board-title { font-size: 21px; font-weight: 900; line-height: 1.1; overflow-wrap: anywhere; }
 .board-note { font-family: var(--font-hud), monospace; font-size: 12px; font-weight: 500; opacity: 0.92; }
 .board .arrow { width: 30px; height: 30px; margin-top: 6px; }
-.board:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--black); }
+.board:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--black), var(--glow); }
 
 /* ── 5. Lanes ── */
 
-.lane { display: grid; gap: var(--space-4); scroll-margin-top: 140px; }
+.lane { display: grid; gap: var(--space-4); }
 .plate {
   position: relative;
   justify-self: start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -361,7 +366,7 @@
   opacity: 0.9;
   pointer-events: none;
 }
-.plate-n { font-family: var(--font-hud), monospace; font-size: 13px; font-weight: 700; }
+.plate-n { flex-shrink: 0; font-family: var(--font-hud), monospace; font-size: 13px; font-weight: 700; }
 
 .signs { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .signs[data-compact] { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
@@ -466,13 +471,13 @@
   color: var(--black) !important;
   border: var(--border-small);
   border-radius: var(--radius-plate);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), var(--glow);
   font-family: var(--font-hud), monospace;
   font-weight: 700;
   font-size: 14px;
   transition: transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
 }
-.fold:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black); }
+.fold:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
 
 /* Press: the sign sinks fully into its shadow. */
 .sign:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--black), var(--glow); transition-duration: 90ms; }
@@ -498,14 +503,14 @@
   aspect-ratio: 1;
   color: #ffffff;
   text-decoration: none;
-  filter: drop-shadow(4px 4px 0 var(--black));
+  filter: drop-shadow(4px 4px 0 var(--black)) drop-shadow(var(--glow-drop));
   transition: transform 120ms var(--ease-out), filter 120ms var(--ease-out);
 }
 .octagon { position: absolute; inset: 0; width: 100%; height: 100%; }
 .stop-text { position: relative; display: grid; justify-items: center; line-height: 1; }
 .stop-text b { font-size: 30px; font-weight: 900; letter-spacing: 0.02em; }
 .stop-text small { margin-top: 3px; font-family: var(--font-hud), monospace; font-size: 11px; font-weight: 700; }
-.stop-sign:active { transform: translate(3px, 3px); filter: drop-shadow(1px 1px 0 var(--black)); }
+.stop-sign:active { transform: translate(3px, 3px); filter: drop-shadow(1px 1px 0 var(--black)) drop-shadow(var(--glow-drop)); }
 .stop-copy p { margin: 0; font-size: 15px; line-height: 1.4; }
 .stop-title { font-size: 20px !important; font-weight: 900; margin-bottom: 4px !important; }
 .limit { display: flex; align-items: center; gap: 10px; margin-top: var(--space-3); font-size: 13px; line-height: 1.3; }
@@ -532,20 +537,21 @@
   color: var(--black) !important;
   border: var(--border);
   border-radius: var(--radius-plate);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), var(--glow);
   font-size: 17px;
   font-weight: 900;
   transition: transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
 }
-.act:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--black); }
+.act:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--black), var(--glow); }
 
 .qr {
+  margin: auto; /* Tailwind's reset zeroes the UA margin that centres a modal <dialog> */
   width: min(340px, calc(100vw - 32px));
   padding: var(--space-5);
   background: var(--white);
   color: var(--black);
   border: var(--border);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), var(--glow);
   text-align: center;
 }
 .qr::backdrop { background: rgb(0 0 0 / 0.55); }
@@ -585,7 +591,7 @@
     #2b2b2b;
   border-block: var(--border-small);
 }
-.km-post { display: grid; justify-items: center; width: 64px; filter: drop-shadow(4px 4px 0 var(--black)); }
+.km-post { display: grid; justify-items: center; width: 64px; filter: drop-shadow(4px 4px 0 var(--black)) drop-shadow(var(--glow-drop)); }
 .km-cap { width: 100%; height: 22px; background: var(--red); border: var(--border-small); border-bottom: 0; border-radius: 30px 30px 0 0; }
 .km-face {
   display: grid;
@@ -616,22 +622,22 @@
   color: #ffffff !important;
   border: var(--border-small);
   border-radius: var(--radius-plate);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), var(--glow);
+  /* hidden = out of the tab order and the a11y tree too, not just transparent */
   opacity: 0;
   translate: 0 12px;
-  pointer-events: none;
-  transition: opacity 180ms var(--ease-out), translate 180ms var(--ease-out), transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
+  visibility: hidden;
+  transition: opacity 180ms var(--ease-out), translate 180ms var(--ease-out), visibility 0s 180ms, transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
 }
 .uturn svg { width: 30px; height: 30px; }
-.uturn[data-show] { opacity: 1; translate: 0 0; pointer-events: auto; }
-.uturn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black); }
+.uturn[data-show] { opacity: 1; translate: 0 0; visibility: visible; transition-delay: 0s; }
+.uturn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
 
 /* ── Pointer hover (mouse only) ── */
 
 @media (hover: hover) and (pointer: fine) {
   .sign:hover { transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--black), var(--glow); }
-  .sign:hover::after { animation: sheen 520ms var(--ease-out); }
-  .tab:hover:not([aria-pressed="true"]), .act:hover, .fold:hover, .mode:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--black); }
+  .tab:hover:not([aria-pressed="true"]), .act:hover, .fold:hover, .mode:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--black), var(--glow); }
   .board:hover { transform: translateY(3px); }
   .stop-sign:hover { transform: translate(3px, 0); }
   .tape:hover .tape-run > span { animation-play-state: paused; }
@@ -641,20 +647,28 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .tape-run > span { animation: tape 26s linear infinite; }
-  .rambu:not([data-preview]) .scan { animation: scan 1.2s var(--ease-out) 200ms 1 both; }
-  .rambu:not([data-preview]) .signs > li,
-  .rambu:not([data-preview]) .gantry-boards > li,
-  .rambu:not([data-preview]) .plate {
-    animation: mount 460ms var(--ease-out) backwards;
-    animation-delay: calc(240ms + min(var(--i, 0), 8) * 50ms);
+  /* Arrival only: once data-booted lands (2.5s, after the last BARU blink, or the first tab/search/fold), re-mounted signs appear without motion. */
+  .rambu:not([data-preview], [data-booted]) .scan { animation: scan 1.1s var(--ease-out) 200ms 1 both; }
+  .rambu:not([data-preview], [data-booted]) .signs > li,
+  .rambu:not([data-preview], [data-booted]) .gantry-boards > li,
+  .rambu:not([data-preview], [data-booted]) .plate {
+    animation: mount 420ms var(--ease-out) backwards;
+    animation-delay: calc(200ms + min(var(--i, 0), 8) * 50ms);
   }
-  .rambu:not([data-preview]) .tag[data-label="baru"] { animation: blink 0.5s steps(1, end) 900ms 3; }
+  .rambu:not([data-preview], [data-booted]) .tag[data-label="baru"] { animation: blink 0.5s steps(1, end) 900ms 3; }
+  @media (hover: hover) and (pointer: fine) {
+    .sign:hover::after { animation: sheen 520ms var(--ease-out); }
+  }
+}
+/* PRD: all motion off under reduced motion, transitions included (state still changes, instantly). */
+@media (prefers-reduced-motion: reduce) {
+  .rambu *, .rambu *::before, .rambu *::after { transition: none !important; }
 }
 @keyframes tape { to { transform: translateX(-100%); } }
 @keyframes scan {
   0% { opacity: 1; transform: translateY(0); }
   85% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(var(--scan-to, 420px)); }
+  100% { opacity: 0; transform: translateY(100%); }
 }
 @keyframes mount {
   from { opacity: 0; transform: translateY(-14px) rotate(-1.5deg); }
@@ -663,6 +677,22 @@
 @keyframes sheen { from { opacity: 1; transform: translateX(0) skewX(-12deg); } to { opacity: 1; transform: translateX(420%) skewX(-12deg); } }
 
 /* ── Breakpoints ── */
+
+/* Touch: no "/" hint (no keyboard to press it), so the clear button takes its place. */
+@media (pointer: coarse) {
+  .search-key { display: none; }
+  .search input { padding-right: 56px; }
+  .search-clear { right: 6px; }
+}
+/* Mouse: the tab strip can't be swiped, so show a thin scrollbar to reach tabs past the edge. */
+@media (hover: hover) and (pointer: fine) {
+  .tabs { scrollbar-width: thin; scrollbar-color: var(--black) transparent; }
+}
+
+/* Two gantry boards share a phone width: one step down so ordinary words don't split mid-word. */
+@media (max-width: 399px) {
+  .gantry-boards[data-n="2"] .board-title { font-size: 18px; }
+}
 
 @media (max-width: 339px) {
   .signs[data-compact] { grid-template-columns: 1fr; }
