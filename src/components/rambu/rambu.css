@@ -443,7 +443,7 @@
   border: 2px solid var(--black);
   border-radius: 4px;
   font-family: var(--font-hud), monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -459,7 +459,7 @@
   color: #ffffff;
   border-radius: 0 0 4px 4px;
   font-family: var(--font-hud), monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   rotate: -2deg;
 }
@@ -509,7 +509,7 @@
 .octagon { position: absolute; inset: 0; width: 100%; height: 100%; }
 .stop-text { position: relative; display: grid; justify-items: center; line-height: 1; }
 .stop-text b { font-size: 30px; font-weight: 900; letter-spacing: 0.02em; }
-.stop-text small { margin-top: 3px; font-family: var(--font-hud), monospace; font-size: 11px; font-weight: 700; }
+.stop-text small { margin-top: 3px; font-family: var(--font-hud), monospace; font-size: 12px; font-weight: 700; }
 .stop-sign:active { transform: translate(3px, 3px); filter: drop-shadow(1px 1px 0 var(--black)) drop-shadow(var(--glow-drop)); }
 .stop-copy p { margin: 0; font-size: 15px; line-height: 1.4; }
 .stop-title { font-size: 20px !important; font-weight: 900; margin-bottom: 4px !important; }
@@ -588,7 +588,7 @@
   height: 38px;
   background:
     repeating-linear-gradient(90deg, #ffffff 0 34px, transparent 34px 60px) center / 100% 6px no-repeat,
-    #2b2b2b;
+    var(--beam);
   border-block: var(--border-small);
 }
 .km-post { display: grid; justify-items: center; width: 64px; filter: drop-shadow(4px 4px 0 var(--black)) drop-shadow(var(--glow-drop)); }
