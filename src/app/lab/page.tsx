@@ -40,7 +40,7 @@ const fixtures: [string, Site][] = [
   ...HANDLES.map((handle) => [`handle ${handle}`, site({ handle })] as [string, Site]),
   ...FONTS.map((font) => [`font ${font}`, site({ font })] as [string, Site]),
   ["radio off, radius 0, depth 0", site({ radio: false, radius: 0, depth: 0 })],
-  ["radius 28, depth 1, grafit", site({ radius: 28, depth: 1, base: PRESETS.grafit.base, led: PRESETS.grafit.led })],
+  ["radius 28, depth 1, hitam, krom off, malam", site({ radius: 28, depth: 1, base: PRESETS.hitam.base, led: PRESETS.hitam.led, trim: "hitam", scene: "malam" })],
   ["empty: 0 links", site({}, { links: [] })],
   ["broken avatar", site({}, { profile: { name: "Avatar Rusak", bio: "", avatar: "https://example.invalid/avatar.png" } })],
   ["40 links, 12 socials (6 kept)", site({ handle: "cup" }, { links: forty, socials: twelveSocials })],
