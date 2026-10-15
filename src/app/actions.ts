@@ -12,6 +12,9 @@ export type LoginState = { error?: string };
 export async function login(_: LoginState, form: FormData): Promise<LoginState> {
   const password = String(form.get("password") ?? "");
   if (!process.env.ADMIN_PASSWORD) return { error: "ADMIN_PASSWORD belum diset di server." };
+  // The login throttle only caps guessing (~8.6k/day); a long password is what makes that cap safe.
+  if (process.env.NODE_ENV === "production" && process.env.ADMIN_PASSWORD.length < 12)
+    return { error: "ADMIN_PASSWORD terlalu pendek. Pakai minimal 12 karakter acak di environment server." };
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
   const wait = lockedOut(ip);
