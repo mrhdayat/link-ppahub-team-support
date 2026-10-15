@@ -82,6 +82,13 @@ export function PegboardTools() {
         <Screwdriver x={150} y={470} />
         <Screwdriver x={198} y={470} rot={4} />
         <Pliers x={280} y={470} />
+        {/* inner columns: visible beside the chest on tablets */}
+        <Screwdriver x={392} y={190} rot={2} />
+        <Wrench x={440} y={430} len={190} />
+      </g>
+      <g>
+        <Tape x={1040} y={200} />
+        <Screwdriver x={1050} y={420} rot={-2} />
       </g>
       <g>
         <Hammer x={1220} y={150} />

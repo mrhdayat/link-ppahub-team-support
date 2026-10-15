@@ -28,3 +28,20 @@ Halaman link-in-bio milik tim: 1 halaman publik + 1 admin (password env) untuk k
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |---|---|---|
+
+## Iterasi 2 — Workshop (2026-10-15)
+Permintaan: tampilan lebih menarik, mirip head unit truk / toolbox mekanik, motion mikro + makro, background tidak monoton, pakai scroll-craft.
+| Keputusan | Pilihan | Alasan |
+|---|---|---|
+| Dunia | Radio head unit double-DIN di atas lemari perkakas (roll cab) di bengkel | Menggabungkan "radio hi-fi" + "toolbox mekanik/headunit truk" jadi satu adegan nyata |
+| Link | Laci dengan pegangan aluminium + kartu label | Toolbox grammar; laci "ditarik" saat ditekan |
+| Sosial | 6 tombol preset radio (maks 6) | Head unit punya 6 preset |
+| Background | Pegboard + perkakas SVG, lampu kerja berayun, lantai beton; scene garasi/malam/polos | Tidak monoton, berlapis (scroll-craft hero-depth) |
+| Motion makro | Boot (lampu berkedip, VFD warm-up, laci settle), lamp sway, scroll-driven drift per plane + kenop VOL berputar | CSS-only, off main thread |
+| Motion mikro | Laci keluar saat hover/press, tombol preset turun 3px + LED, VFD menampilkan link yang disorot | Feedback + state |
+| Aset foto | Tidak dipakai (KIE_AI_API_KEY tidak ada); semua digambar CSS/SVG | Material interaktif harus kode |
+- [x] Kontrak tema baru (da50ae5)
+- [x] Halaman publik workshop (6a4bae2)
+- [ ] T5 editor admin workshop (worker)
+- [ ] T6 audit workshop (worker)
+- [ ] Integrasi, verifikasi, DESIGN.md update

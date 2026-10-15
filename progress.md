@@ -10,3 +10,4 @@
 - T3 selesai (merge b4f3fd1): fix LED fokus, avatar rusak → inisial, "(utama)" untuk SR, RTL, forced-colors. Koordinator: kontras tinta vs kedua ujung gradien, base hitam diangkat, colorScheme.
 - T2 selesai (merge tactile-admin): login, editor 2 panel, preview langsung, simpan + updateTag; 23 langkah uji headless lulus.
 - Verifikasi: screenshot desktop/390/admin/login di .impeccable/review; impeccable detect = 0 temuan; build hijau.
+- Iterasi 2: kontrak tema workshop + halaman publik baru; T5 (ctx_36ac0fccf0f0) & T6 (ctx_1bec125edd1f) jalan paralel.
