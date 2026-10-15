@@ -1,0 +1,38 @@
+/* Rambu Navigasi design tokens (PRD "Design tokens"). Sign colours never change between day and night. */
+:root {
+  --black: #000000;
+  --yellow: #ffd100;
+  --green: #00704a;
+  --blue: #0050b5;
+  --red: #d7261e;
+  --white: #f7f7f2;
+
+  --ground: #e7e3d8;
+  --grid: rgba(0, 0, 0, 0.07);
+  --beam: #2b2b2b;
+  --glow: 0 0 0 transparent;
+  --ink: #000000;
+
+  --border: 4px solid var(--black);
+  --border-small: 3px solid var(--black);
+  --radius-sign: 12px;
+  --radius-plate: 8px;
+  --shadow-lg: 8px 8px 0 var(--black);
+  --shadow-md: 6px 6px 0 var(--black);
+  --shadow-sm: 4px 4px 0 var(--black);
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-5: 20px; --space-6: 28px;
+  --tap-min: 44px;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --focus: 4px solid var(--blue);
+}
+
+:root[data-theme="dark"] {
+  --ground: #1c1c1c;
+  --grid: rgba(255, 255, 255, 0.06);
+  --beam: #5a5a5a;
+  --glow: 0 0 22px rgba(255, 255, 230, 0.18);
+  --ink: #f7f7f2;
+}

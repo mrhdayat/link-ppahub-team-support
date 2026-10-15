@@ -1,140 +1,262 @@
-# PRD — Halaman Link Tactile
+# PRD Rambu Navigasi — Halaman Link-in-Bio
 
-**Versi:** 2.1 (dunia visual diganti ke bengkel; lihat §12)
-**Tanggal:** 15 Oktober 2026
-**Status:** Dalam eksekusi
+Oct 15, 2026 · @Dwi Fitriadi
 
-Perubahan dari v1.0: multi-user, login OAuth, editor blok bento, dan prompt→page dihapus. Produk ini **satu halaman publik milik tim + satu admin**. Arah visual berganti dari frosted glass ke **hybrid tactile** (neumorphism + skeuomorphism) dengan dunia visual **perangkat audio hi-fi**.
+> **Catatan implementasi (proyek ini).** PRD di bawah ditulis untuk versi satu file HTML. Atas keputusan pemilik (15 Okt 2026) proyek ini tetap **Next.js + admin**: objek CONFIG disimpan di server (Neon atau `data/site.json`) dan diubah lewat `/admin`, bukan dengan mengedit file. Skema CONFIG ada di `src/lib/site.ts`. Pustaka QR memakai paket npm `qrcode`, bukan cdnjs. Selain itu desain, perilaku, token, dan copy mengikuti PRD ini apa adanya.
 
----
+## Ringkasan produk
 
-## 1. Ringkasan
+Rambu Navigasi adalah halaman link-in-bio satu halaman yang menyajikan semua tautan seorang kreator sebagai rambu lalu lintas, dengan sentuhan antarmuka teknologi dan gaya neubrutalism.
 
-Halaman link-in-bio milik sendiri. Pengunjung membuka satu halaman dan mengetuk link yang dicari. Admin masuk ke `/admin` dengan password, mengatur isi dan tampilan, melihat hasilnya langsung, lalu menyimpan.
+Masalah yang diselesaikan: halaman link biasa terlihat seragam dan menjadi berantakan ketika jumlah tautan bertambah. Rambu Navigasi memberi identitas visual yang khas dan tetap rapi untuk puluhan tautan lewat kategori (jalur), pencarian, dan tata letak yang menyesuaikan jumlah tautan.
 
-Halaman dirancang seperti sebuah perangkat hi-fi: satu panel cetak dari satu bahan, avatar duduk sebagai kerucut speaker di balik grille, setiap link adalah tombol preset dengan lampu indikator.
+Versi acuan: Rambu Navigasi v3. Versi sebelumnya: v2 dan v1.
 
-## 2. Masalah
+## Tujuan dan metrik keberhasilan
 
-- Halaman Linktree terlihat sama semua; hanya beda warna.
-- Layanan pihak ketiga menampilkan branding dan iklan mereka, serta membatasi kustomisasi di paket gratis.
-- Neumorphism yang biasa dibuat orang punya kontras rendah dan tombol yang tidak terlihat bisa ditekan.
+Tujuan utama: pengunjung menemukan tautan yang dicari dalam waktu kurang dari 10 detik, dan lebih banyak pengunjung menghubungi lewat WhatsApp.
 
-## 3. Pengguna
-
-| Peran | Situasi | Kebutuhan |
+| Tujuan | Metrik | Target |
 |---|---|---|
-| Pengunjung | Dari bio IG, QR, atau WhatsApp, hampir selalu di ponsel | Menemukan link yang benar dalam beberapa detik |
-| Admin | Satu orang di tim, bukan desainer | Mengubah link & gaya tanpa developer, melihat hasil sebelum simpan |
+| Tautan mudah ditemukan | Waktu dari buka halaman sampai klik pertama | [ISI TARGET] detik |
+| Tautan utama lebih sering diklik | Persentase klik ke Portofolio dan Toko online | [ISI TARGET] % |
+| Lebih banyak kontak masuk | Klik tombol CHAT WhatsApp per minggu | [ISI TARGET] klik |
+| Halaman cepat dibuka | Waktu tampil konten utama di jaringan 4G | di bawah 2 detik |
+| Mudah dirawat | Waktu menambah satu tautan baru | di bawah 1 menit |
 
-## 4. Tujuan & Ukuran Berhasil
+Angka dasar (baseline) belum ada. Isi setelah dua minggu pertama memakai alat analitik.
 
-1. Halaman publik terbaca dan bisa dipakai dalam < 3 detik di 4G (statis, tanpa JS untuk konten).
-2. Admin bisa mengganti link, urutan, dan tema dalam < 2 menit tanpa bantuan.
-3. Kontras teks ≥ 4.5:1 di **setiap** kombinasi warna yang bisa dipilih admin (dijamin oleh kode, bukan oleh admin).
-4. Lighthouse mobile ≥ 95 (Performa, Aksesibilitas, Best Practices).
+## Pengguna dan skenario
 
-## 5. Ruang Lingkup v1
+| Pengguna | Skenario | Yang dibutuhkan |
+|---|---|---|
+| Pengikut baru dari Instagram/TikTok | Ingin melihat karya lain dalam sekali klik | Tautan utama langsung terlihat di atas |
+| Calon klien | Ingin memesan karya dan tahu kapan dibalas | Status pesanan, jam balas, tombol chat yang jelas |
+| Pembeli | Mencari toko di marketplace tertentu | Pencarian dan jalur Toko |
+| Pengunjung acara offline | Memindai dari poster atau kartu nama | Kode QR dan halaman ringan di HP |
+| Pemilik halaman | Menambah atau mengubah tautan | Satu tempat pengaturan (CONFIG / admin), tanpa menyentuh desain |
 
-### 5.1 Halaman publik `/`
-- Profil: nama, bio (≤ 160 karakter), avatar (URL atau unggahan kecil). Tanpa avatar → inisial.
-- Link (≤ 40): label, URL, ikon (18 pilihan), tampil/sembunyi, **lit** (lampu menyala permanen untuk link utama).
-- Sosial (≤ 12): baris tombol bulat (Instagram, TikTok, YouTube, WhatsApp, LinkedIn, X, Facebook, Email, Website).
-- Animasi tanda tangan: **power-on** — lampu tombol berkedip berurutan sekali saat halaman dibuka, lalu lampu daya menyala. Dimatikan oleh `prefers-reduced-motion`.
-- SEO dasar: title, description, Open Graph dari profil. `theme-color` mengikuti warna meja.
+## Konsep desain
 
-### 5.2 Admin `/admin`
-- Login password tunggal (`ADMIN_PASSWORD`). Cookie httpOnly bertanda tangan HMAC, 7 hari.
-- Editor dua panel: kontrol di kiri, preview langsung di kanan (ponsel: preview di atas/tab).
-- Kontrol isi: ubah profil, tambah/ubah/hapus/urutkan link dan sosial, ubah avatar.
-- Kontrol tampilan:
-  - **Bahan** (preset): Kapur, Grafit, Zaitun, Baja, atau warna bebas.
-  - **Warna lampu** (LED).
-  - **Radius sudut** 0–28 px, **Kedalaman** bayangan 0–100%.
-  - **Gaya tombol**: timbul, cekung, pil.
-  - **Huruf**: Archivo, Barlow, Bricolage Grotesque.
-  - **Grille** speaker: tampil/sembunyi.
-- Simpan → validasi server (Zod) → cache halaman publik langsung diperbarui (`updateTag`).
-- Tanda belum disimpan, peringatan saat meninggalkan halaman, pesan galat yang menyebut bagian yang salah.
+Setiap tautan adalah rambu jalan yang menunjuk ke sebuah tujuan; tampilan teknologi menjadi "dasbor kendaraan", dan neubrutalism membuat semuanya tegas dan mudah disentuh.
 
-### 5.3 Di luar lingkup v1
-Multi-user, statistik klik, domain kustom, jadwal tampil link, embed video, form email, prompt→halaman. Bisa menyusul di v2 bila dibutuhkan.
+- **Rambu lalu lintas:** pita kuning-hitam, rambu peringatan wajik untuk profil, papan petunjuk arah berwarna, papan gantry untuk tautan utama, rambu STOP untuk chat, rambu batas kecepatan untuk jam balas, patok KM 0 di kaki halaman.
+- **Teknologi:** panel HUD bersudut bracket, lampu lalu lintas sebagai indikator status, jam digital, garis scan saat halaman dibuka, latar bergrid.
+- **Neubrutalism:** border hitam 3–4 px, bayangan keras tanpa blur, warna datar, tombol "amblas" ke bayangannya saat ditekan.
 
-## 6. Prinsip Desain
+Prinsip visual:
 
-Gaya: **hybrid tactile**, dunia visual **perangkat audio hi-fi**.
+1. Warna punya arti. Hijau, biru, merah, dan kuning menandai kategori, bukan hiasan.
+2. Satu bentuk, satu fungsi. Wajik untuk identitas, segi delapan hanya untuk chat, lingkaran merah hanya untuk batas waktu.
+3. Gerak hanya sekali atau sebagai respons. Animasi pemasangan rambu saat dibuka; selebihnya gerak hanya saat disentuh.
+4. Terbaca di jalan. Huruf Overpass (terinspirasi huruf rambu jalan raya), kontras tinggi, target sentuh minimal 44 px.
 
-1. **Satu bahan.** Semua bayangan, sorotan, dan permukaan diturunkan dari satu warna dasar (`themeVars`). Admin memilih dua warna; sistem menurunkan sisanya.
-2. **Kontras dijamin kode.** Warna tinta dihitung dari luminans warna dasar dan dipaksa ≥ 4.5:1. Admin tidak bisa membuat halaman yang tidak terbaca.
-3. **Status lewat lampu, bukan bayangan saja.** Kelemahan neumorphism adalah tombol tak terbedakan; di sini setiap tombol punya LED (mati = sel gelap yang tetap terlihat, menyala = aktif/utama/fokus).
-4. **Tekan terasa fisik.** Tombol turun 2 px dan bayangannya berbalik ke dalam dalam 90 ms. Hover hanya untuk mouse.
-5. **Satu momen gerak.** Power-on saat halaman dibuka. Tidak ada animasi masuk per-bagian.
-6. **Tidak generik.** Tanpa kicker/eyebrow, tanpa gradient text, tanpa glass dekoratif, tanpa kartu ikon seragam, tanpa emoji sebagai ikon.
-7. **Mobile dulu.** `100svh`, safe area, input ≥ 16 px, target sentuh ≥ 44 px, tanpa tap highlight.
+## Kebutuhan fungsional
 
-## 7. Arsitektur
+P0 wajib untuk rilis, P1 penting, P2 pelengkap.
 
-| Bagian | Pilihan |
+| Fitur | Perilaku | Prioritas |
+|---|---|---|
+| Profil HUD | Menampilkan inisial, nama, bio, status pesanan, jam, jumlah tujuan | P0 |
+| Tautan dari CONFIG | Semua tautan, kategori, dan profil diatur di satu tempat | P0 |
+| Jalur kategori | Tautan dikelompokkan per kategori, tiap kategori punya warna rambu | P0 |
+| Tab jalur menempel | Tab kategori menempel di atas saat digulir, dengan jumlah tautan per tab | P0 |
+| Papan gantry | Maksimal 2 tautan bertanda utama tampil paling atas | P0 |
+| Tombol CHAT | Rambu STOP menuju WhatsApp, dengan rambu batas jam balas | P0 |
+| Pencarian | Menyaring judul, catatan, dan nama kategori secara langsung; tombol / untuk fokus, Esc untuk hapus | P1 |
+| Tata letak adaptif | Lebih dari 4 tautan dalam satu jalur berubah ke grid 2 kolom yang ringkas | P1 |
+| Lipat jalur panjang | Lebih dari 6 tautan dalam satu jalur dilipat, ada tombol "Tampilkan n tujuan lainnya" | P1 |
+| Status otomatis | Lampu hijau saat jam buka, kuning di luar jam, merah di hari libur; bisa diganti manual | P1 |
+| Label berbatas waktu | Label BARU, POPULER, PROMO hilang sendiri setelah tanggal labelSampai | P1 |
+| Tautan berbagi per jalur | URL #jalur-toko langsung membuka jalur Toko | P1 |
+| Mode siang/malam | Tombol di pojok kanan atas, pilihan disimpan di perangkat pengunjung | P1 |
+| Bagikan dan kode QR | Menu bagikan bawaan HP atau salin tautan; QR untuk poster dan kartu nama | P2 |
+| Jejak kunjungan | Tautan yang sudah diklik ditandai "dilewati" di perangkat pengunjung | P2 |
+| Putar balik | Tombol rambu U-turn untuk kembali ke atas setelah menggulir jauh | P2 |
+| Kilau reflektif dan animasi pemasangan | Efek visual saat disentuh dan saat halaman pertama dibuka | P2 |
+
+## Struktur konten dan banyak tautan
+
+Bentuk halaman tidak berubah saat tautan bertambah; yang berubah hanya cara tiap jalur menata isinya, berdasarkan jumlah tautan di jalur itu.
+
+Urutan halaman dari atas ke bawah:
+
+1. Pita peringatan dan tab jalur (menempel)
+2. Panel profil HUD
+3. Kolom pencarian
+4. Papan gantry (tautan utama)
+5. Jalur-jalur kategori, sesuai urutan di CONFIG
+6. Rambu STOP chat dan batas jam balas
+7. Bagikan dan kode QR
+8. Marka jalan dan patok KM 0
+
+| Jumlah tautan dalam satu jalur | Tampilan |
 |---|---|
-| Framework | Next.js 16 App Router, Cache Components |
-| Data | 1 dokumen JSON `site`. Neon Postgres bila `DATABASE_URL` ada; selain itu `data/site.json` |
-| Cache | `getSite()` = `'use cache'` + `cacheTag('site')`; simpan → `updateTag('site')` |
-| Validasi | Zod (`siteSchema`), URL hanya `http(s)`, `mailto`, `tel` |
-| Auth | `ADMIN_PASSWORD`, HMAC cookie, perbandingan constant-time |
-| Gaya | CSS biasa + custom properties untuk faceplate; Tailwind v4 tersedia |
-| Ikon | Phosphor (SSR) |
+| 1–4 | Papan rambu lebar, lengkap dengan panah, catatan, dan jarak |
+| 5–6 | Grid 2 kolom rambu ringkas (di layar di bawah 340 px kembali 1 kolom) |
+| 7 atau lebih | Grid ringkas, 6 pertama tampil, sisanya di balik tombol "Tampilkan n tujuan lainnya" |
 
-File inti: `src/lib/site.ts` (skema, preset, `themeVars`), `src/lib/color.ts`, `src/lib/store.ts`, `src/lib/auth.ts`, `src/app/actions.ts`, `src/components/faceplate.tsx|css`.
+Aturan lain:
 
-## 8. Rencana Eksekusi (Orca orchestration)
+- Saat mencari, semua hasil tampil tanpa dilipat, dan papan gantry disembunyikan.
+- Saat memilih satu tab, hanya jalur itu yang tampil, termasuk tautan utama dari jalur tersebut.
+- Kategori tanpa tautan otomatis tidak muncul di tab maupun di halaman.
+- Disarankan maksimal 8 kategori agar tab tetap mudah digeser; tidak ada batas teknis jumlah tautan (skema: 200).
 
-| Task | Pemilik | Isi | Dependensi |
+## Design tokens
+
+Warna rambu tetap sama di mode siang dan malam, yang berganti hanya latar.
+
+```css
+:root {
+  /* warna rambu */
+  --black:  #000000;
+  --yellow: #ffd100; /* peringatan, aksi utama */
+  --green:  #00704a; /* petunjuk arah */
+  --blue:   #0050b5; /* informasi */
+  --red:    #d7261e; /* larangan, chat */
+  --white:  #f7f7f2; /* panel */
+
+  /* latar (siang) */
+  --ground: #e7e3d8;
+  --grid:   rgba(0,0,0,.07);
+  --beam:   #2b2b2b;
+  --glow:   0 0 0 transparent;
+
+  /* bentuk */
+  --border:       4px solid var(--black);
+  --border-small: 3px solid var(--black);
+  --radius-sign:  12px;
+  --radius-plate: 8px;
+  --shadow-lg: 8px 8px 0 var(--black);
+  --shadow-md: 6px 6px 0 var(--black);
+  --shadow-sm: 4px 4px 0 var(--black);
+
+  /* jarak (kelipatan 2 dan 4) */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+  --space-4: 16px; --space-5: 20px; --space-6: 28px;
+  --tap-min: 44px;
+}
+
+:root[data-theme="dark"] {
+  --ground: #1c1c1c;
+  --grid:   rgba(255,255,255,.06);
+  --beam:   #5a5a5a;
+  --glow:   0 0 22px rgba(255,255,230,.18); /* rambu memantulkan cahaya */
+}
+```
+
+| Peran | Huruf | Ukuran / tebal |
+|---|---|---|
+| Nama profil | Overpass | 30 px / 900 |
+| Judul rambu | Overpass | 23 px / 900 (ringkas 18 px) |
+| Papan jalur | Overpass | 18 px / 900 |
+| Isi dan bio | Overpass | 15–16 px / 600 |
+| Data HUD, catatan, jarak | Overpass Mono | 12–13 px / 500–700 |
+
+## Komponen UI
+
+Setiap komponen punya satu tugas dan satu bentuk rambu yang tetap.
+
+| Komponen | Bentuk | Isi | Keadaan |
 |---|---|---|---|
-| T1 Fondasi | Koordinator | Skema, store, auth, actions, faceplate, halaman publik | — |
-| T2 Editor admin | Worker Claude (worktree) | `/admin/login`, `/admin`, panel kontrol, preview | T1 |
-| T3 Audit publik | Worker Claude (worktree) | Uji data ekstrem + a11y + mobile, laporan + perbaikan kecil di faceplate | T1 |
-| T4 Integrasi | Koordinator | Merge, build, verifikasi visual, DESIGN.md | T2, T3 |
+| Pita peringatan | Garis kuning-hitam + teks berjalan + tombol mode | Teks dari teksBerjalan | Berhenti saat disorot; diam jika gerak dikurangi |
+| Tab jalur | Pelat kecil berwarna kategori | Nama kategori + jumlah | Aktif: tertekan, tanpa bayangan, ada titik wajik |
+| Rambu profil | Wajik kuning bergaris hitam | Inisial 2 huruf | Statis |
+| Panel HUD | Kotak putih, sudut bracket biru | Nama, bio, status, jam, jumlah rute | Garis scan sekali saat dibuka |
+| Lampu status | Tiga lampu kecil | Merah, kuning, hijau | Satu lampu menyala sesuai status |
+| Kolom pencarian | Kotak putih bergaris tebal | Placeholder contoh kata | Tombol hapus muncul saat terisi |
+| Papan gantry | Balok gelap, 1–2 papan hijau, dua tiang | Judul, catatan, panah | Turun 3 px saat disentuh |
+| Pelat jalur | Pelat berwarna dengan garis dalam | "Jalur Nama" + jumlah | Statis |
+| Rambu tautan | Papan berwarna, garis dalam putih | Panah, judul, label, catatan, jarak | Sorot: amblas 4 px + kilau; tekan: amblas penuh |
+| Rambu ringkas | Versi kecil di grid 2 kolom | Panah, judul, label, catatan | Sama seperti rambu tautan |
+| Label | Plat kecil | BARU, POPULER, PROMO | BARU berkedip 3 kali lalu diam |
+| Penanda dilewati | Plat hitam kecil di pojok | "dilewati" | Muncul setelah tautan diklik |
+| Rambu STOP | Segi delapan merah, tepi putih dan hitam | CHAT + WhatsApp | Bergeser 3 px saat disentuh |
+| Batas jam balas | Lingkaran putih bertepi merah | Angka jam | Statis |
+| Tombol aksi | Kotak kuning / putih | Bagikan, Kode QR | Amblas saat disentuh |
+| Dialog QR | Kotak putih dengan bayangan keras | Kode QR halaman | Tutup dengan tombol atau Esc |
+| Rambu putar balik | Kotak biru, ikon U-turn | — | Muncul setelah gulir 700 px |
+| Patok KM | Patok putih bertopi merah | KM 0 | Statis |
 
-## 9. Risiko
+## CONFIG
 
-| Risiko | Mitigasi |
+Di proyek ini CONFIG diubah lewat `/admin`. Bentuknya (lihat `src/lib/site.ts`):
+
+```js
+{
+  profil: { nama, inisial, bio },
+  // mode: "otomatis" (pakai jam) atau "manual"; manual: "hijau" | "kuning" | "merah"; hariLibur: 0 = Minggu … 6 = Sabtu
+  status: { mode: "otomatis", jamBuka: 9, jamTutup: 21, hariLibur: [0], manual: "hijau" },
+  balasMaksJam: 24,
+  whatsapp: "https://wa.me/62XXXXXXXXXX",
+  teksBerjalan: ["Jalur kreatif aktif", "Konten baru tiap minggu"],
+  // warna: "green" | "blue" | "red" | "yellow" | "white"
+  kategori: [{ id: "sosial", nama: "Sosial", warna: "green" }, …],
+  // utama: true -> papan gantry (maksimal 2); label: "baru" | "populer" | "promo"; labelSampai: "YYYY-MM-DD"
+  link: [{ id, judul, url, kategori, catatan, utama, label?, labelSampai? }, …]
+}
+```
+
+Urutan kategori = urutan jalur di halaman; urutan tautan = urutan rambu.
+
+## Kebutuhan non-fungsional
+
+| Area | Kebutuhan |
 |---|---|
-| File lokal hilang di hosting serverless | Wajib `DATABASE_URL` saat deploy ke Vercel; dicatat di README |
-| Tebak password | Jeda 600 ms per gagal; v2: rate limit per IP |
-| Avatar besar membengkakkan dokumen | Editor mengecilkan ke 256 px WebP; skema membatasi 200 KB |
-| Neumorphism tidak terbaca | Kontras dihitung & diuji (`site.check.ts`) |
+| Aksesibilitas | Kontras teks minimal 4.5:1; target sentuh minimal 44 px; fokus keyboard terlihat (garis biru 4 px); tautan "Lompat ke pencarian"; tab memakai aria-pressed; hasil pencarian diumumkan ke pembaca layar; ikon dekoratif disembunyikan dari pembaca layar |
+| Gerak | Semua animasi dimatikan jika perangkat memakai pengaturan kurangi gerakan |
+| Responsif | Mobile-first. Lebar konten maksimal 500 px; di bawah 400 px profil bertumpuk; di bawah 340 px grid ringkas jadi 1 kolom; aman untuk layar berponi (safe area) |
+| Performa | Tanpa gambar; hanya font Overpass dan pustaka QR (dimuat saat dialog QR dibuka) |
+| Privasi | Mode tampilan dan jejak "dilewati" hanya disimpan di perangkat pengunjung; tidak ada pelacak |
+| Tautan keluar | Tautan https:// dibuka di tab baru dengan rel="noopener" |
+| Browser | Chrome, Safari, Firefox, Edge versi 2 tahun terakhir; Safari iOS 15 ke atas |
 
-## 10. Definisi Selesai
+## Copywriting siap pakai
 
-- [ ] `npm run build` hijau, `npx tsx src/lib/site.check.ts` lulus.
-- [ ] Admin bisa login, mengubah semua isi & tema, preview sinkron, simpan, dan halaman publik berubah.
-- [ ] Halaman publik benar di 390 px dan 1440 px, tanpa overflow pada data ekstrem.
-- [ ] `prefers-reduced-motion` dan `prefers-contrast` dihormati; fokus keyboard terlihat.
-- [ ] DESIGN.md mendokumentasikan sistem yang dibangun.
+Pilihan bio (maksimal 2 kalimat):
 
----
+- Ilustrator dan pembuat konten. Silakan pilih tujuan di bawah.
+- Menggambar setiap hari, berbagi setiap minggu. Pilih jalurmu.
+- Desainer visual untuk brand lokal. Semua rute karya ada di sini.
+- Membuat stiker, poster, dan kelas menggambar. Mau ke mana hari ini?
 
-## 12. Revisi 2.1 — Dunia bengkel (15 Oktober 2026)
+Pilihan teks berjalan: Jalur kreatif aktif · Konten baru tiap minggu · Kurangi kecepatan, nikmati karya · Pesanan dibuka, antrean terbatas · Promo akhir bulan sedang berlangsung
 
-Menggantikan dunia "perangkat hi-fi" di §1, §5 dan §6. Permintaan: bentuk benar-benar seperti radio head unit truk / toolbox mekanik, detail, motion mikro dan makro, background tidak monoton.
+| Tempat | Teks |
+|---|---|
+| Judul rambu STOP | Berhenti sebentar |
+| Ajakan chat | Mau kerja sama atau pesan karya? Langsung chat saja. |
+| Batas jam balas | Batas waktu balas pesan paling lama |
+| Status hijau | dibuka sampai 21.00 |
+| Status kuning | dibalas mulai 09.00 / antrean penuh |
+| Status merah | libur hari ini / sedang libur |
+| Pencarian kosong | Tujuan tidak ditemukan. Coba kata lain, atau lihat semua jalur. |
+| Tombol lipat | Tampilkan 3 tujuan lainnya / Ringkas jalur ini |
+| Notifikasi salin | Tautan halaman disalin |
+| Dialog QR | Pindai untuk mampir. Arahkan kamera HP ke kode ini untuk membuka halaman. |
+| Kaki halaman | Titik awal semua rute. |
 
-### Bentuk
-- **Radio head unit** (double-DIN, plastik hitam bertekstur) berdiri di atas lemari: layar VFD dot-matrix (font Doto) dengan jam dan meter level, kenop VOL dan TUNE bergerigi, **6 tombol preset karet = media sosial** (maksimal 6).
-- **Lemari perkakas** (roll cab, cat powder coat): stiker vinyl berisi avatar, **nama di label Dymo** (huruf timbul), **bio ditulis spidol di selotip kertas**, gembok, pegangan samping, kick plate diamond plate, roda.
-- **Setiap link = laci** dengan pegangan aluminium dan kartu label putih di bingkai krom. Link utama = laci lebih dalam dengan LED menyala di ujung pegangan.
-- **Latar:** pegboard dengan perkakas tergantung (kunci, obeng, palu, tang, meteran), lampu kerja, lantai beton. Scene lain: *malam* (dinding seng, cahaya bulan) dan *polos*.
+## Rilis, checklist QA, dan pertanyaan terbuka
 
-### Kustomisasi admin
-Cat lemari (Merah bengkel, Hitam doff, Biru baja, Hijau army, Kuning safety, atau bebas), warna nyala layar, pegangan laci (batang/mangkuk/lidah), scene, trim logam (krom/hitam), radio tampil/sembunyi, huruf (Barlow Condensed/Big Shoulders/Archivo), radius, kedalaman bayangan.
+Langkah rilis: isi CONFIG lewat `/admin` dengan data asli, deploy (wajib `DATABASE_URL` di hosting serverless), pasang tautan di bio dan cetak QR.
 
-### Motion
-| Jenis | Gerak | Alasan |
-|---|---|---|
-| Makro, sekali | Lampu menyala (satu kedip), radio turun ke tempatnya, VFD warm-up, laci-laci "duduk" berurutan | Momen pembuka yang diingat |
-| Makro, scroll | Dinding, lampu bergeser dengan kecepatan berbeda; kenop VOL berputar mengikuti scroll | Kedalaman berlapis (scroll-craft hero-depth), CSS `animation-timeline` |
-| Makro, ambien | Lampu berayun sekali lalu diam | Tidak ada loop tanpa akhir |
-| Mikro | Laci keluar sedikit saat hover, tertarik saat ditekan; tombol preset turun 3 px + LED; VFD menampilkan nama link yang disorot/difokus | Feedback & state |
-Semua gerak dimatikan oleh `prefers-reduced-motion`; scroll-driven turun ke statis di browser yang belum mendukung.
+Checklist QA:
 
-### Tetap berlaku
-Kontras dijamin kode (teks ≥ 4.5:1; warna nyala diangkat otomatis bila terlalu gelap), target sentuh ≥ 44 px, fokus terlihat, tanpa dependensi baru.
+- [ ] Semua tautan membuka tujuan yang benar
+- [ ] Nomor WhatsApp memakai format https://wa.me/62... tanpa angka 0 di depan
+- [ ] Status lampu sesuai jam buka dan hari libur
+- [ ] Label PROMO hilang setelah tanggal labelSampai
+- [ ] Pencarian menemukan tautan dari judul dan catatan
+- [ ] Jalur dengan lebih dari 6 tautan bisa dibuka dan diringkas
+- [ ] Tampilan rapi di layar 360 px dan 430 px
+- [ ] Mode siang dan malam sama-sama terbaca
+- [ ] Seluruh halaman bisa dipakai hanya dengan keyboard
+- [ ] Kode QR membuka halaman yang benar setelah dipasang di domain final
+
+Pertanyaan terbuka:
+
+- Alat analitik apa yang dipakai untuk mengukur klik (misalnya Plausible atau Umami)?
+- Apakah butuh foto profil asli sebagai ganti inisial di rambu wajik?
+- Apakah halaman perlu dua bahasa (Indonesia dan Inggris)?
+- Domain apa yang akan dipakai?
