@@ -11,3 +11,4 @@
 - T2 selesai (merge tactile-admin): login, editor 2 panel, preview langsung, simpan + updateTag; 23 langkah uji headless lulus.
 - Verifikasi: screenshot desktop/390/admin/login di .impeccable/review; impeccable detect = 0 temuan; build hijau.
 - Iterasi 2: kontrak tema workshop + halaman publik baru; T5 (ctx_36ac0fccf0f0) & T6 (ctx_1bec125edd1f) jalan paralel.
+- T5 merged (bench editor), T6 merged (18 fixes), glow lift (f9c66c6), pegboard inner tools. Visual check 390/768/1440 ok. DESIGN.md rewrite delegated.

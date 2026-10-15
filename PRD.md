@@ -1,6 +1,6 @@
 # PRD — Halaman Link Tactile
 
-**Versi:** 2.0 (menggantikan draf "LinkForge" 1.0)
+**Versi:** 2.1 (dunia visual diganti ke bengkel; lihat §12)
 **Tanggal:** 15 Oktober 2026
 **Status:** Dalam eksekusi
 
@@ -111,3 +111,30 @@ File inti: `src/lib/site.ts` (skema, preset, `themeVars`), `src/lib/color.ts`, `
 - [ ] Halaman publik benar di 390 px dan 1440 px, tanpa overflow pada data ekstrem.
 - [ ] `prefers-reduced-motion` dan `prefers-contrast` dihormati; fokus keyboard terlihat.
 - [ ] DESIGN.md mendokumentasikan sistem yang dibangun.
+
+---
+
+## 12. Revisi 2.1 — Dunia bengkel (15 Oktober 2026)
+
+Menggantikan dunia "perangkat hi-fi" di §1, §5 dan §6. Permintaan: bentuk benar-benar seperti radio head unit truk / toolbox mekanik, detail, motion mikro dan makro, background tidak monoton.
+
+### Bentuk
+- **Radio head unit** (double-DIN, plastik hitam bertekstur) berdiri di atas lemari: layar VFD dot-matrix (font Doto) dengan jam dan meter level, kenop VOL dan TUNE bergerigi, **6 tombol preset karet = media sosial** (maksimal 6).
+- **Lemari perkakas** (roll cab, cat powder coat): stiker vinyl berisi avatar, **nama di label Dymo** (huruf timbul), **bio ditulis spidol di selotip kertas**, gembok, pegangan samping, kick plate diamond plate, roda.
+- **Setiap link = laci** dengan pegangan aluminium dan kartu label putih di bingkai krom. Link utama = laci lebih dalam dengan LED menyala di ujung pegangan.
+- **Latar:** pegboard dengan perkakas tergantung (kunci, obeng, palu, tang, meteran), lampu kerja, lantai beton. Scene lain: *malam* (dinding seng, cahaya bulan) dan *polos*.
+
+### Kustomisasi admin
+Cat lemari (Merah bengkel, Hitam doff, Biru baja, Hijau army, Kuning safety, atau bebas), warna nyala layar, pegangan laci (batang/mangkuk/lidah), scene, trim logam (krom/hitam), radio tampil/sembunyi, huruf (Barlow Condensed/Big Shoulders/Archivo), radius, kedalaman bayangan.
+
+### Motion
+| Jenis | Gerak | Alasan |
+|---|---|---|
+| Makro, sekali | Lampu menyala (satu kedip), radio turun ke tempatnya, VFD warm-up, laci-laci "duduk" berurutan | Momen pembuka yang diingat |
+| Makro, scroll | Dinding, lampu bergeser dengan kecepatan berbeda; kenop VOL berputar mengikuti scroll | Kedalaman berlapis (scroll-craft hero-depth), CSS `animation-timeline` |
+| Makro, ambien | Lampu berayun sekali lalu diam | Tidak ada loop tanpa akhir |
+| Mikro | Laci keluar sedikit saat hover, tertarik saat ditekan; tombol preset turun 3 px + LED; VFD menampilkan nama link yang disorot/difokus | Feedback & state |
+Semua gerak dimatikan oleh `prefers-reduced-motion`; scroll-driven turun ke statis di browser yang belum mendukung.
+
+### Tetap berlaku
+Kontras dijamin kode (teks ≥ 4.5:1; warna nyala diangkat otomatis bila terlalu gelap), target sentuh ≥ 44 px, fokus terlihat, tanpa dependensi baru.

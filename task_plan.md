@@ -42,6 +42,6 @@ Permintaan: tampilan lebih menarik, mirip head unit truk / toolbox mekanik, moti
 | Aset foto | Tidak dipakai (KIE_AI_API_KEY tidak ada); semua digambar CSS/SVG | Material interaktif harus kode |
 - [x] Kontrak tema baru (da50ae5)
 - [x] Halaman publik workshop (6a4bae2)
-- [ ] T5 editor admin workshop (worker)
-- [ ] T6 audit workshop (worker)
+- [x] T5 editor admin workshop (worker)
+- [x] T6 audit workshop (worker)
 - [ ] Integrasi, verifikasi, DESIGN.md update
