@@ -6,6 +6,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { themeVars, type Site } from "@/lib/site";
+import { ConeAvatar } from "./cone-avatar";
 import "./faceplate.css";
 
 export const ICON: Record<string, Icon> = {
@@ -31,7 +32,9 @@ function initials(name: string) {
 export function Faceplate({ site, boot = true, className = "" }: { site: Site; boot?: boolean; className?: string }) {
   const { profile, socials, theme } = site;
   const links = site.links.filter((l) => l.on);
-  const style = themeVars(theme) as CSSProperties;
+  // React only accepts camelCase for standard properties; "color-scheme" would be dropped.
+  const { "color-scheme": colorScheme, ...vars } = themeVars(theme);
+  const style = { ...vars, colorScheme } as CSSProperties;
 
   return (
     <div className={`desk ${className}`} style={style} data-font={theme.font} data-keys={theme.keyStyle} data-boot={boot || undefined}>
@@ -43,14 +46,13 @@ export function Faceplate({ site, boot = true, className = "" }: { site: Site; b
           {theme.grille && <div className="grille" aria-hidden />}
           <div className="cone" data-grille={theme.grille || undefined}>
             {profile.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element -- admin-supplied URL or inline data image
-              <img src={profile.avatar} alt="" width={96} height={96} />
+              <ConeAvatar key={profile.avatar} src={profile.avatar} initials={initials(profile.name)} />
             ) : (
               <span aria-hidden>{initials(profile.name)}</span>
             )}
           </div>
-          <h1 className="name">{profile.name}</h1>
-          {profile.bio && <p className="bio">{profile.bio}</p>}
+          <h1 className="name" dir="auto">{profile.name}</h1>
+          {profile.bio && <p className="bio" dir="auto">{profile.bio}</p>}
 
           {socials.length > 0 && (
             <ul className="tacts" aria-label="Media sosial">
@@ -77,7 +79,8 @@ export function Faceplate({ site, boot = true, className = "" }: { site: Site; b
                   <a className="key" href={l.url} data-lit={l.lit || undefined}>
                     <span className="led" aria-hidden />
                     <I className="glyph" size={20} weight="regular" aria-hidden />
-                    <span className="label">{l.label}</span>
+                    <span className="label" dir="auto">{l.label}</span>
+                    {l.lit && <span className="sr-only"> (utama)</span>}
                     <ArrowUpRight className="go" size={16} weight="bold" aria-hidden />
                   </a>
                 </li>
