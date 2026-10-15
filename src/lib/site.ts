@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { contrast, luminance, mix } from "./color";
+
+// Rambu Navigasi CONFIG. One document; the admin edits it, the public page renders it.
 
 // Only schemes a visitor can safely open. Blocks javascript:, data:, etc.
 const SAFE_PROTOCOLS = ["http:", "https:", "mailto:", "tel:"];
@@ -11,149 +12,116 @@ export function isSafeUrl(value: string): boolean {
   }
 }
 
-const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Warna harus format #RRGGBB");
 const url = z.string().trim().max(2048).refine(isSafeUrl, "Link harus diawali https://, mailto: atau tel:");
-const id = z.string().min(1).max(40);
+const id = z.string().trim().min(1).max(40);
+const slug = z.string().trim().regex(/^[a-z0-9-]{1,24}$/, "ID kategori: huruf kecil, angka, atau tanda hubung");
 
-export const ICONS = [
-  "link", "globe", "whatsapp", "instagram", "tiktok", "youtube", "linkedin", "x", "facebook",
-  "email", "phone", "map", "file", "calendar", "briefcase", "shop", "music", "camera",
-] as const;
-export const SOCIALS = ["instagram", "tiktok", "youtube", "whatsapp", "linkedin", "x", "facebook", "email", "globe"] as const;
-export const FONTS = ["barlow", "shoulders", "archivo"] as const;
-export const HANDLES = ["bar", "cup", "tab"] as const;
-export const SCENES = ["garasi", "malam", "polos"] as const;
-export const TRIMS = ["krom", "hitam"] as const;
+export const WARNA = ["green", "blue", "red", "yellow", "white"] as const;
+export const LABELS = ["baru", "populer", "promo"] as const;
+export const STATUS = ["hijau", "kuning", "merah"] as const;
+
+export const kategoriSchema = z.object({
+  id: slug,
+  nama: z.string().trim().min(1, "Nama kategori wajib diisi").max(24),
+  warna: z.enum(WARNA),
+});
 
 export const linkSchema = z.object({
   id,
-  label: z.string().trim().min(1, "Nama tombol wajib diisi").max(60),
+  judul: z.string().trim().min(1, "Judul wajib diisi").max(48),
   url,
-  icon: z.enum(ICONS).default("link"),
-  on: z.boolean().default(true),
-  lit: z.boolean().default(false),
+  kategori: slug,
+  catatan: z.string().trim().max(60).default(""),
+  utama: z.boolean().default(false),
+  label: z.enum(LABELS).optional().catch(undefined),
+  labelSampai: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal label: YYYY-MM-DD")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 
-export const socialSchema = z.object({ id, kind: z.enum(SOCIALS), url });
-
-/** Cabinet paint + display glow. Each preset is a real-world tool-chest finish. */
-export const PRESETS: Record<string, { label: string; base: string; led: string }> = {
-  merah: { label: "Merah bengkel", base: "#b0281f", led: "#5ef2c8" },
-  hitam: { label: "Hitam doff", base: "#26282c", led: "#ffb547" },
-  biru: { label: "Biru baja", base: "#2c5a86", led: "#8fe3ff" },
-  hijau: { label: "Hijau army", base: "#4f5b3c", led: "#a6ff7a" },
-  kuning: { label: "Kuning safety", base: "#d9a21b", led: "#ff8a3d" },
-};
-
-export const DEFAULT_THEME = {
-  preset: "merah",
-  base: PRESETS.merah.base,
-  led: PRESETS.merah.led,
-  radius: 10,
-  depth: 0.75,
-  font: "barlow" as (typeof FONTS)[number],
-  handle: "bar" as (typeof HANDLES)[number],
-  scene: "garasi" as (typeof SCENES)[number],
-  trim: "krom" as (typeof TRIMS)[number],
-  radio: true,
-};
-
-// Every field degrades on its own, so an old or hand-edited theme keeps whatever is still valid.
-export const themeSchema = z.object({
-  preset: z.string().max(20).catch(DEFAULT_THEME.preset),
-  base: hex.catch(DEFAULT_THEME.base),
-  led: hex.catch(DEFAULT_THEME.led),
-  radius: z.number().min(0).max(28).catch(DEFAULT_THEME.radius),
-  depth: z.number().min(0).max(1).catch(DEFAULT_THEME.depth),
-  font: z.enum(FONTS).catch(DEFAULT_THEME.font),
-  handle: z.enum(HANDLES).catch(DEFAULT_THEME.handle),
-  scene: z.enum(SCENES).catch(DEFAULT_THEME.scene),
-  trim: z.enum(TRIMS).catch(DEFAULT_THEME.trim),
-  radio: z.boolean().catch(DEFAULT_THEME.radio),
-});
-
-// Avatar may be an https URL or a small inline image produced by the editor.
-const avatar = z.union([
-  z.literal(""),
-  url,
-  z.string().max(200_000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/),
-]);
-
-export const siteSchema = z.object({
-  profile: z.object({
-    name: z.string().trim().min(1, "Nama wajib diisi").max(60),
-    bio: z.string().trim().max(160),
-    avatar,
-  }),
-  links: z.array(linkSchema).max(40),
-  // A head unit has six preset keys.
-  socials: z.preprocess((v) => (Array.isArray(v) ? v.slice(0, 6) : v), z.array(socialSchema).max(6, "Maksimal 6 tombol preset")),
-  theme: themeSchema,
-});
+export const siteSchema = z
+  .object({
+    profil: z.object({
+      nama: z.string().trim().min(1, "Nama wajib diisi").max(40),
+      inisial: z.string().trim().min(1).max(2).transform((s) => s.toUpperCase()),
+      bio: z.string().trim().max(140),
+    }),
+    // mode otomatis memakai jam; manual memakai nilai manual
+    status: z.object({
+      mode: z.enum(["otomatis", "manual"]),
+      jamBuka: z.number().int().min(0).max(23),
+      jamTutup: z.number().int().min(1).max(24),
+      hariLibur: z.array(z.number().int().min(0).max(6)).max(7),
+      manual: z.enum(STATUS),
+    }),
+    balasMaksJam: z.number().int().min(1).max(168),
+    whatsapp: z.union([z.literal(""), url.refine((u) => /^https:\/\/wa\.me\/\d{8,15}/.test(u), "Format WhatsApp: https://wa.me/62…")]),
+    teksBerjalan: z.array(z.string().trim().min(1).max(60)).max(6),
+    kategori: z.array(kategoriSchema).max(12),
+    link: z.array(linkSchema).max(200),
+  })
+  .superRefine((s, ctx) => {
+    const ids = new Set(s.kategori.map((k) => k.id));
+    if (ids.size !== s.kategori.length) ctx.addIssue({ code: "custom", path: ["kategori"], message: "ID kategori tidak boleh kembar" });
+    s.link.forEach((l, i) => {
+      if (!ids.has(l.kategori)) ctx.addIssue({ code: "custom", path: ["link", i, "kategori"], message: `Kategori "${l.kategori}" tidak ada` });
+    });
+    if (s.link.filter((l) => l.utama).length > 2)
+      ctx.addIssue({ code: "custom", path: ["link"], message: "Maksimal 2 tautan utama di papan gantry" });
+    if (s.status.jamTutup <= s.status.jamBuka)
+      ctx.addIssue({ code: "custom", path: ["status", "jamTutup"], message: "Jam tutup harus setelah jam buka" });
+  });
 
 export type Site = z.infer<typeof siteSchema>;
+export type Kategori = z.infer<typeof kategoriSchema>;
 export type Link = z.infer<typeof linkSchema>;
-export type Social = z.infer<typeof socialSchema>;
-export type Theme = z.infer<typeof themeSchema>;
-
+export type Warna = (typeof WARNA)[number];
+export type StatusWarna = (typeof STATUS)[number];
 
 export const DEFAULT_SITE: Site = {
-  profile: {
-    name: "Team PPA",
-    bio: "Contoh isi. Ganti nama, bio, dan link ini dari halaman admin.",
-    avatar: "",
-  },
-  links: [
-    { id: "l1", label: "Website resmi", url: "https://example.com", icon: "globe", on: true, lit: true },
-    { id: "l2", label: "Hubungi via WhatsApp", url: "https://wa.me/620000000000", icon: "whatsapp", on: true, lit: false },
-    { id: "l3", label: "Formulir pengajuan", url: "https://example.com/form", icon: "file", on: true, lit: false },
-    { id: "l4", label: "Lokasi kantor", url: "https://maps.google.com", icon: "map", on: true, lit: false },
+  profil: { nama: "Team PPA", inisial: "TP", bio: "Contoh isi. Ganti nama, bio, dan tautan ini dari halaman admin." },
+  status: { mode: "otomatis", jamBuka: 9, jamTutup: 21, hariLibur: [0], manual: "hijau" },
+  balasMaksJam: 24,
+  whatsapp: "https://wa.me/620000000000",
+  teksBerjalan: ["Jalur kreatif aktif", "Konten baru tiap minggu"],
+  kategori: [
+    { id: "sosial", nama: "Sosial", warna: "green" },
+    { id: "karya", nama: "Karya", warna: "blue" },
+    { id: "toko", nama: "Toko", warna: "red" },
+    { id: "belajar", nama: "Belajar", warna: "yellow" },
   ],
-  socials: [
-    { id: "s1", kind: "instagram", url: "https://instagram.com" },
-    { id: "s2", kind: "linkedin", url: "https://linkedin.com" },
-    { id: "s3", kind: "youtube", url: "https://youtube.com" },
+  link: [
+    { id: "l1", judul: "Portofolio", url: "https://example.com/portofolio", kategori: "karya", catatan: "karya pilihan", utama: true },
+    { id: "l2", judul: "Toko online", url: "https://example.com/toko", kategori: "toko", catatan: "stiker, cetak, merch", utama: true },
+    { id: "l3", judul: "Instagram", url: "https://instagram.com", kategori: "sosial", catatan: "@contoh", utama: false },
+    { id: "l4", judul: "YouTube", url: "https://youtube.com", kategori: "sosial", catatan: "video terbaru", utama: false, label: "baru", labelSampai: "2026-12-31" },
   ],
-  theme: DEFAULT_THEME,
 };
 
-/** Old or partial stored data never breaks the page: fall back per section. */
+/** Stored data that no longer fits (old theme formats, hand edits) falls back to the default instead of breaking the page. */
 export function parseSite(raw: unknown): Site {
   const full = siteSchema.safeParse(raw);
-  if (full.success) return full.data;
-  const r = (raw ?? {}) as Partial<Record<keyof Site, unknown>>;
-  const part = <K extends keyof Site>(k: K) => {
-    const p = siteSchema.shape[k].safeParse(r[k]);
-    return p.success ? p.data : DEFAULT_SITE[k];
-  };
-  return { profile: part("profile"), links: part("links"), socials: part("socials"), theme: part("theme") } as Site;
+  return full.success ? full.data : DEFAULT_SITE;
 }
 
-/** Every color the workshop needs, derived from two picks (paint + glow) so the admin can't break legibility. */
-export function themeVars(t: Theme): Record<string, string> {
-  // Pure black can't cast a darker shadow or hold a darker gap, so lift it a hair.
-  const base = luminance(t.base) < 0.012 ? mix(t.base, "#ffffff", 0.14) : t.base;
-  const light = luminance(base) > 0.18;
-  const d = t.depth;
-  // The glow is VFD text, focus ring and LED: lift a dark pick toward white until it reads on the glass and in the gaps.
-  const gap = mix(base, "#000000", 0.82);
-  let glow = t.led;
-  for (let k = 0.08; (contrast(glow, "#060708") < 4.5 || contrast(glow, gap) < 3) && k <= 1; k += 0.08) glow = mix(t.led, "#ffffff", k);
-  return {
-    "--radius": `${t.radius}px`,
-    "--depth": String(d),
-    // Tool chest: powder-coated paint, the gaps between drawers, the display glow, the metal trim.
-    "--paint": base,
-    "--paint-hi": mix(base, "#ffffff", light ? 0.35 : 0.2),
-    "--paint-lo": mix(base, "#000000", 0.38),
-    "--paint-edge": mix(base, "#000000", 0.62),
-    "--gap": gap,
-    "--glow": glow,
-    "--glow-dim": mix(glow, "#0b0d0e", 0.86),
-    "--glow-soft": mix(glow, "#0b0d0e", 0.45),
-    ...(t.trim === "hitam"
-      ? { "--metal-1": "#5b5f66", "--metal-2": "#303338", "--metal-3": "#151618" }
-      : { "--metal-1": "#f7f8fa", "--metal-2": "#b6bdc5", "--metal-3": "#5d646d" }),
-    colorScheme: light ? "light" : "dark",
-  };
+/** Label still showing on `today` (YYYY-MM-DD, local). */
+export function activeLabel(l: Link, today: string): Link["label"] {
+  return l.label && (!l.labelSampai || today <= l.labelSampai) ? l.label : undefined;
+}
+
+/** Traffic-light status for a moment in time. */
+export function statusAt(s: Site["status"], now: Date): StatusWarna {
+  if (s.mode === "manual") return s.manual;
+  if (s.hariLibur.includes(now.getDay())) return "merah";
+  const h = now.getHours();
+  return h >= s.jamBuka && h < s.jamTutup ? "hijau" : "kuning";
+}
+
+/** How a lane lays out its signs, from the PRD: 1–4 wide, 5–6 compact grid, 7+ compact with fold after 6. */
+export function laneLayout(count: number): { compact: boolean; visible: number } {
+  if (count <= 4) return { compact: false, visible: count };
+  if (count <= 6) return { compact: true, visible: count };
+  return { compact: true, visible: 6 };
 }
