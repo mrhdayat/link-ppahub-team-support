@@ -61,6 +61,8 @@ export const siteSchema = z
       manual: z.enum(STATUS),
     }),
     balasMaksJam: z.number().int().min(1).max(168),
+    // show each sign's all-time tap count on the public page
+    tampilKlik: z.boolean().default(true),
     whatsapp: z.union([z.literal(""), url.refine((u) => /^https:\/\/wa\.me\/\d{8,15}/.test(u), "Format WhatsApp: https://wa.me/62…")]),
     teksBerjalan: z.array(z.string().trim().min(1).max(60)).max(6),
     kategori: z.array(kategoriSchema).max(12),
@@ -88,6 +90,7 @@ export const DEFAULT_SITE: Site = {
   profil: { nama: "Team PPA", inisial: "TP", bio: "Contoh isi. Ganti nama, bio, dan tautan ini dari halaman admin." },
   status: { mode: "otomatis", zona: "Asia/Makassar", jamBuka: 9, jamTutup: 21, hariLibur: [0], manual: "hijau" },
   balasMaksJam: 24,
+  tampilKlik: true,
   whatsapp: "https://wa.me/620000000000",
   teksBerjalan: ["Jalur kreatif aktif", "Konten baru tiap minggu"],
   kategori: [

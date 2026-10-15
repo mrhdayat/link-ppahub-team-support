@@ -27,6 +27,7 @@ const WORST: Site = {
   },
   status: { mode: "manual", zona: "Asia/Jakarta", jamBuka: 9, jamTutup: 21, hariLibur: [0, 6], manual: "kuning" },
   balasMaksJam: 168,
+  tampilKlik: true,
   whatsapp: "",
   teksBerjalan: [],
   kategori: [

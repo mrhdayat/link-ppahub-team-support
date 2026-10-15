@@ -454,18 +454,18 @@
 .tag[data-label="promo"] { background: var(--yellow); }
 .tag[data-label="populer"] { background: var(--black); color: var(--yellow); border-color: var(--yellow); }
 
-.passed {
+.taps {
   position: absolute;
   top: -2px;
   right: 10px;
   padding: 3px 7px;
   background: var(--black);
-  color: #ffffff;
+  color: var(--yellow);
   border-radius: 0 0 4px 4px;
   font-family: var(--font-hud), monospace;
   font-size: 12px;
   font-weight: 700;
-  rotate: -2deg;
+  font-variant-numeric: tabular-nums;
 }
 
 .fold {

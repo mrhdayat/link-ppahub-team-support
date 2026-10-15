@@ -42,4 +42,15 @@ assert.equal(statusAt({ ...st, mode: "manual", manual: "kuning" }, wita(15, 10))
 // Old stored data without a zone gets the default.
 assert.equal(siteSchema.parse({ ...DEFAULT_SITE, status: { ...st, zona: undefined } }).status.zona, "Asia/Makassar");
 
-console.log("site.check ok");
+// Analytics day window is zero-filled and ends today in the owner's zone.
+import("./analytics").then(({ lastDays, totals, linkTaps }) => {
+  const days = [{ day: "2026-10-14", counts: { view: 3, "l:l1": 2 } }, { day: "2026-10-15", counts: { "l:l1": 1, "l:l3": 4, wa: 1 } }];
+  const w = lastDays(days, 7, "Asia/Makassar", new Date(Date.UTC(2026, 9, 15, 4)));
+  assert.equal(w.length, 7);
+  assert.equal(w[6].day, "2026-10-15");
+  assert.equal(w[0].day, "2026-10-09");
+  assert.deepEqual(w[5].counts, { view: 3, "l:l1": 2 });
+  assert.equal(totals(days)["l:l1"], 3);
+  assert.equal(linkTaps(days[1].counts), 5);
+  console.log("site.check ok");
+});

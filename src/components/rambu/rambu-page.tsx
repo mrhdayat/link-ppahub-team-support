@@ -8,7 +8,17 @@ import "./tokens.css";
 import "./rambu.css";
 
 const THEME_KEY = "rambu-tema";
-const VISIT_KEY = "rambu-dilewati";
+const VIEW_KEY = "rambu-dilihat";
+
+/** Fire-and-forget tap counter; survives the page navigating away. */
+function hit(k: string) {
+  try {
+    navigator.sendBeacon?.("/api/hit", new Blob([k], { type: "text/plain" })) ||
+      fetch("/api/hit", { method: "POST", body: k, keepalive: true });
+  } catch {}
+}
+
+const fmt = new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 });
 
 const norm = (s: string) => s.toLocaleLowerCase("id").normalize("NFD").replace(/[̀-ͯ]/g, "");
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -22,14 +32,6 @@ const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tapeItems(items: string[]): string[] {
   const chars = items.reduce((n, t) => n + t.length + 6, 0);
   return Array.from({ length: Math.max(1, Math.ceil(200 / chars)) }, () => items).flat();
-}
-
-function readSet(key: string): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(key) ?? "[]"));
-  } catch {
-    return new Set();
-  }
 }
 
 function statusText(s: Site["status"], st: StatusWarna): string {
@@ -61,7 +63,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<string | null>(null);
   const [open, setOpen] = useState<Set<string>>(new Set());
-  const [visited, setVisited] = useState<Set<string>>(new Set());
+  const [taps, setTaps] = useState<Record<string, number>>({});
   const [dark, setDark] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
   const [far, setFar] = useState(false);
@@ -86,12 +88,23 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   // Device-local preferences and history.
   useEffect(() => {
     if (preview) return;
-    setVisited(readSet(VISIT_KEY));
+    // one page view per browser session; tap counts for the signs (when the owner shows them)
+    try {
+      if (!sessionStorage.getItem(VIEW_KEY)) {
+        sessionStorage.setItem(VIEW_KEY, "1");
+        hit("view");
+      }
+    } catch {}
+    if (site.tampilKlik)
+      fetch("/api/hits")
+        .then((r) => (r.ok ? r.json() : {}))
+        .then(setTaps)
+        .catch(() => {});
     const t = document.documentElement.dataset.theme;
     const d = t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     setDark(d);
     if (t) paintChrome(d);
-  }, [preview]);
+  }, [preview, site.tampilKlik]);
 
   // #jalur-<id> opens that lane.
   useEffect(() => {
@@ -163,15 +176,11 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
     if (!preview) history.replaceState(null, "", id ? `#jalur-${id}` : location.pathname + location.search);
   };
 
-  const markVisited = (id: string) => {
+  // Count the tap, and bump the visible number right away so the visitor sees their own tap land.
+  const tapped = (id: string) => {
     if (preview) return;
-    setVisited((v) => {
-      const n = new Set(v).add(id);
-      try {
-        localStorage.setItem(VISIT_KEY, JSON.stringify([...n]));
-      } catch {}
-      return n;
-    });
+    hit(`l:${id}`);
+    setTaps((t) => ({ ...t, [id]: (t[id] ?? 0) + 1 }));
   };
 
   // The text stays while the toast fades out; a second flash restarts the timer instead of being cut short.
@@ -182,6 +191,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   }, []);
 
   const share = async () => {
+    if (!preview) hit("share");
     const url = location.href.split("#")[0];
     if (navigator.share) {
       try {
@@ -200,6 +210,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   };
 
   const showQr = async () => {
+    if (!preview) hit("qr");
     const { toDataURL } = await import("qrcode");
     setQr(await toDataURL(location.href.split("#")[0], { margin: 1, width: 480, errorCorrectionLevel: "M" }));
     dialog.current?.showModal();
@@ -238,8 +249,8 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           href={l.url}
           target={ext ? "_blank" : undefined}
           rel={ext ? "noopener" : undefined}
-          onClick={() => markVisited(l.id)}
-          onAuxClick={() => markVisited(l.id)}
+          onClick={() => tapped(l.id)}
+          onAuxClick={() => tapped(l.id)}
         >
           <Arrow dir={compact ? "up-right" : "right"} />
           <span className="sign-body">
@@ -262,7 +273,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
               KM {laneNo}.{i + 1}
             </span>
           )}
-          {visited.has(l.id) && <span className="passed">dilewati</span>}
+          {site.tampilKlik && taps[l.id] > 0 && <span className="taps">{fmt.format(taps[l.id])}× klik</span>}
           {ext && <span className="sr-only"> (tab baru)</span>}
         </a>
       </li>
@@ -404,8 +415,8 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
                       href={l.url}
                       target={ext ? "_blank" : undefined}
                       rel={ext ? "noopener" : undefined}
-                      onClick={() => markVisited(l.id)}
-                      onAuxClick={() => markVisited(l.id)}
+                      onClick={() => tapped(l.id)}
+                      onAuxClick={() => tapped(l.id)}
                     >
                       <span className="board-title" dir="auto">
                         {l.judul}
@@ -416,7 +427,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
                         </span>
                       )}
                       <Arrow dir="down" />
-                      {visited.has(l.id) && <span className="passed">dilewati</span>}
+                      {site.tampilKlik && taps[l.id] > 0 && <span className="taps">{fmt.format(taps[l.id])}× klik</span>}
                       {ext && <span className="sr-only"> (tab baru)</span>}
                     </a>
                   </li>
@@ -486,7 +497,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
 
         {site.whatsapp && (
           <section className="stop" aria-label="Chat">
-            <a className="stop-sign" href={site.whatsapp} target="_blank" rel="noopener" aria-label="Chat WhatsApp (tab baru)">
+            <a className="stop-sign" href={site.whatsapp} target="_blank" rel="noopener" onClick={() => !preview && hit("wa")} aria-label="Chat WhatsApp (tab baru)">
               <Octagon />
               <span className="stop-text">
                 <b>CHAT</b>
