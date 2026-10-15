@@ -15,7 +15,10 @@ export async function login(_: LoginState, form: FormData): Promise<LoginState> 
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
   const wait = lockedOut(ip);
-  if (wait) return { error: `Terlalu banyak percobaan. Coba lagi dalam ${wait} menit.` };
+  if (wait) {
+    const when = wait >= 60 ? `${Math.ceil(wait / 60)} menit` : `${wait} detik`;
+    return { error: `Terlalu banyak percobaan. Coba lagi dalam ${when}.` };
+  }
   if (!checkPassword(password)) {
     recordFailure(ip);
     await new Promise((r) => setTimeout(r, 600));

@@ -35,21 +35,28 @@ export function checkPassword(input: string): boolean {
 }
 
 // ponytail: in-memory lockout, per server instance. Swap for a shared store (Neon/Redis) if deployed multi-instance.
-// The per-IP key trusts forwarded headers, which a client can spoof without a proxy in front,
-// so a global ceiling ("*") caps total guesses no matter what IP is claimed.
+// The per-IP key trusts forwarded headers, which a client can spoof without a proxy in front.
+// So past a global failure count we throttle (1 attempt per 10s for everyone) instead of locking:
+// guessing stays capped at ~8.6k/day without letting a stranger lock the admin out entirely.
 const failures = new Map<string, { count: number; until: number }>();
-const LIMITS: Record<string, number> = { "*": 20 };
 const PER_IP = 5;
+const GLOBAL = 20;
 const LOCK_MS = 15 * 60 * 1000;
+const THROTTLE_MS = 10_000;
+let lastGlobalAttempt = 0;
 
-function minutesLeft(key: string): number {
-  const f = failures.get(key);
-  const limit = LIMITS[key] ?? PER_IP;
-  return f && f.count >= limit && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 60000) : 0;
-}
-
+/** Seconds the caller must wait before trying, 0 when allowed. */
 export function lockedOut(ip: string): number {
-  return Math.max(minutesLeft(ip), minutesLeft("*"));
+  const now = Date.now();
+  const f = failures.get(ip);
+  if (f && f.count >= PER_IP && f.until > now) return Math.ceil((f.until - now) / 1000);
+  const g = failures.get("*");
+  if (g && g.count >= GLOBAL && g.until > now) {
+    const wait = lastGlobalAttempt + THROTTLE_MS - now;
+    if (wait > 0) return Math.ceil(wait / 1000);
+    lastGlobalAttempt = now;
+  }
+  return 0;
 }
 
 export function recordFailure(ip: string) {
