@@ -1,6 +1,8 @@
 /* Rambu Navigasi. Mobile-first: base styles are the phone; wider screens only relax spacing. */
 
 .rambu {
+  min-width: 0;
+  max-width: 100%;
   min-height: 100svh;
   color: var(--ink);
   background-color: var(--ground);
@@ -67,6 +69,8 @@
 .tape-run {
   flex: 1;
   min-width: 0;
+  /* the marquee is long by design: never let its text width size the page (the admin preview grew to 3600px) */
+  contain: inline-size;
   display: flex;
   overflow: hidden;
   height: 32px;
