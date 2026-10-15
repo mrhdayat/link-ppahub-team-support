@@ -5,14 +5,14 @@ import type { Metadata } from "next";
 import { isAdmin } from "@/lib/auth";
 import { getSite } from "@/lib/store";
 import { Editor } from "@/components/editor/editor";
-import { PANEL } from "@/components/editor/panel";
+import "@/components/rambu/tokens.css";
 import "@/components/editor/editor.css";
 
 export const metadata: Metadata = { title: "Editor", robots: { index: false } };
 
 export default function AdminPage() {
   return (
-    <Suspense fallback={<p className="ed-loading" style={PANEL}>Memuat editor…</p>}>
+    <Suspense fallback={<p className="ed-loading">Memuat editor…</p>}>
       <Gate />
     </Suspense>
   );
