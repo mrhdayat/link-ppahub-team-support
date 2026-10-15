@@ -19,6 +19,9 @@ const slug = z.string().trim().regex(/^[a-z0-9-]{1,24}$/, "ID kategori: huruf ke
 export const WARNA = ["green", "blue", "red", "yellow", "white"] as const;
 export const LABELS = ["baru", "populer", "promo"] as const;
 export const STATUS = ["hijau", "kuning", "merah"] as const;
+/** Indonesian time zones. Opening hours and label dates are the owner's, not the visitor's. */
+export const ZONA = { "Asia/Jakarta": "WIB", "Asia/Makassar": "WITA", "Asia/Jayapura": "WIT" } as const;
+export type Zona = keyof typeof ZONA;
 
 export const kategoriSchema = z.object({
   id: slug,
@@ -51,6 +54,7 @@ export const siteSchema = z
     // mode otomatis memakai jam; manual memakai nilai manual
     status: z.object({
       mode: z.enum(["otomatis", "manual"]),
+      zona: z.enum(Object.keys(ZONA) as [Zona, ...Zona[]]).default("Asia/Makassar"),
       jamBuka: z.number().int().min(0).max(23),
       jamTutup: z.number().int().min(1).max(24),
       hariLibur: z.array(z.number().int().min(0).max(6)).max(7),
@@ -82,7 +86,7 @@ export type StatusWarna = (typeof STATUS)[number];
 
 export const DEFAULT_SITE: Site = {
   profil: { nama: "Team PPA", inisial: "TP", bio: "Contoh isi. Ganti nama, bio, dan tautan ini dari halaman admin." },
-  status: { mode: "otomatis", jamBuka: 9, jamTutup: 21, hariLibur: [0], manual: "hijau" },
+  status: { mode: "otomatis", zona: "Asia/Makassar", jamBuka: 9, jamTutup: 21, hariLibur: [0], manual: "hijau" },
   balasMaksJam: 24,
   whatsapp: "https://wa.me/620000000000",
   teksBerjalan: ["Jalur kreatif aktif", "Konten baru tiap minggu"],
@@ -111,12 +115,23 @@ export function activeLabel(l: Link, today: string): Link["label"] {
   return l.label && (!l.labelSampai || today <= l.labelSampai) ? l.label : undefined;
 }
 
-/** Traffic-light status for a moment in time. */
+/** Wall-clock parts of `now` in an IANA zone. */
+export function clockIn(zona: Zona, now: Date) {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: zona, hourCycle: "h23", weekday: "short", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    }).formatToParts(now).map((x) => [x.type, x.value]),
+  );
+  const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(p.weekday);
+  return { date: `${p.year}-${p.month}-${p.day}`, day, hour: Number(p.hour), minute: Number(p.minute) };
+}
+
+/** Traffic-light status for a moment in time, read on the owner's clock. */
 export function statusAt(s: Site["status"], now: Date): StatusWarna {
   if (s.mode === "manual") return s.manual;
-  if (s.hariLibur.includes(now.getDay())) return "merah";
-  const h = now.getHours();
-  return h >= s.jamBuka && h < s.jamTutup ? "hijau" : "kuning";
+  const c = clockIn(s.zona, now);
+  if (s.hariLibur.includes(c.day)) return "merah";
+  return c.hour >= s.jamBuka && c.hour < s.jamTutup ? "hijau" : "kuning";
 }
 
 /** How a lane lays out its signs, from the PRD: 1–4 wide, 5–6 compact grid, 7+ compact with fold after 6. */

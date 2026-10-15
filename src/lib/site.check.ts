@@ -30,10 +30,16 @@ assert.equal(activeLabel(l, "2026-12-31"), "baru");
 assert.equal(activeLabel(l, "2027-01-01"), undefined);
 
 // Status lamp: open hours, closed hours, day off, manual override.
-const st = DEFAULT_SITE.status; // 9–21, Sunday off
-assert.equal(statusAt(st, new Date(2026, 9, 15, 10)), "hijau"); // Thursday 10:00
-assert.equal(statusAt(st, new Date(2026, 9, 15, 22)), "kuning");
-assert.equal(statusAt(st, new Date(2026, 9, 18, 10)), "merah"); // Sunday
-assert.equal(statusAt({ ...st, mode: "manual", manual: "kuning" }, new Date(2026, 9, 15, 10)), "kuning");
+// Times are given in UTC; the owner is on WITA (UTC+8), whatever the visitor's machine says.
+const st = DEFAULT_SITE.status; // 9–21 WITA, Sunday off
+const wita = (d: number, h: number) => new Date(Date.UTC(2026, 9, d, h - 8));
+assert.equal(statusAt(st, wita(15, 10)), "hijau"); // Thursday 10:00 WITA
+assert.equal(statusAt(st, wita(15, 22)), "kuning");
+assert.equal(statusAt(st, wita(18, 10)), "merah"); // Sunday
+assert.equal(statusAt(st, wita(15, 6)), "kuning"); // 06:00 WITA is 05:00 WIB / 22:00 UTC the day before
+assert.equal(statusAt({ ...st, zona: "Asia/Jakarta" }, wita(15, 9)), "kuning", "09:00 WITA is 08:00 WIB: not open yet in Jakarta");
+assert.equal(statusAt({ ...st, mode: "manual", manual: "kuning" }, wita(15, 10)), "kuning");
+// Old stored data without a zone gets the default.
+assert.equal(siteSchema.parse({ ...DEFAULT_SITE, status: { ...st, zona: undefined } }).status.zona, "Asia/Makassar");
 
 console.log("site.check ok");

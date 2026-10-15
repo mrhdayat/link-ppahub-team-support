@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { activeLabel, laneLayout, statusAt, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
+import { ZONA, activeLabel, clockIn, laneLayout, statusAt, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
 import { X } from "@phosphor-icons/react/dist/ssr";
 import { Arrow, Diamond, Octagon, SunMoon, UTurn } from "./signs";
 import "./tokens.css";
@@ -209,7 +209,9 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   const q = norm(query.trim());
   const searching = q.length > 0;
   const matches = (l: Link, k: Kategori) => norm(`${l.judul} ${l.catatan} ${k.nama}`).includes(q);
-  const today = now ? `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` : "";
+  // The owner's clock: opening hours, label dates and the HUD time all read in their zone.
+  const own = now ? clockIn(status.zona, now) : null;
+  const today = own?.date ?? "";
   // Until the visitor's date is known, a label with an end date stays hidden rather than flash an expired one.
   const label = (l: Link) => (today ? activeLabel(l, today) : l.labelSampai ? undefined : l.label);
 
@@ -348,7 +350,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
             </div>
             <div className="hud-cell">
               <dt>Jam</dt>
-              <dd>{now ? `${pad(now.getHours())}:${pad(now.getMinutes())}` : "--:--"}</dd>
+              <dd>{own ? `${pad(own.hour)}:${pad(own.minute)} ${ZONA[status.zona]}` : "--:--"}</dd>
             </div>
             <div className="hud-cell">
               <dt>Rute</dt>

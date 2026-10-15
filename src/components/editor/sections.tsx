@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { ArrowCounterClockwise, CaretDown, Check, MagnifyingGlass, Plus, X } from "@phosphor-icons/react";
-import { LABELS, STATUS, WARNA, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
+import { LABELS, STATUS, WARNA, ZONA, type Kategori, type Link, type Site, type StatusWarna, type Zona } from "@/lib/site";
 import {
   Field, NumberInput, Plate, RowTools, Segmented, WARNA_NAME,
   fid, focusLater, initialsOf, insertAt, newId, slugify, swap, uniqueSlug, wire,
@@ -79,6 +79,10 @@ export function StatusSection({ site, update, errors, announce }: Props) {
       <Segmented name="mode" label="Mode status" id={fid("status.mode")} value={status.mode}
         onChange={(mode) => setStatus({ mode })}
         options={[{ value: "otomatis", label: "Otomatis" }, { value: "manual", label: "Manual" }]} />
+
+      <Segmented name="zona" label="Zona waktu jam buka" id={fid("status.zona")} value={status.zona}
+        onChange={(zona) => setStatus({ zona })}
+        options={(Object.keys(ZONA) as Zona[]).map((z) => ({ value: z, label: ZONA[z] }))} />
 
       <div className="pair">
         <Field path="status.jamBuka" label="Jam buka" error={e("status.jamBuka")}>

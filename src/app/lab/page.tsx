@@ -25,7 +25,7 @@ const WORST: Site = {
     inisial: "AW",
     bio: "Ilustrator dan pembuat konten dari Yogyakarta. Menggambar setiap hari, berbagi setiap minggu; pesanan dibuka sampai akhir bulan ini, ya 🙏",
   },
-  status: { mode: "manual", jamBuka: 9, jamTutup: 21, hariLibur: [0, 6], manual: "kuning" },
+  status: { mode: "manual", zona: "Asia/Jakarta", jamBuka: 9, jamTutup: 21, hariLibur: [0, 6], manual: "kuning" },
   balasMaksJam: 168,
   whatsapp: "",
   teksBerjalan: [],
