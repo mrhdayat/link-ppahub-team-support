@@ -23,7 +23,7 @@ Halaman link-in-bio milik tim: 1 halaman publik + 1 admin (password env) untuk k
 - [x] 5. Orca wave 1 (paralel): W1 editor admin · W2 audit a11y/edge-case halaman publik (read-only report)
 - [x] 6. Integrasi + build hijau + self-check test
 - [x] 7. Verifikasi visual (desktop + mobile), impeccable detect, fix 1 batch
-- [ ] 8. DESIGN.md + laporan
+- [x] 8. DESIGN.md + laporan
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
