@@ -1,6 +1,6 @@
-# Halaman Link Tactile
+# Rambu Navigasi
 
-Halaman link-in-bio milik sendiri. Satu halaman publik di `/`, satu admin di `/admin`. Gaya visual: panel perangkat audio hi-fi (neumorphism + skeuomorphism). Detail produk ada di [PRD.md](PRD.md).
+Halaman link-in-bio bergaya rambu lalu lintas (HUD + neubrutalism). Satu halaman publik di `/`, satu admin di `/admin` untuk mengubah CONFIG (profil, status, kategori/jalur, tautan) tanpa menyentuh kode. Spesifikasi lengkap ada di [PRD.md](PRD.md).
 
 ## Jalankan lokal
 
@@ -31,7 +31,7 @@ Di Vercel atau hosting serverless lain, **wajib** isi `DATABASE_URL`. Disk serve
 ## Cek
 
 ```bash
-npx tsx src/lib/site.check.ts   # kontras warna & validasi URL
+npx tsx src/lib/site.check.ts   # skema, URL aman, tata letak jalur, status & zona waktu, label
 npm run build
 ```
 
@@ -39,10 +39,9 @@ npm run build
 
 | File | Isi |
 |---|---|
-| `src/lib/site.ts` | Skema data (Zod), preset bahan, `themeVars()` yang menurunkan semua warna dari 2 pilihan |
-| `src/lib/color.ts` | Hitung kontras, pilih warna tinta yang lolos WCAG AA |
+| `src/lib/site.ts` | Skema CONFIG (Zod), aturan tata letak jalur, status lampu per zona waktu, label berbatas tanggal |
 | `src/lib/store.ts` | Baca/simpan 1 dokumen `site` (Neon atau file), di-cache dengan tag `site` |
 | `src/lib/auth.ts` | Sesi admin (cookie HMAC), batas percobaan login |
 | `src/app/actions.ts` | Server action: `login`, `logout`, `save` |
-| `src/components/faceplate.*` | Tampilan halaman publik, juga dipakai untuk preview di editor |
+| `src/components/rambu/*` | Halaman publik (juga preview di editor): token desain, rambu SVG, CSS |
 | `src/components/editor/*` | Editor admin |
