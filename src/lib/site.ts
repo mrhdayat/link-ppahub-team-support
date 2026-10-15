@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { contrast, inkFor, luminance, mix, softInkFor } from "./color";
+import { contrast, luminance, mix } from "./color";
 
 // Only schemes a visitor can safely open. Blocks javascript:, data:, etc.
 const SAFE_PROTOCOLS = ["http:", "https:", "mailto:", "tel:"];
@@ -129,32 +129,17 @@ export function parseSite(raw: unknown): Site {
   return { profile: part("profile"), links: part("links"), socials: part("socials"), theme: part("theme") } as Site;
 }
 
-/** Every color the faceplate needs, derived from two picks so contrast can't be broken by the admin. */
+/** Every color the workshop needs, derived from two picks (paint + glow) so the admin can't break legibility. */
 export function themeVars(t: Theme): Record<string, string> {
-  // Pure black can't cast a darker shadow or hold a darker LED cell, so lift it a hair.
+  // Pure black can't cast a darker shadow or hold a darker gap, so lift it a hair.
   const base = luminance(t.base) < 0.012 ? mix(t.base, "#ffffff", 0.14) : t.base;
   const light = luminance(base) > 0.18;
-  const faceTop = mix(base, "#ffffff", light ? 0.22 : 0.06);
-  const faceBottom = mix(base, "#000000", light ? 0.03 : 0.12);
-  // Text sits on the base and on both ends of the key/plate gradient: clear AA on all three.
-  const surfaces = [base, faceTop, faceBottom];
-  const ink = inkFor(base, surfaces);
   const d = t.depth;
   // The glow is VFD text, focus ring and LED: lift a dark pick toward white until it reads on the glass and in the gaps.
   const gap = mix(base, "#000000", 0.82);
   let glow = t.led;
   for (let k = 0.08; (contrast(glow, "#060708") < 4.5 || contrast(glow, gap) < 3) && k <= 1; k += 0.08) glow = mix(t.led, "#ffffff", k);
   return {
-    "--base": base,
-    "--ground": mix(base, "#000000", light ? 0.07 : 0.32),
-    "--ink": ink,
-    "--ink-soft": softInkFor(base, ink, surfaces),
-    "--hi": mix(base, "#ffffff", (light ? 0.75 : 0.1) * d),
-    "--lo": mix(base, "#000000", (light ? 0.2 : 0.55) * d),
-    "--face-top": faceTop,
-    "--face-bottom": faceBottom,
-    "--led": t.led,
-    "--led-off": mix(base, "#000000", light ? 0.16 : 0.35),
     "--radius": `${t.radius}px`,
     "--depth": String(d),
     // Tool chest: powder-coated paint, the gaps between drawers, the display glow, the metal trim.

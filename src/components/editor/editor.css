@@ -84,7 +84,6 @@
   min-height: 0;
 }
 .ed-preview { grid-area: main; }
-.ed-preview .desk { min-height: 0; }
 
 .ed-bar {
   grid-area: bar;

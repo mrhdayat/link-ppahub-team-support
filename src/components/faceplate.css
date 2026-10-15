@@ -142,7 +142,7 @@
     inset 0 -1px 0 rgb(0 0 0 / 0.6),
     inset 0 0 0 1px #0c0d0e,
     0 2px 0 #0a0a0b,
-    0 18px 24px -10px rgb(0 0 0 / 0.75);
+    0 calc(6px + var(--depth) * 16px) calc(10px + var(--depth) * 18px) -10px rgb(0 0 0 / calc(0.3 + var(--depth) * 0.5));
 }
 .foot {
   position: absolute;
@@ -299,7 +299,8 @@
   position: relative;
   z-index: 1;
   width: min(100%, 460px);
-  filter: drop-shadow(0 30px 30px rgb(0 0 0 / 0.55));
+  /* "Kedalaman bayangan" in the editor: how hard the lamp throws the chest onto the wall */
+  filter: drop-shadow(0 calc(8px + var(--depth) * 26px) calc(10px + var(--depth) * 24px) rgb(0 0 0 / calc(0.2 + var(--depth) * 0.5)));
 }
 
 /* Top chest with a lid: name plate lives here. */

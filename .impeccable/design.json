@@ -1,167 +1,1488 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-15T00:00:00Z",
+  "generatedAt": "2026-10-15T09:50:32.108Z",
   "title": "Design System: Team PPA Links",
   "extensions": {
     "colorMeta": {
-      "base": { "role": "neutral", "displayName": "Kapur Chalk", "canonical": "#dfe2e5", "derivation": "admin pick (preset or color input); near-black (luminance < 0.012) lifted 14% toward white", "tonalRamp": ["#383939", "#646667", "#919395", "#bec0c3", "#e5e8ea", "#edeff1", "#f5f6f7", "#fbfcfc"] },
-      "ground": { "role": "neutral", "displayName": "Desk Shadow", "canonical": "#cfd2d5", "derivation": "mix(base, black, light ? 0.07 : 0.32)", "tonalRamp": ["#343535", "#5d5e60", "#87898a", "#b0b3b5", "#d9dbdd", "#e5e6e8", "#f1f2f2", "#f9fafa"] },
-      "face-top": { "role": "neutral", "displayName": "Lit Face", "canonical": "#e6e8eb", "derivation": "mix(base, white, light ? 0.22 : 0.06)", "tonalRamp": ["#3a3a3b", "#67686a", "#969799", "#c4c5c8", "#ebedef", "#f1f2f4", "#f8f8f9", "#fcfcfd"] },
-      "face-bottom": { "role": "neutral", "displayName": "Shaded Face", "canonical": "#d8dbde", "derivation": "mix(base, black, light ? 0.03 : 0.12)", "tonalRamp": ["#363738", "#616364", "#8c8e90", "#b8babd", "#e0e2e5", "#eaebed", "#f3f4f5", "#fafbfb"] },
-      "hi": { "role": "neutral", "displayName": "Highlight", "canonical": "#f0f1f3", "derivation": "mix(base, white, (light ? 0.75 : 0.10) * depth); shadow-only", "tonalRamp": ["#3c3c3d", "#6c6c6d", "#9c9d9e", "#cccdcf", "#f3f4f5", "#f7f7f8", "#fbfbfb", "#fdfdfe"] },
-      "lo": { "role": "neutral", "displayName": "Shade", "canonical": "#c0c2c5", "derivation": "mix(base, black, (light ? 0.20 : 0.55) * depth); shadow-only", "tonalRamp": ["#303131", "#565759", "#7d7e80", "#a3a5a7", "#cdced1", "#dcdddf", "#ecedee", "#f7f8f8"] },
-      "ink": { "role": "neutral", "displayName": "Engraved Ink", "canonical": "#282929", "derivation": "inkFor(base, [base, face-top, face-bottom]): base hue deepened until >= 4.5:1 on all three", "tonalRamp": ["#0a0a0a", "#121212", "#1a1b1b", "#222323", "#535454", "#898989", "#bfbfbf", "#e5e5e5"] },
-      "ink-soft": { "role": "neutral", "displayName": "Worn Ink", "canonical": "#565758", "derivation": "softInkFor: ink pulled toward base while >= 4.5:1 on all surfaces", "tonalRamp": ["#161616", "#272728", "#383939", "#494a4b", "#787979", "#a2a3a3", "#cccdcd", "#ebebeb"] },
-      "led": { "role": "primary", "displayName": "Indicator Green", "canonical": "#1fb46a", "derivation": "admin pick; used as-is", "tonalRamp": ["#082d1b", "#0e5130", "#147545", "#1a995a", "#4cc388", "#84d6ad", "#bce9d2", "#e4f6ed"] },
-      "led-off": { "role": "neutral", "displayName": "Dark LED Cell", "canonical": "#bbbec0", "derivation": "mix(base, black, light ? 0.16 : 0.35)", "tonalRamp": ["#2f3030", "#545556", "#7a7c7d", "#9fa2a3", "#c9cbcd", "#dadbdc", "#ebecec", "#f7f7f7"] },
-      "well": { "role": "neutral", "displayName": "Input Well", "canonical": "#f1f2f3", "derivation": "color-mix(base 45%, white); admin only", "tonalRamp": ["#3c3d3d", "#6c6d6d", "#9d9d9e", "#cdcecf", "#f4f5f5", "#f7f8f8", "#fbfbfb", "#fdfdfe"] },
-      "danger": { "role": "secondary", "displayName": "Fault Red", "canonical": "#a3201b", "derivation": "fixed; admin panel only", "tonalRamp": ["#290807", "#490e0c", "#6a1512", "#8b1b17", "#b54d49", "#cc8482", "#e3bcbb", "#f4e4e4"] },
-      "amber": { "role": "tertiary", "displayName": "Standby Amber", "canonical": "#e89a1c", "derivation": "fixed; admin panel only (unsaved / busy LED)", "tonalRamp": ["#3a2707", "#68450d", "#976412", "#c58318", "#edae49", "#f2c782", "#f8e1bb", "#fcf3e4"] }
-    },
-    "themeDerivation": {
-      "source": "src/lib/site.ts themeVars()",
-      "inputs": ["base", "led", "radius (0-28px)", "depth (0-1)", "font", "keyStyle", "grille"],
-      "lightTest": "luminance(base) > 0.18",
-      "presets": {
-        "kapur": { "--base": "#dfe2e5", "--ground": "#cfd2d5", "--ink": "#282929", "--ink-soft": "#565758", "--hi": "#f0f1f3", "--lo": "#c0c2c5", "--face-top": "#e6e8eb", "--face-bottom": "#d8dbde", "--led": "#1fb46a", "--led-off": "#bbbec0", "colorScheme": "light" },
-        "grafit": { "--base": "#2c2e33", "--ground": "#1e1f23", "--ink": "#eaeaeb", "--ink-soft": "#a8a8ab", "--hi": "#3b3d41", "--lo": "#1b1c1f", "--face-top": "#393b3f", "--face-bottom": "#27282d", "--led": "#ffb547", "--led-off": "#1d1e21", "colorScheme": "dark" },
-        "zaitun": { "--base": "#b9bca4", "--ground": "#acaf99", "--ink": "#21221e", "--ink-soft": "#3f4139", "--hi": "#dedfd4", "--lo": "#9fa28d", "--face-top": "#c8cbb8", "--face-bottom": "#b3b69f", "--led": "#f7c548", "--led-off": "#9b9e8a", "colorScheme": "light" },
-        "baja": { "--base": "#a9b7c6", "--ground": "#9daab8", "--ink": "#1e2124", "--ink-soft": "#3a3f44", "--hi": "#d6dde4", "--lo": "#919daa", "--face-top": "#bcc7d3", "--face-bottom": "#a4b2c0", "--led": "#e8453c", "--led-off": "#8e9aa6", "colorScheme": "light" }
+      "paint": {
+        "role": "primary",
+        "displayName": "Merah Bengkel Powder Coat",
+        "canonical": "oklch(49.8% 0.174 28)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0001",
+          "#7d0001",
+          "#aa2119",
+          "#d44c3e",
+          "#ff7362",
+          "#ffb5aa",
+          "#fee9e5"
+        ],
+        "derivation": "themeVars: per preset/custom base; see extensions.presets"
       },
-      "presetDefaults": "radius 14px, depth 0.7 (public); admin panel plate: Kapur, radius 12px, depth 0.6 (hi #edeff1, lo #c4c7ca)"
+      "paint-hi": {
+        "role": "primary",
+        "displayName": "Paint Lip Highlight",
+        "canonical": "oklch(58.0% 0.142 26)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0004",
+          "#7a0b11",
+          "#9e3430",
+          "#c75952",
+          "#f07e75",
+          "#ffb5ad",
+          "#fee9e6"
+        ],
+        "derivation": "themeVars: per preset/custom base; see extensions.presets"
+      },
+      "paint-lo": {
+        "role": "primary",
+        "displayName": "Paint Underside",
+        "canonical": "oklch(35.6% 0.119 28)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0001",
+          "#721e17",
+          "#953f35",
+          "#bd6256",
+          "#e5877a",
+          "#feb6ab",
+          "#ffe9e5"
+        ],
+        "derivation": "themeVars: per preset/custom base; see extensions.presets"
+      },
+      "paint-edge": {
+        "role": "primary",
+        "displayName": "Paint Edge Seam",
+        "canonical": "oklch(25.9% 0.081 27)",
+        "tonalRamp": [
+          "#1f0000",
+          "#430f0c",
+          "#642d27",
+          "#854b44",
+          "#ab6d66",
+          "#d29189",
+          "#fbb7ae",
+          "#ffe9e6"
+        ],
+        "derivation": "themeVars: per preset/custom base; see extensions.presets"
+      },
+      "gap": {
+        "role": "neutral",
+        "displayName": "Drawer Gap Shadow",
+        "canonical": "oklch(17.3% 0.044 25)",
+        "tonalRamp": [
+          "#1a0303",
+          "#371b19",
+          "#553734",
+          "#755451",
+          "#997673",
+          "#bf9a96",
+          "#e6c0bc",
+          "#ffe9e6"
+        ],
+        "derivation": "themeVars: per preset/custom base; see extensions.presets"
+      },
+      "glow": {
+        "role": "secondary",
+        "displayName": "Toska VFD Glow",
+        "canonical": "oklch(87.1% 0.140 170)",
+        "tonalRamp": [
+          "#000f09",
+          "#012c21",
+          "#014c3b",
+          "#076e57",
+          "#079677",
+          "#07c099",
+          "#52e8be",
+          "#beffe8"
+        ],
+        "derivation": "themeVars: led lifted toward white until >= 4.5:1 on #060708 and >= 3:1 on --gap"
+      },
+      "glow-dim": {
+        "role": "secondary",
+        "displayName": "Unlit VFD Cell",
+        "canonical": "oklch(27.7% 0.030 177)",
+        "tonalRamp": [
+          "#000f0b",
+          "#132924",
+          "#2e4540",
+          "#4c635d",
+          "#6e8680",
+          "#92aba4",
+          "#b7d1ca",
+          "#dbf5ee"
+        ],
+        "derivation": "themeVars: led lifted toward white until >= 4.5:1 on #060708 and >= 3:1 on --gap"
+      },
+      "glow-soft": {
+        "role": "secondary",
+        "displayName": "VFD Halo",
+        "canonical": "oklch(57.9% 0.088 171)",
+        "tonalRamp": [
+          "#000f0a",
+          "#012c21",
+          "#004c3b",
+          "#126d58",
+          "#40917a",
+          "#66b79e",
+          "#8ddec4",
+          "#beffe9"
+        ],
+        "derivation": "themeVars: led lifted toward white until >= 4.5:1 on #060708 and >= 3:1 on --gap"
+      },
+      "metal-krom-1": {
+        "role": "tertiary",
+        "displayName": "Chrome Highlight",
+        "canonical": "oklch(97.9% 0.003 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#232425",
+          "#3f4041",
+          "#5d5e5f",
+          "#7f8082",
+          "#a4a4a6",
+          "#c9cacc",
+          "#edeef0"
+        ]
+      },
+      "metal-krom-2": {
+        "role": "tertiary",
+        "displayName": "Brushed Aluminium",
+        "canonical": "oklch(79.5% 0.014 251)",
+        "tonalRamp": [
+          "#070c11",
+          "#1f252b",
+          "#3b4047",
+          "#585e65",
+          "#7a8188",
+          "#9fa5ad",
+          "#c4cbd3",
+          "#e8eff8"
+        ]
+      },
+      "metal-krom-3": {
+        "role": "tertiary",
+        "displayName": "Aluminium Shade",
+        "canonical": "oklch(50.0% 0.017 254)",
+        "tonalRamp": [
+          "#070c12",
+          "#1f252c",
+          "#3a4049",
+          "#575e67",
+          "#7a818a",
+          "#9ea5af",
+          "#c3cbd6",
+          "#e7effa"
+        ]
+      },
+      "metal-hitam-1": {
+        "role": "tertiary",
+        "displayName": "Black Trim Highlight",
+        "canonical": "oklch(48.4% 0.012 261)",
+        "tonalRamp": [
+          "#080b10",
+          "#21242a",
+          "#3c4046",
+          "#5a5e65",
+          "#7c8088",
+          "#a0a5ad",
+          "#c6cbd3",
+          "#eaeff7"
+        ]
+      },
+      "metal-hitam-2": {
+        "role": "tertiary",
+        "displayName": "Black Trim",
+        "canonical": "oklch(32.0% 0.010 260)",
+        "tonalRamp": [
+          "#090b0f",
+          "#212429",
+          "#3d4045",
+          "#5a5e63",
+          "#7d8086",
+          "#a1a5ab",
+          "#c7cbd1",
+          "#ebeff5"
+        ]
+      },
+      "metal-hitam-3": {
+        "role": "tertiary",
+        "displayName": "Black Trim Shade",
+        "canonical": "oklch(20.0% 0.004 264)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3f4042",
+          "#5c5e60",
+          "#7f8083",
+          "#a3a4a7",
+          "#c9cacd",
+          "#edeef1"
+        ]
+      },
+      "vfd-glass": {
+        "role": "neutral",
+        "displayName": "Smoked VFD Glass",
+        "canonical": "oklch(12.8% 0.003 245)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3e4041",
+          "#5c5e5f",
+          "#7e8082",
+          "#a3a5a7",
+          "#c9cbcd",
+          "#edeff1"
+        ]
+      },
+      "radio-body": {
+        "role": "neutral",
+        "displayName": "Head-Unit Fascia",
+        "canonical": "oklch(22.7% 0.006 271)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7f8084",
+          "#a3a4a8",
+          "#c9cace",
+          "#edeef3"
+        ]
+      },
+      "wall": {
+        "role": "neutral",
+        "displayName": "Pegboard Brown",
+        "canonical": "oklch(36.6% 0.035 64)",
+        "tonalRamp": [
+          "#150800",
+          "#302011",
+          "#4d3c2c",
+          "#6c5a49",
+          "#907c6b",
+          "#b5a18e",
+          "#dbc6b3",
+          "#ffead8"
+        ]
+      },
+      "wall-hole": {
+        "role": "neutral",
+        "displayName": "Pegboard Hole",
+        "canonical": "oklch(19.9% 0.019 62)",
+        "tonalRamp": [
+          "#110904",
+          "#2b221b",
+          "#473e36",
+          "#665c53",
+          "#897e75",
+          "#ada299",
+          "#d4c8be",
+          "#f8ece2"
+        ]
+      },
+      "wall-malam": {
+        "role": "neutral",
+        "displayName": "Night Corrugated Steel",
+        "canonical": "oklch(25.7% 0.026 255)",
+        "tonalRamp": [
+          "#050b16",
+          "#1c2531",
+          "#37414e",
+          "#545f6d",
+          "#768190",
+          "#9aa6b5",
+          "#c0ccdc",
+          "#e5f0fe"
+        ]
+      },
+      "lamp-light": {
+        "role": "neutral",
+        "displayName": "Work-Lamp Warm",
+        "canonical": "oklch(93.4% 0.065 82)",
+        "tonalRamp": [
+          "#120a00",
+          "#312100",
+          "#513c10",
+          "#705a30",
+          "#947d52",
+          "#b9a175",
+          "#e0c79a",
+          "#feeccb"
+        ]
+      },
+      "lamp-malam": {
+        "role": "neutral",
+        "displayName": "Moonlight",
+        "canonical": "oklch(87.1% 0.064 259)",
+        "tonalRamp": [
+          "#000924",
+          "#102342",
+          "#2b4061",
+          "#485e82",
+          "#6a81a7",
+          "#8da6cd",
+          "#b2ccf5",
+          "#e5efff"
+        ]
+      },
+      "floor": {
+        "role": "neutral",
+        "displayName": "Concrete Floor",
+        "canonical": "oklch(34.8% 0.005 91)",
+        "tonalRamp": [
+          "#0c0b09",
+          "#252421",
+          "#41403d",
+          "#5f5d5a",
+          "#81807d",
+          "#a6a4a1",
+          "#cccac7",
+          "#f0eeea"
+        ]
+      },
+      "tool-silhouette": {
+        "role": "neutral",
+        "displayName": "Tool Silhouette",
+        "canonical": "oklch(21.3% 0.021 62)",
+        "tonalRamp": [
+          "#110904",
+          "#2b221a",
+          "#483e35",
+          "#665b52",
+          "#8a7e74",
+          "#aea298",
+          "#d5c8bd",
+          "#f9ece1"
+        ]
+      },
+      "peg": {
+        "role": "neutral",
+        "displayName": "Steel Peg",
+        "canonical": "oklch(76.6% 0.019 81)",
+        "tonalRamp": [
+          "#0f0a04",
+          "#29231a",
+          "#453f35",
+          "#635d52",
+          "#867f74",
+          "#aba498",
+          "#d1cabd",
+          "#f5eee1"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Label Card",
+        "canonical": "oklch(96.9% 0.007 106)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242421",
+          "#40403c",
+          "#5e5e5a",
+          "#80807c",
+          "#a5a5a0",
+          "#cbcbc6",
+          "#efefea"
+        ]
+      },
+      "card-ink": {
+        "role": "neutral",
+        "displayName": "Card Ink",
+        "canonical": "oklch(24.4% 0.006 271)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7f8084",
+          "#a3a4a8",
+          "#c9cace",
+          "#edeef2"
+        ]
+      },
+      "card-ink-soft": {
+        "role": "neutral",
+        "displayName": "Card Glyph Ink",
+        "canonical": "oklch(42.0% 0.009 268)",
+        "tonalRamp": [
+          "#0a0b0f",
+          "#222428",
+          "#3e4044",
+          "#5b5d63",
+          "#7e8086",
+          "#a2a4aa",
+          "#c8cad0",
+          "#eceef4"
+        ]
+      },
+      "rubber": {
+        "role": "neutral",
+        "displayName": "Rubber Key",
+        "canonical": "oklch(25.6% 0.006 271)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7f8084",
+          "#a3a4a8",
+          "#c9cace",
+          "#edeef2"
+        ]
+      },
+      "rubber-hi": {
+        "role": "neutral",
+        "displayName": "Rubber Key Crown",
+        "canonical": "oklch(35.6% 0.007 264)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#222428",
+          "#3e4044",
+          "#5b5e62",
+          "#7e8085",
+          "#a2a5a9",
+          "#c8cacf",
+          "#eceef4"
+        ]
+      },
+      "preset-ink": {
+        "role": "neutral",
+        "displayName": "Key Glyph",
+        "canonical": "oklch(88.8% 0.003 264)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232425",
+          "#3f4041",
+          "#5d5e5f",
+          "#7f8082",
+          "#a4a4a6",
+          "#c9cacc",
+          "#edeef0"
+        ]
+      },
+      "preset-number": {
+        "role": "neutral",
+        "displayName": "Engraved Number",
+        "canonical": "oklch(72.8% 0.009 264)",
+        "tonalRamp": [
+          "#090b0f",
+          "#222429",
+          "#3d4045",
+          "#5b5e63",
+          "#7d8086",
+          "#a2a5ab",
+          "#c7cbd1",
+          "#ebeef5"
+        ]
+      },
+      "dymo-tape": {
+        "role": "neutral",
+        "displayName": "Dymo Tape",
+        "canonical": "oklch(18.6% 0.003 247)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232425",
+          "#3f4041",
+          "#5c5e5f",
+          "#7f8082",
+          "#a3a5a6",
+          "#c9cbcc",
+          "#edeff0"
+        ]
+      },
+      "dymo-ink": {
+        "role": "neutral",
+        "displayName": "Dymo Emboss",
+        "canonical": "oklch(96.0% 0.004 106)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242422",
+          "#40403d",
+          "#5e5e5b",
+          "#80807e",
+          "#a5a5a2",
+          "#cbcbc8",
+          "#efefec"
+        ]
+      },
+      "masking-tape": {
+        "role": "neutral",
+        "displayName": "Masking Tape",
+        "canonical": "oklch(89.4% 0.052 92)",
+        "tonalRamp": [
+          "#100b00",
+          "#2d2301",
+          "#493f1e",
+          "#685d3b",
+          "#8b805d",
+          "#b0a480",
+          "#d6caa5",
+          "#faeec8"
+        ]
+      },
+      "marker-ink": {
+        "role": "neutral",
+        "displayName": "Marker Ink",
+        "canonical": "oklch(23.2% 0.004 286)",
+        "tonalRamp": [
+          "#0b0b0d",
+          "#242426",
+          "#3f3f42",
+          "#5d5d60",
+          "#808082",
+          "#a4a4a7",
+          "#cacacd",
+          "#eeeef1"
+        ]
+      },
+      "sticker-vinyl": {
+        "role": "neutral",
+        "displayName": "Vinyl Sticker",
+        "canonical": "oklch(98.7% 0.004 106)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242422",
+          "#40403d",
+          "#5e5e5b",
+          "#80807e",
+          "#a5a5a2",
+          "#cbcbc8",
+          "#efefec"
+        ]
+      },
+      "bench-ground": {
+        "role": "neutral",
+        "displayName": "Bench Pegboard",
+        "canonical": "oklch(23.3% 0.007 248)",
+        "tonalRamp": [
+          "#090b0e",
+          "#212427",
+          "#3d4043",
+          "#5a5e62",
+          "#7d8184",
+          "#a1a5a9",
+          "#c7cbcf",
+          "#ebeff3"
+        ]
+      },
+      "bench-hole": {
+        "role": "neutral",
+        "displayName": "Bench Peg Hole",
+        "canonical": "oklch(15.4% 0.005 264)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3e4042",
+          "#5c5e60",
+          "#7f8083",
+          "#a3a4a7",
+          "#c9cacd",
+          "#edeef2"
+        ]
+      },
+      "bench-strip": {
+        "role": "neutral",
+        "displayName": "Anodized Rail",
+        "canonical": "oklch(19.9% 0.007 258)",
+        "tonalRamp": [
+          "#090b0e",
+          "#222427",
+          "#3e4043",
+          "#5b5e61",
+          "#7e8084",
+          "#a2a5a9",
+          "#c8cbcf",
+          "#eceff3"
+        ]
+      },
+      "bench-plate-hi": {
+        "role": "neutral",
+        "displayName": "Steel Plate Lip",
+        "canonical": "oklch(87.7% 0.009 247)",
+        "tonalRamp": [
+          "#080c0f",
+          "#212428",
+          "#3c4044",
+          "#5a5e62",
+          "#7c8185",
+          "#a0a5aa",
+          "#c6cbd0",
+          "#eaeff4"
+        ]
+      },
+      "bench-plate": {
+        "role": "neutral",
+        "displayName": "Brushed Steel Plate",
+        "canonical": "oklch(82.3% 0.012 247)",
+        "tonalRamp": [
+          "#070c10",
+          "#1f252a",
+          "#3b4046",
+          "#585e64",
+          "#7b8187",
+          "#9fa5ac",
+          "#c4cbd2",
+          "#e8eff7"
+        ]
+      },
+      "bench-plate-lo": {
+        "role": "neutral",
+        "displayName": "Steel Plate Fold",
+        "canonical": "oklch(75.7% 0.015 248)",
+        "tonalRamp": [
+          "#070c11",
+          "#1f252b",
+          "#3a4147",
+          "#575f66",
+          "#7a8189",
+          "#9ea6ad",
+          "#c3ccd4",
+          "#e7f0f8"
+        ]
+      },
+      "bench-edge": {
+        "role": "neutral",
+        "displayName": "Plate Edge",
+        "canonical": "oklch(50.0% 0.017 254)",
+        "tonalRamp": [
+          "#070c12",
+          "#1f252c",
+          "#3a4049",
+          "#575e67",
+          "#7a818a",
+          "#9ea5af",
+          "#c3cbd6",
+          "#e7effa"
+        ]
+      },
+      "bench-ink": {
+        "role": "neutral",
+        "displayName": "Bench Ink",
+        "canonical": "oklch(20.3% 0.008 248)",
+        "tonalRamp": [
+          "#090b0e",
+          "#212428",
+          "#3d4044",
+          "#5a5e62",
+          "#7d8185",
+          "#a1a5a9",
+          "#c7cbcf",
+          "#ebeff3"
+        ]
+      },
+      "bench-ink-soft": {
+        "role": "neutral",
+        "displayName": "Bench Hint Ink",
+        "canonical": "oklch(33.0% 0.013 248)",
+        "tonalRamp": [
+          "#070c11",
+          "#1f252a",
+          "#3a4047",
+          "#585e65",
+          "#7a8188",
+          "#9ea5ad",
+          "#c4cbd3",
+          "#e8eff7"
+        ]
+      },
+      "bench-card": {
+        "role": "neutral",
+        "displayName": "Bench Label Card",
+        "canonical": "oklch(98.4% 0.007 97)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403c",
+          "#5e5e59",
+          "#81807c",
+          "#a6a5a0",
+          "#cbcbc6",
+          "#efeeea"
+        ]
+      },
+      "bench-rubber-hi": {
+        "role": "neutral",
+        "displayName": "Bench Key Crown",
+        "canonical": "oklch(36.9% 0.012 252)",
+        "tonalRamp": [
+          "#080c10",
+          "#20242a",
+          "#3b4046",
+          "#595e65",
+          "#7b8188",
+          "#9fa5ac",
+          "#c5cbd3",
+          "#e9eff7"
+        ]
+      },
+      "bench-rubber": {
+        "role": "neutral",
+        "displayName": "Bench Rubber Key",
+        "canonical": "oklch(29.9% 0.011 254)",
+        "tonalRamp": [
+          "#080b10",
+          "#212429",
+          "#3c4045",
+          "#5a5e64",
+          "#7c8187",
+          "#a0a5ab",
+          "#c6cbd1",
+          "#eaeff6"
+        ]
+      },
+      "bench-rubber-lo": {
+        "role": "neutral",
+        "displayName": "Bench Key Skirt",
+        "canonical": "oklch(18.6% 0.007 258)",
+        "tonalRamp": [
+          "#090b0e",
+          "#222427",
+          "#3d4043",
+          "#5b5e62",
+          "#7e8084",
+          "#a2a5a9",
+          "#c8cbcf",
+          "#eceff3"
+        ]
+      },
+      "bench-key-ink": {
+        "role": "neutral",
+        "displayName": "Bench Key Ink",
+        "canonical": "oklch(96.3% 0.003 247)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3e4041",
+          "#5c5e5f",
+          "#7f8082",
+          "#a3a5a7",
+          "#c9cbcd",
+          "#edeff1"
+        ]
+      },
+      "bench-tape": {
+        "role": "neutral",
+        "displayName": "Bench Dymo Tape",
+        "canonical": "oklch(21.3% 0.007 258)",
+        "tonalRamp": [
+          "#090b0e",
+          "#222427",
+          "#3e4043",
+          "#5b5e61",
+          "#7e8084",
+          "#a2a5a9",
+          "#c8cbcf",
+          "#eceff3"
+        ]
+      },
+      "bench-tape-ink": {
+        "role": "neutral",
+        "displayName": "Bench Dymo Emboss",
+        "canonical": "oklch(96.3% 0.005 106)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5a",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ]
+      },
+      "bench-led": {
+        "role": "secondary",
+        "displayName": "Saved LED Green",
+        "canonical": "oklch(79.3% 0.180 153)",
+        "tonalRamp": [
+          "#001005",
+          "#012d15",
+          "#024d28",
+          "#02703c",
+          "#059954",
+          "#08c46e",
+          "#52ec93",
+          "#c6ffd7"
+        ]
+      },
+      "bench-led-off": {
+        "role": "neutral",
+        "displayName": "Unlit LED",
+        "canonical": "oklch(37.6% 0.013 248)",
+        "tonalRamp": [
+          "#070c10",
+          "#1f252a",
+          "#3a4046",
+          "#585e65",
+          "#7a8188",
+          "#9ea5ad",
+          "#c4cbd3",
+          "#e8eff7"
+        ]
+      },
+      "bench-amber": {
+        "role": "secondary",
+        "displayName": "Unsaved Amber",
+        "canonical": "oklch(82.4% 0.149 73)",
+        "tonalRamp": [
+          "#130900",
+          "#341f00",
+          "#583800",
+          "#7f5304",
+          "#ad7204",
+          "#dc9415",
+          "#febc60",
+          "#ffebd3"
+        ]
+      },
+      "bench-danger": {
+        "role": "secondary",
+        "displayName": "Danger on Steel",
+        "canonical": "oklch(42.0% 0.147 28)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0101",
+          "#7b0506",
+          "#a03229",
+          "#c9574b",
+          "#f37d6e",
+          "#ffb5aa",
+          "#fee9e6"
+        ]
+      },
+      "bench-danger-hot": {
+        "role": "secondary",
+        "displayName": "Danger on Rubber",
+        "canonical": "oklch(73.2% 0.164 27)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0003",
+          "#7c0108",
+          "#a72724",
+          "#d05047",
+          "#fb766a",
+          "#feb5ac",
+          "#ffe9e6"
+        ]
+      },
+      "bench-vfd": {
+        "role": "neutral",
+        "displayName": "Bench VFD Glass",
+        "canonical": "oklch(14.8% 0.004 228)",
+        "tonalRamp": [
+          "#090b0c",
+          "#222426",
+          "#3e4041",
+          "#5b5e5f",
+          "#7e8182",
+          "#a2a5a6",
+          "#c8cbcc",
+          "#eceff1"
+        ]
+      },
+      "bench-vfd-glow": {
+        "role": "secondary",
+        "displayName": "Bench VFD Glow",
+        "canonical": "oklch(87.1% 0.140 170)",
+        "tonalRamp": [
+          "#000f09",
+          "#012c21",
+          "#014c3b",
+          "#076e57",
+          "#079677",
+          "#07c099",
+          "#52e8be",
+          "#beffe8"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Owner's name under the cone only." },
-      "headline": { "displayName": "Headline", "purpose": "Admin panel headings; login title 1.375rem, top-bar title 1.125rem." },
-      "title": { "displayName": "Key Legend", "purpose": "Preset-key labels." },
-      "body": { "displayName": "Body", "purpose": "Bio, soft ink, max 34ch." },
-      "label": { "displayName": "Label", "purpose": "Admin field labels, legends, buttons, switches, status." },
-      "label-sm": { "displayName": "Label Small", "purpose": "Hints, counters, readouts, errors (600)." },
-      "alternates": { "displayName": "Alternate faces", "purpose": "Barlow (400/600/700) and Bricolage Grotesque, faceplate only, lazy-loaded, chosen by admin." }
+      "display": {
+        "displayName": "Dymo Name",
+        "purpose": "Owner name on embossed Dymo tape, uppercase, one strip per line."
+      },
+      "vfd": {
+        "displayName": "VFD Line",
+        "purpose": "Main display line on smoked glass: owner name or the tuned link."
+      },
+      "vfd-small": {
+        "displayName": "VFD Slot and Clock",
+        "purpose": "Channel slot (CH01, P1) and clock on the display top row."
+      },
+      "title": {
+        "displayName": "Lit Drawer Label",
+        "purpose": "Label of the primary (lit) drawer."
+      },
+      "body": {
+        "displayName": "Drawer Label",
+        "purpose": "Link labels on white label cards."
+      },
+      "tape": {
+        "displayName": "Marker on Masking Tape",
+        "purpose": "Bio only, max 32ch."
+      },
+      "label": {
+        "displayName": "Engraved Number",
+        "purpose": "Preset key numerals 1-6."
+      },
+      "bench-headline": {
+        "displayName": "Bench Dymo Tape",
+        "purpose": "Admin section headings; the only uppercase on the bench."
+      },
+      "bench-title": {
+        "displayName": "Bench Title",
+        "purpose": "Editor title on the top rail."
+      },
+      "bench-label": {
+        "displayName": "Bench Label",
+        "purpose": "Field labels, legends, keys, toggles."
+      },
+      "bench-body": {
+        "displayName": "Bench Body",
+        "purpose": "Inputs and muted copy; 16px in inputs."
+      },
+      "bench-hint": {
+        "displayName": "Bench Hint",
+        "purpose": "Counts and hints, tabular numerals."
+      }
+    },
+    "presets": {
+      "merah": {
+        "label": "Merah bengkel",
+        "base": "#b0281f",
+        "led": "#5ef2c8",
+        "colorScheme": "dark",
+        "paint": "#b0281f",
+        "paint-hi": "#c0534c",
+        "paint-lo": "#6d1913",
+        "paint-edge": "#430f0c",
+        "gap": "#200706",
+        "glow": "#5ef2c8",
+        "glow-dim": "#172d28",
+        "glow-soft": "#398b74"
+      },
+      "hitam": {
+        "label": "Hitam doff",
+        "base": "#26282c",
+        "led": "#ffb547",
+        "colorScheme": "dark",
+        "paint": "#26282c",
+        "paint-hi": "#515356",
+        "paint-lo": "#18191b",
+        "paint-edge": "#0e0f11",
+        "gap": "#070708",
+        "glow": "#ffb547",
+        "glow-dim": "#2d2516",
+        "glow-soft": "#91692d"
+      },
+      "biru": {
+        "label": "Biru baja",
+        "base": "#2c5a86",
+        "led": "#8fe3ff",
+        "colorScheme": "dark",
+        "paint": "#2c5a86",
+        "paint-hi": "#567b9e",
+        "paint-lo": "#1b3853",
+        "paint-edge": "#112233",
+        "gap": "#081018",
+        "glow": "#8fe3ff",
+        "glow-dim": "#1d2b30",
+        "glow-soft": "#548393"
+      },
+      "hijau": {
+        "label": "Hijau army",
+        "base": "#4f5b3c",
+        "led": "#a6ff7a",
+        "colorScheme": "dark",
+        "paint": "#4f5b3c",
+        "paint-hi": "#727c63",
+        "paint-lo": "#313825",
+        "paint-edge": "#1e2317",
+        "gap": "#0e100b",
+        "glow": "#a6ff7a",
+        "glow-dim": "#212f1d",
+        "glow-soft": "#609249"
+      },
+      "kuning": {
+        "label": "Kuning safety",
+        "base": "#d9a21b",
+        "led": "#ff8a3d",
+        "colorScheme": "light",
+        "paint": "#d9a21b",
+        "paint-hi": "#e6c36b",
+        "paint-lo": "#876411",
+        "paint-edge": "#523e0a",
+        "gap": "#271d05",
+        "glow": "#ff8a3d",
+        "glow-dim": "#2d1f15",
+        "glow-soft": "#915228"
+      }
+    },
+    "derivation": {
+      "source": "src/lib/site.ts themeVars(theme)",
+      "base": "admin pick; luminance < 0.012 lifted 14% toward white; light = luminance > 0.18",
+      "paint": "base",
+      "paint-hi": "mix(base, white, light ? 0.35 : 0.2)",
+      "paint-lo": "mix(base, black, 0.38)",
+      "paint-edge": "mix(base, black, 0.62)",
+      "gap": "mix(base, black, 0.82)",
+      "glow": "led, mixed toward white in 0.08 steps until contrast >= 4.5 on #060708 and >= 3 on gap",
+      "glow-dim": "mix(glow, #0b0d0e, 0.86)",
+      "glow-soft": "mix(glow, #0b0d0e, 0.45)",
+      "metal": "trim krom: #f7f8fa / #b6bdc5 / #5d646d; trim hitam: #5b5f66 / #303338 / #151618",
+      "radius": "theme.radius px (0-28, default 10); drawer = radius * 0.35",
+      "glowChoices": {
+        "Toska": "#5ef2c8",
+        "Jingga": "#ffb547",
+        "Biru es": "#8fe3ff",
+        "Hijau": "#a6ff7a",
+        "Oranye": "#ff8a3d",
+        "Merah": "#ff5a4e",
+        "Putih": "#f2f4f7"
+      }
+    },
+    "scenes": {
+      "garasi": {
+        "wall": "#4c3b2b",
+        "wallHole": "#1c140d",
+        "light": "#ffe6b8",
+        "floor": "#3b3a37",
+        "canvas": "#1a1612",
+        "themeColor": "#413225",
+        "wallPattern": "pegboard, 26px hole grid, tool silhouettes"
+      },
+      "malam": {
+        "wall": "#1b2430",
+        "wallHole": "#0a0f15",
+        "light": "#bcd6ff",
+        "floor": "#2a2d31",
+        "canvas": "#0d1117",
+        "themeColor": "#171f29",
+        "wallPattern": "corrugated steel, slanted moonlight pane, no tools"
+      },
+      "polos": {
+        "wall": "var(--paint-edge)",
+        "wallHole": "var(--gap)",
+        "light": "#ffffff",
+        "floor": "var(--gap)",
+        "canvas": "var(--gap)",
+        "themeColor": "--paint-edge",
+        "wallPattern": "noise only, no tools"
+      }
+    },
+    "fonts": [
+      {
+        "name": "Barlow Condensed",
+        "variable": "--font-barlow",
+        "weights": [
+          500,
+          600,
+          700
+        ],
+        "role": "default page face; all bench labels, keys and Dymo tapes"
+      },
+      {
+        "name": "Doto",
+        "variable": "--font-doto",
+        "weights": [
+          700,
+          900
+        ],
+        "role": "VFD dot matrix on glass only"
+      },
+      {
+        "name": "Permanent Marker",
+        "variable": "--font-marker",
+        "weights": [
+          400
+        ],
+        "role": "marker on masking tape only"
+      },
+      {
+        "name": "Big Shoulders",
+        "variable": "--font-shoulders",
+        "preload": false,
+        "role": "alternate page face (theme.font = shoulders)"
+      },
+      {
+        "name": "Archivo",
+        "variable": "--font-archivo",
+        "preload": false,
+        "role": "bench body face; alternate page face (theme.font = archivo)"
+      }
+    ],
+    "contrast": {
+      "card-ink on card": "14.9:1",
+      "card glyph on card": "7.7:1",
+      "marker ink on masking tape": "12.3:1",
+      "Dymo emboss on Dymo tape": "12.5:1",
+      "VFD glow on glass, 5 presets": "8.6-16.5:1",
+      "engraved preset number on key crown": "4.58:1",
+      "bench-ink on bench-plate-lo": "8.29:1",
+      "bench-ink-soft on bench-plate-lo": "5.63:1",
+      "bench-key-ink on bench-rubber": "12.28:1",
+      "bench-tape-ink on bench-tape": "15.83:1",
+      "bench-danger on bench-plate": "5.29:1",
+      "bench-danger-hot on bench-rubber": "5.37:1",
+      "bench-vfd-glow on bench-vfd": "14.10:1",
+      "bench-amber on bench-vfd": "11.23:1"
     },
     "shadows": [
-      { "name": "chassis-lift", "value": "-14px -14px 32px var(--hi), 18px 22px 44px var(--lo), var(--bevel)", "purpose": "The unit only." },
-      { "name": "raise", "value": "-6px -6px 14px var(--hi), 7px 8px 16px var(--lo)", "purpose": "Faceplate keys and cone." },
-      { "name": "raise-admin", "value": "-4px -4px 10px var(--hi), 5px 6px 12px var(--lo)", "purpose": "Admin panels, buttons, swatch keys." },
-      { "name": "tact-lift", "value": "-3px -3px 7px var(--hi), 4px 4px 9px var(--lo)", "purpose": "Round social tact switches." },
-      { "name": "press", "value": "inset 3px 3px 6px var(--lo), inset -3px -3px 6px var(--hi)", "purpose": "Grille, cone surround, pressed keys, empty state." },
-      { "name": "press-admin", "value": "inset 2px 2px 5px var(--lo), inset -2px -2px 5px var(--hi)", "purpose": "Inputs, wells, switch tracks, segmented tray." },
-      { "name": "bevel", "value": "inset 0 1px 0 color-mix(in srgb, var(--hi) 70%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--lo) 45%, transparent)", "purpose": "1px molded edge on every raised part." },
-      { "name": "rim", "value": "0 0 0 1px color-mix(in srgb, var(--ink) calc(max(0, 0.5 - var(--depth)) * 40%), transparent)", "purpose": "Hairline that fades in below depth 0.5." },
-      { "name": "led-glow", "value": "0 0 0 1px rgb(0 0 0 / 0.12), 0 0 6px var(--led), 0 0 14px color-mix(in srgb, var(--led) 55%, transparent)", "purpose": "Lit indicator." },
-      { "name": "led-cell", "value": "inset 0 1px 1.5px rgb(0 0 0 / 0.35)", "purpose": "Unlit indicator cell." }
+      {
+        "name": "chest-cast",
+        "value": "drop-shadow(0 30px 30px rgb(0 0 0 / 0.55))",
+        "purpose": "The whole tool chest on the wall (filter)."
+      },
+      {
+        "name": "radio-body",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.6), inset 0 0 0 1px #0c0d0e, 0 2px 0 #0a0a0b, 0 18px 24px -10px rgb(0 0 0 / 0.75)",
+        "purpose": "Head-unit fascia."
+      },
+      {
+        "name": "drawer-gap",
+        "value": "inset 0 2px 4px rgb(0 0 0 / 0.8)",
+        "purpose": "Recess the drawers sit in."
+      },
+      {
+        "name": "drawer-rest",
+        "value": "inset 0 0 0 1px color-mix(in srgb, var(--paint-edge) 70%, transparent), 0 1px 0 rgb(0 0 0 / 0.5)",
+        "purpose": "Drawer front at rest."
+      },
+      {
+        "name": "drawer-hover",
+        "value": "inset 0 0 0 1px color-mix(in srgb, var(--paint-edge) 70%, transparent), 0 8px 10px -4px rgb(0 0 0 / 0.65)",
+        "purpose": "Drawer slid out a hair (fine pointer hover)."
+      },
+      {
+        "name": "drawer-pulled",
+        "value": "inset 0 0 0 1px color-mix(in srgb, var(--paint-edge) 70%, transparent), 0 14px 14px -6px rgb(0 0 0 / 0.75)",
+        "purpose": "Drawer pulled (:active)."
+      },
+      {
+        "name": "card-holder",
+        "value": "0 0 0 2px var(--metal-2), 0 0 0 3px var(--metal-3), inset 0 1px 2px rgb(0 0 0 / 0.18), 0 3px 3px rgb(0 0 0 / 0.3)",
+        "purpose": "Chrome holder around a label card."
+      },
+      {
+        "name": "rubber-key",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.14), 0 3px 0 #0b0b0c, 0 4px 6px rgb(0 0 0 / 0.5)",
+        "purpose": "Preset key with its 3px skirt."
+      },
+      {
+        "name": "rubber-key-pressed",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 #0b0b0c, 0 1px 2px rgb(0 0 0 / 0.5)",
+        "purpose": "Preset key pressed: skirt collapsed."
+      },
+      {
+        "name": "vfd-well",
+        "value": "inset 0 2px 6px rgb(0 0 0 / 0.9), inset 0 0 0 1px #000, 0 1px 0 rgb(255 255 255 / 0.08)",
+        "purpose": "Smoked glass display well."
+      },
+      {
+        "name": "bench-plate",
+        "value": "inset 0 2px 0 rgb(255 255 255 / 0.55), inset 0 -3px 0 var(--b-edge), inset 2px 0 0 rgb(255 255 255 / 0.25), inset -2px 0 0 rgb(0 0 0 / 0.15), 0 10px 22px -10px rgb(0 0 0 / 0.85), 0 2px 3px rgb(0 0 0 / 0.5)",
+        "purpose": "Folded steel plate on the bench pegboard."
+      },
+      {
+        "name": "bench-key",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.14), 0 3px 0 var(--b-rubber-lo), 0 4px 8px rgb(0 0 0 / 0.35)",
+        "purpose": "Bench rubber key with skirt."
+      },
+      {
+        "name": "bench-key-pressed",
+        "value": "inset 0 2px 3px rgb(0 0 0 / 0.5), 0 1px 0 var(--b-rubber-lo), 0 1px 2px rgb(0 0 0 / 0.3)",
+        "purpose": "Bench key pressed or latched."
+      },
+      {
+        "name": "bench-rail",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.07), 0 1px 0 #000, 0 6px 16px -8px rgb(0 0 0 / 0.7)",
+        "purpose": "Top anodized rail."
+      }
     ],
     "motion": [
-      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "All press, slide, and hover transitions." },
-      { "name": "press-key", "value": "90ms", "purpose": "Faceplate key/tact travel and shadow flip." },
-      { "name": "press-admin", "value": "120ms", "purpose": "Admin buttons, segmented, swatches." },
-      { "name": "switch-slide", "value": "140ms", "purpose": "Switch cap travel (pointer only; keyboard snaps)." },
-      { "name": "boot-led", "value": "380ms, delay 180ms + i*70ms", "purpose": "Power-on sweep per key LED; disabled under reduced motion." },
-      { "name": "boot-power", "value": "500ms, delay 260ms + n*70ms", "purpose": "Power lamp flicker-and-settle." }
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Default for presses, hovers, drop-in and VFD tune-in."
+      },
+      {
+        "name": "ease-drawer",
+        "value": "cubic-bezier(0.32, 0.72, 0, 1)",
+        "purpose": "Drawers settling home during boot."
+      },
+      {
+        "name": "drawer-hover",
+        "value": "180ms ease-out; translateY(-1px) scale(1.012)",
+        "purpose": "Drawer slides out a hair (fine pointers only)."
+      },
+      {
+        "name": "drawer-press",
+        "value": "110ms; translateY(-2px) scale(1.03)",
+        "purpose": "Drawer pulled toward you."
+      },
+      {
+        "name": "preset-press",
+        "value": "100ms ease-out; translateY(3px)",
+        "purpose": "Preset key travels down, LED lights."
+      },
+      {
+        "name": "bench-press",
+        "value": "120ms ease-out (--press-ms); translateY(2px)",
+        "purpose": "Bench keys, segmented keys and chips."
+      },
+      {
+        "name": "toggle-flip",
+        "value": "140ms ease-out; lever rotate 180deg -> 0deg",
+        "purpose": "Truck toggle (pointer only; keyboard snaps)."
+      },
+      {
+        "name": "boot-flicker",
+        "value": "900ms steps(1, end), once",
+        "purpose": "Lamp switches on with one flicker."
+      },
+      {
+        "name": "boot-drop-in",
+        "value": "520ms ease-out, 120ms delay; translateY(-14px) + fade",
+        "purpose": "Radio set onto the chest."
+      },
+      {
+        "name": "boot-warm",
+        "value": "900ms, 350ms delay; brightness 2.2 bloom",
+        "purpose": "VFD warms up."
+      },
+      {
+        "name": "boot-settle",
+        "value": "560ms ease-drawer, delay 380ms + min(i, 8) * 55ms; from translateY(-5px) scale(1.035)",
+        "purpose": "Drawers settle home one by one."
+      },
+      {
+        "name": "lamp-sway",
+        "value": "7s ease-in-out, once; rotate -2.4deg decaying to 0",
+        "purpose": "Lamp just switched on, comes to rest."
+      },
+      {
+        "name": "vfd-tune-in",
+        "value": "260ms ease-out; from opacity 0.2, blur 1.5px",
+        "purpose": "New text on the display."
+      },
+      {
+        "name": "vfd-marquee",
+        "value": "linear, max(4s, overflow / 22) per pass, 1s delay, 2 alternate",
+        "purpose": "Long text runs across once and back."
+      },
+      {
+        "name": "vfd-meter-hot",
+        "value": "450ms ease-in-out alternate, staggered -170ms per cell, only while tuned",
+        "purpose": "Meter jumps while a link is named."
+      },
+      {
+        "name": "vfd-revert",
+        "value": "900ms timeout",
+        "purpose": "Display returns to the owner's name after pointer/focus leaves."
+      },
+      {
+        "name": "scroll-drift",
+        "value": "animation-timeline: scroll(root block); wall translateY(-5%), lamp translateY(-14%), volume knob rotate 280deg",
+        "purpose": "Planes drift at their own rates; only under @supports and no-preference, never when contained."
+      },
+      {
+        "name": "save-lamp-breathe",
+        "value": "1.6s ease-in-out infinite alternate, only while unsaved",
+        "purpose": "Unsaved-changes signal on the save key."
+      },
+      {
+        "name": "status-saved",
+        "value": "600ms ease-out, once per save",
+        "purpose": "VFD status strip flashes on a fresh save."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all keyframes inside prefers-reduced-motion: no-preference; reduce -> drawer/preset transitions 0ms, bench transitions/animations/travel removed",
+        "purpose": "State stays visible through shadow and LEDs."
+      }
     ],
     "breakpoints": [
-      { "name": "editor-split", "value": "900px" }
+      {
+        "name": "tiny",
+        "value": "max-width: 359px",
+        "purpose": "Preset keys wrap to 2 rows of 3."
+      },
+      {
+        "name": "phone",
+        "value": "max-width: 420px",
+        "purpose": "Radio tightens, sticker 66px, cards full width."
+      },
+      {
+        "name": "bench-single",
+        "value": "max-width: 899px",
+        "purpose": "Bench shows one pane (Atur | Lihat)."
+      },
+      {
+        "name": "bench-split",
+        "value": "min-width: 900px",
+        "purpose": "460px controls column, pinned preview."
+      }
     ]
   },
   "components": [
     {
+      "name": "Drawer Link",
+      "kind": "custom",
+      "refersTo": "drawer",
+      "description": "A link as a tool-chest drawer: paint front, aluminium bar pull with LED, white label card in a chrome holder.",
+      "html": "<a class=\"ds-drawer\" href=\"#\"><span class=\"ds-pull\"><span class=\"ds-pull-led\"></span></span><span class=\"ds-card\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"#4b4d52\" aria-hidden=\"true\"><path d=\"M128 24a104 104 0 1 0 104 104A104.12 104.12 0 0 0 128 24Zm87.62 96h-39.83c-1.79-36.51-15.85-62.33-27.38-77.6A88.19 88.19 0 0 1 215.62 120ZM128 216c-18.74-20.26-28.86-48.6-31.29-80h62.58C156.86 167.4 146.74 195.74 128 216ZM96.71 120c2.43-31.4 12.55-59.74 31.29-80 18.74 20.26 28.86 48.6 31.29 80Z\"/></svg><span class=\"ds-label\">Website resmi</span></span></a>",
+      "css": ".ds-drawer { position: relative; display: flex; align-items: center; min-height: 82px; padding: 28px 14px 12px; border-radius: 3.5px; color: #1f2023; text-decoration: none; font-family: 'Barlow Condensed', system-ui, sans-serif; background: linear-gradient(180deg, #c0534c 0, #b0281f 3px, #b0281f calc(100% - 3px), #6d1913 100%); box-shadow: inset 0 0 0 1px rgb(67 15 12 / 0.7), 0 1px 0 rgb(0 0 0 / 0.5); transform-origin: 50% 0; transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 180ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-pull { position: absolute; top: 9px; left: 14px; right: 14px; height: 13px; border-radius: 4px; background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.1) 0 1px, transparent 1px 3px), linear-gradient(180deg, #f7f8fa 0%, #b6bdc5 48%, #5d646d 100%); box-shadow: 0 4px 4px -1px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.6); } .ds-pull-led { position: absolute; right: 14px; top: 50%; width: 6px; height: 6px; translate: 0 -50%; border-radius: 50%; background: #2a2b2d; } .ds-card { display: inline-grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; min-height: 40px; padding: 7px 14px 7px 10px; border-radius: 3px; background: linear-gradient(180deg, #ffffff, #f5f5f0); box-shadow: 0 0 0 2px #b6bdc5, 0 0 0 3px #5d646d, inset 0 1px 2px rgb(0 0 0 / 0.18), 0 3px 3px rgb(0 0 0 / 0.3); } .ds-label { font-size: 1.12rem; font-weight: 600; line-height: 1.2; letter-spacing: 0.01em; } .ds-drawer:hover { transform: translateY(-1px) scale(1.012); box-shadow: inset 0 0 0 1px rgb(67 15 12 / 0.7), 0 8px 10px -4px rgb(0 0 0 / 0.65); } .ds-drawer:hover .ds-pull-led { background: color-mix(in srgb, #5ef2c8 60%, #2a2b2d); } .ds-drawer:active { transform: translateY(-2px) scale(1.03); transition-duration: 110ms; box-shadow: inset 0 0 0 1px rgb(67 15 12 / 0.7), 0 14px 14px -6px rgb(0 0 0 / 0.75); } .ds-drawer:focus-visible { outline: 3px solid #5ef2c8; outline-offset: 3px; } .ds-drawer:focus-visible .ds-pull-led { background: #5ef2c8; box-shadow: 0 0 6px #5ef2c8; }"
+    },
+    {
       "name": "Preset Key",
-      "kind": "custom",
+      "kind": "button",
       "refersTo": "preset-key",
-      "description": "Signature link key: LED cell, glyph, label, arrow. Lit variant glows; press travels 2px and flips inward.",
-      "html": "<div class=\"ds-desk\"><a class=\"ds-key\" href=\"#\" data-lit><span class=\"ds-led\"></span><svg width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" class=\"ds-glyph\"><circle cx=\"128\" cy=\"128\" r=\"96\"/><path d=\"M32 128h192M128 32c-24 26-36 58-36 96s12 70 36 96c24-26 36-58 36-96s-12-70-36-96z\"/></svg><span class=\"ds-label\">Website resmi</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"24\" stroke-linecap=\"round\" class=\"ds-go\"><path d=\"M64 192 192 64M88 64h104v104\"/></svg></a><a class=\"ds-key\" href=\"#\"><span class=\"ds-led\"></span><svg width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" class=\"ds-glyph\"><path d=\"M128 232s72-64 72-128a72 72 0 0 0-144 0c0 64 72 128 72 128z\"/><circle cx=\"128\" cy=\"104\" r=\"24\"/></svg><span class=\"ds-label\">Lokasi kantor</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"24\" stroke-linecap=\"round\" class=\"ds-go\"><path d=\"M64 192 192 64M88 64h104v104\"/></svg></a></div>",
-      "css": ".ds-desk { display: grid; gap: 14px; padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-key { display: grid; grid-template-columns: 8px 20px 1fr 16px; align-items: center; gap: 12px; min-height: 58px; padding: 10px 18px 10px 16px; border-radius: 14px; color: #282929; text-decoration: none; background: linear-gradient(175deg, #e6e8eb, #d8dbde); box-shadow: -6px -6px 14px #f0f1f3, 7px 8px 16px #c0c2c5, inset 0 1px 0 rgba(240,241,243,.7), inset 0 -1px 0 rgba(192,194,197,.45); transition: transform 90ms cubic-bezier(0.23,1,0.32,1), box-shadow 90ms cubic-bezier(0.23,1,0.32,1); } .ds-key:active { transform: translateY(2px); box-shadow: inset 3px 3px 6px #c0c2c5, inset -3px -3px 6px #f0f1f3; } .ds-key:focus-visible { outline: 2px solid #282929; outline-offset: 4px; } .ds-label { font-size: 1rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.005em; } .ds-glyph, .ds-go { color: #565758; } .ds-go { opacity: .7; transition: transform 160ms cubic-bezier(0.23,1,0.32,1), opacity 160ms; } .ds-key:hover .ds-go { opacity: 1; transform: translate(2px,-2px); } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); transition: background-color 120ms, box-shadow 120ms; } .ds-key:hover .ds-led { background: #6dbd92; } .ds-key[data-lit] .ds-led, .ds-key:active .ds-led, .ds-key:focus-visible .ds-led { background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.85) 0 1px, transparent 2.5px), #1fb46a; box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 0 6px #1fb46a, 0 0 14px rgba(31,180,106,.55); }"
+      "description": "One of six rubber radio preset keys carrying a social link: engraved number, glyph, LED strip.",
+      "html": "<a class=\"ds-preset\" href=\"#\" aria-label=\"Instagram\"><span class=\"ds-pnum\">1</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M128 80a48 48 0 1 0 48 48 48.05 48.05 0 0 0-48-48Zm0 80a32 32 0 1 1 32-32 32 32 0 0 1-32 32Zm48-136H80a56.06 56.06 0 0 0-56 56v96a56.06 56.06 0 0 0 56 56h96a56.06 56.06 0 0 0 56-56V80a56.06 56.06 0 0 0-56-56Zm40 152a40 40 0 0 1-40 40H80a40 40 0 0 1-40-40V80a40 40 0 0 1 40-40h96a40 40 0 0 1 40 40Zm-20-104a12 12 0 1 1-12-12 12 12 0 0 1 12 12Z\"/></svg><span class=\"ds-pled\"></span></a>",
+      "css": ".ds-preset { position: relative; display: inline-grid; grid-template-columns: auto 1fr; align-items: center; justify-items: center; gap: 2px; min-width: 56px; min-height: 46px; padding: 0 6px 6px; border-radius: 6px; color: #d9dadc; text-decoration: none; font-family: 'Barlow Condensed', system-ui, sans-serif; background: linear-gradient(180deg, #3a3c40, #222326 60%, #18191b); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 3px 0 #0b0b0c, 0 4px 6px rgb(0 0 0 / 0.5); transition: transform 100ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 100ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-pnum { font-size: 0.72rem; font-weight: 700; color: #a4a7ad; align-self: start; padding-top: 5px; } .ds-pled { position: absolute; bottom: 5px; left: 50%; width: 14px; height: 3px; translate: -50% 0; border-radius: 2px; background: #3b3d42; transition: background-color 100ms, box-shadow 100ms; } .ds-preset:hover { color: #fff; } .ds-preset:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 #0b0b0c, 0 1px 2px rgb(0 0 0 / 0.5); } .ds-preset:active .ds-pled, .ds-preset:focus-visible .ds-pled { background: #5ef2c8; box-shadow: 0 0 6px #5ef2c8; } .ds-preset:focus-visible { outline: 3px solid #5ef2c8; outline-offset: 3px; }"
     },
     {
-      "name": "Tact Switch",
-      "kind": "button",
-      "refersTo": "tact-switch",
-      "description": "44px round social button; icon tints toward LED on hover, presses 1px.",
-      "html": "<div class=\"ds-tact-row\"><a class=\"ds-tact\" href=\"#\" aria-label=\"Instagram\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"><rect x=\"32\" y=\"32\" width=\"192\" height=\"192\" rx=\"48\"/><circle cx=\"128\" cy=\"128\" r=\"40\"/><circle cx=\"180\" cy=\"76\" r=\"6\" fill=\"currentColor\"/></svg></a><a class=\"ds-tact\" href=\"#\" aria-label=\"YouTube\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"><rect x=\"24\" y=\"56\" width=\"208\" height=\"144\" rx=\"32\"/><path d=\"M112 100v56l48-28z\" fill=\"currentColor\"/></svg></a></div>",
-      "css": ".ds-tact-row { display: flex; gap: 12px; padding: 24px; background: #dfe2e5; } .ds-tact { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #282929; background: linear-gradient(160deg, #e6e8eb, #d8dbde); box-shadow: -3px -3px 7px #f0f1f3, 4px 4px 9px #c0c2c5, inset 0 1px 0 rgba(240,241,243,.7), inset 0 -1px 0 rgba(192,194,197,.45); transition: transform 90ms cubic-bezier(0.23,1,0.32,1), box-shadow 90ms cubic-bezier(0.23,1,0.32,1); } .ds-tact:hover { color: #253b2f; } .ds-tact:active { transform: translateY(1px); box-shadow: inset 3px 3px 6px #c0c2c5, inset -3px -3px 6px #f0f1f3; } .ds-tact:focus-visible { outline: 2px solid #282929; outline-offset: 4px; }"
-    },
-    {
-      "name": "Primary Button",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Ink slab commit action (Simpan, Masuk) with status LED; disabled becomes an empty pressed well.",
-      "html": "<div class=\"ds-pad\"><button class=\"ds-btn-primary\"><span class=\"ds-led\"></span>Simpan</button><button class=\"ds-btn-primary\" disabled><span class=\"ds-led\"></span>Simpan</button></div>",
-      "css": ".ds-pad { display: flex; gap: 12px; padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 112px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: #282929; color: #dfe2e5; font: inherit; font-size: .9375rem; font-weight: 600; cursor: pointer; box-shadow: -4px -4px 10px #edeff1, 5px 6px 12px #c4c7ca, inset 0 1px 0 rgba(223,226,229,.25); transition: transform 120ms cubic-bezier(0.23,1,0.32,1), box-shadow 120ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-primary:hover:not(:disabled) { background: #3e3f40; } .ds-btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-btn-primary:focus-visible { outline: 2px solid #282929; outline-offset: 2px; } .ds-btn-primary:disabled { background: transparent; color: #565758; cursor: default; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #1fb46a; box-shadow: 0 0 6px #1fb46a; } .ds-btn-primary:disabled .ds-led { background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); }"
-    },
-    {
-      "name": "Button",
-      "kind": "button",
-      "refersTo": "button",
-      "description": "Raised face-gradient key for secondary admin actions; hover deepens the raise.",
-      "html": "<div class=\"ds-pad\"><button class=\"ds-btn\">+ Tambah link</button></div>",
-      "css": ".ds-pad { padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: linear-gradient(175deg, #e6e8eb, #d8dbde); color: #282929; font: inherit; font-size: .9375rem; font-weight: 600; cursor: pointer; box-shadow: -4px -4px 10px #edeff1, 5px 6px 12px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7), inset 0 -1px 0 rgba(196,199,202,.45); transition: transform 120ms cubic-bezier(0.23,1,0.32,1), box-shadow 120ms cubic-bezier(0.23,1,0.32,1); } .ds-btn:hover { box-shadow: -5px -5px 12px #edeff1, 6px 7px 14px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7), inset 0 -1px 0 rgba(196,199,202,.45); } .ds-btn:active { transform: translateY(1px); box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-btn:focus-visible { outline: 2px solid #282929; outline-offset: 2px; }"
-    },
-    {
-      "name": "Text Field",
-      "kind": "input",
-      "refersTo": "input",
-      "description": "Pressed well with label above; error adds a red inset ring and message.",
-      "html": "<div class=\"ds-pad\"><div class=\"ds-field\"><label for=\"ds-n\">Nama</label><input id=\"ds-n\" value=\"Team PPA\"></div><div class=\"ds-field\" data-invalid><label for=\"ds-u\">Link</label><input id=\"ds-u\" value=\"example\"><p class=\"ds-err\">Link harus diawali https://</p></div></div>",
-      "css": ".ds-pad { display: grid; gap: 16px; padding: 24px; background: linear-gradient(170deg, #e6e8eb, #d8dbde); font-family: Archivo, system-ui, sans-serif; color: #282929; } .ds-field { display: grid; gap: 6px; } .ds-field label { font-size: .9375rem; font-weight: 600; } .ds-field input { min-height: 44px; padding: 10px 12px; border: 0; border-radius: 12px; background: #f1f2f3; color: #282929; font: inherit; font-size: 16px; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-field input:focus-visible { outline: 2px solid #282929; outline-offset: 2px; } .ds-field[data-invalid] input { box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1, inset 0 0 0 2px #a3201b; } .ds-err { margin: 0; font-size: .875rem; font-weight: 600; color: #a3201b; }"
-    },
-    {
-      "name": "Slide Switch",
+      "name": "VFD Display",
       "kind": "custom",
-      "refersTo": "switch",
-      "description": "Native checkbox as a pressed track with a raised LED cap.",
-      "html": "<div class=\"ds-pad\"><label class=\"ds-switch\"><input type=\"checkbox\" role=\"switch\" checked><span class=\"ds-track\"><span class=\"ds-cap\"><span class=\"ds-led\"></span></span></span><span>Tampilkan</span></label></div>",
-      "css": ".ds-pad { padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; color: #282929; } .ds-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: .9375rem; font-weight: 600; cursor: pointer; } .ds-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; } .ds-track { position: relative; width: 52px; height: 28px; border-radius: 999px; background: #dfe2e5; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-cap { position: absolute; top: 3px; left: 3px; display: grid; place-items: center; width: 26px; height: 22px; border-radius: 999px; background: linear-gradient(175deg, #e6e8eb, #d8dbde); box-shadow: 1px 2px 4px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7); transition: transform 140ms cubic-bezier(0.23,1,0.32,1); } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); } .ds-switch input:checked + .ds-track .ds-cap { transform: translateX(20px); } .ds-switch input:checked + .ds-track .ds-led { background: #1fb46a; box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 0 6px #1fb46a; } .ds-switch input:focus-visible + .ds-track { outline: 2px solid #282929; outline-offset: 2px; }"
+      "refersTo": "vfd-display",
+      "description": "The head unit's smoked-glass dot-matrix display: channel slot and clock, the name or tuned link, a resting level meter.",
+      "html": "<div class=\"ds-vfd\"><div class=\"ds-vfd-face\"><div class=\"ds-vfd-top\"><span>CH03</span><span>08:42</span></div><div class=\"ds-vfd-line\">FORMULIR PENGAJUAN</div><div class=\"ds-vfd-meter\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>",
+      "css": ".ds-vfd { position: relative; width: 260px; height: 76px; border-radius: 6px; overflow: hidden; background: radial-gradient(circle, #172d28 0.85px, transparent 1.25px) 0 0 / 4px 4px, #060708; box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.9), inset 0 0 0 1px #000, 0 1px 0 rgb(255 255 255 / 0.08); } .ds-vfd::after { content: ''; position: absolute; inset: 0; background: linear-gradient(165deg, rgb(255 255 255 / 0.13) 0 28%, rgb(255 255 255 / 0.02) 29% 60%, transparent 61%); pointer-events: none; } .ds-vfd-face { height: 100%; box-sizing: border-box; display: grid; grid-template-rows: auto 1fr auto; padding: 6px 10px 7px; color: #5ef2c8; font-family: Doto, monospace; text-shadow: 0 0 4px #5ef2c8, 0 0 12px #398b74; } .ds-vfd-top { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.06em; line-height: 1; opacity: 0.85; } .ds-vfd-line { display: flex; align-items: center; overflow: hidden; white-space: nowrap; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.04em; line-height: 1; } .ds-vfd-meter { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; height: 5px; } .ds-vfd-meter i { border-radius: 1px; background: #5ef2c8; box-shadow: 0 0 4px #5ef2c8; opacity: 0.12; } .ds-vfd-meter i:nth-child(-n + 5) { opacity: 0.55; }"
     },
     {
-      "name": "Segmented Keys",
-      "kind": "nav",
-      "refersTo": "segmented",
-      "description": "Native radios in a pressed tray; the checked key rises and lights. Also the Atur | Lihat pane switch on phones.",
-      "html": "<div class=\"ds-pad\"><div class=\"ds-seg\"><label><input type=\"radio\" name=\"ds-v\" checked><span class=\"ds-led\"></span>Atur</label><label><input type=\"radio\" name=\"ds-v\"><span class=\"ds-led\"></span>Lihat</label></div></div>",
-      "css": ".ds-pad { padding: 24px; background: #dfe2e5; font-family: Archivo, system-ui, sans-serif; } .ds-seg { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #dfe2e5; box-shadow: inset 2px 2px 5px #c4c7ca, inset -2px -2px 5px #edeff1; } .ds-seg label { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 12px; font-size: .9375rem; font-weight: 600; color: #565758; cursor: pointer; transition: box-shadow 120ms cubic-bezier(0.23,1,0.32,1), color 120ms; } .ds-seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; } .ds-seg label:has(input:checked) { color: #282929; background: linear-gradient(175deg, #e6e8eb, #d8dbde); box-shadow: 2px 2px 5px #c4c7ca, -2px -2px 5px #edeff1, inset 0 1px 0 rgba(237,239,241,.7); } .ds-seg label:has(input:focus-visible) { outline: 2px solid #282929; outline-offset: 2px; } .ds-led { width: 8px; height: 8px; border-radius: 50%; background: #bbbec0; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.35); } .ds-seg input:checked ~ .ds-led { background: #1fb46a; box-shadow: 0 0 0 1px rgba(0,0,0,.12), 0 0 6px #1fb46a; }"
+      "name": "Name Plate",
+      "kind": "custom",
+      "refersTo": "dymo-name",
+      "description": "Vinyl sticker avatar, Dymo-tape name and masking-tape bio on the painted chest lid.",
+      "html": "<div class=\"ds-lid\"><div class=\"ds-sticker\"><span>TP</span></div><div class=\"ds-plate-text\"><h1 class=\"ds-dymo\"><span>Team PPA</span></h1><p class=\"ds-tape\">Contoh isi. Ganti nama, bio, dan link ini dari halaman admin.</p></div></div>",
+      "css": ".ds-lid { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 14px; max-width: 420px; padding: 30px 18px 18px; border-radius: 10px 10px 4px 4px; background: linear-gradient(180deg, #c0534c 0, #b0281f 9px, #b0281f calc(100% - 6px), #6d1913 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 0 0 1px #430f0c; font-family: 'Barlow Condensed', system-ui, sans-serif; } .ds-sticker { width: 78px; aspect-ratio: 1; box-sizing: border-box; border-radius: 50%; padding: 4px; background: #fbfbf8; rotate: -5deg; box-shadow: 0 2px 3px rgb(0 0 0 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.08); } .ds-sticker span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: #1f2023; color: #f5f5f0; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.02em; } .ds-plate-text { display: grid; gap: 10px; min-width: 0; justify-items: start; } .ds-dymo { margin: 0; font-size: 1.95rem; font-weight: 700; line-height: 1.32; letter-spacing: 0.09em; text-transform: uppercase; rotate: -1.2deg; } .ds-dymo span { padding: 1px 10px 2px; color: #f2f2ef; background: linear-gradient(180deg, #2b2c2f, #121314 55%, #1d1e20); box-decoration-break: clone; -webkit-box-decoration-break: clone; border-radius: 2px; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.18); box-shadow: 0 2px 2px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.12); } .ds-tape { margin: 0; max-width: 32ch; padding: 7px 14px 8px; font-family: 'Permanent Marker', cursive; font-size: 0.98rem; line-height: 1.4; color: #1d1d1f; background: color-mix(in srgb, #e8dcb6 92%, transparent); rotate: 0.8deg; box-shadow: 0 1px 2px rgb(0 0 0 / 0.25); mask-image: linear-gradient(90deg, transparent 0, #000 6px, #000 calc(100% - 6px), transparent 100%), repeating-linear-gradient(0deg, #000 0 3px, transparent 3px 5px); mask-size: 100% 100%, 6px 100%; mask-repeat: no-repeat, repeat-y; mask-composite: add; }"
     },
     {
-      "name": "Admin Panel",
+      "name": "Bench Plate with Dymo Tape",
       "kind": "card",
-      "refersTo": "panel",
-      "description": "Raised face-gradient section container holding a headline and fields.",
-      "html": "<div class=\"ds-ground\"><section class=\"ds-panel\"><h2>Profil</h2><p class=\"ds-muted\">Belum ada link. Tambahkan link pertama.</p></section></div>",
-      "css": ".ds-ground { padding: 24px; background: #cfd2d5; font-family: Archivo, system-ui, sans-serif; color: #282929; } .ds-panel { display: grid; gap: 16px; padding: 18px 16px 20px; border-radius: 16px; background: linear-gradient(170deg, #e6e8eb, #d8dbde); box-shadow: -4px -4px 10px #edeff1, 5px 6px 12px #c4c7ca, inset 0 1px 0 rgba(237,239,241,.7), inset 0 -1px 0 rgba(196,199,202,.45); } .ds-panel h2 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; } .ds-muted { margin: 0; color: #565758; }"
+      "refersTo": "bench-plate",
+      "description": "Admin section: riveted brushed-steel plate with a notched Dymo-tape heading.",
+      "html": "<section class=\"ds-plate\"><h2 class=\"ds-btape\">Profil</h2><p class=\"ds-muted\">Nama, bio, dan foto di bagian atas halaman.</p></section>",
+      "css": ".ds-plate { --r: radial-gradient(circle at 38% 34%, #ffffff 0 1px, #b6bdc5 2px, #5d646d 4px, #2a2e33 4.6px, transparent 5.2px); display: grid; gap: 18px; max-width: 420px; padding: 22px 20px 24px; border-radius: 6px; color: #14171a; font-family: Archivo, system-ui, sans-serif; background: var(--r) left 7px top 7px / 12px 12px no-repeat, var(--r) right 7px top 7px / 12px 12px no-repeat, var(--r) left 7px bottom 7px / 12px 12px no-repeat, var(--r) right 7px bottom 7px / 12px 12px no-repeat, repeating-linear-gradient(90deg, rgb(255 255 255 / 0.07) 0 1px, transparent 1px 3px), linear-gradient(180deg, #d2d7dc, #bfc6cd 55%, #a9b1b9); box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.55), inset 0 -3px 0 #5d646d, inset 2px 0 0 rgb(255 255 255 / 0.25), inset -2px 0 0 rgb(0 0 0 / 0.15), 0 10px 22px -10px rgb(0 0 0 / 0.85), 0 2px 3px rgb(0 0 0 / 0.5); } .ds-btape { justify-self: start; margin: 0 0 2px; padding: 5px 14px 6px; background: linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent 40%, rgb(0 0 0 / 0.25)), #17191c; color: #f3f3ef; font-family: 'Barlow Condensed', sans-serif; font-size: 1.1875rem; font-weight: 700; line-height: 1.1; letter-spacing: 0.14em; text-transform: uppercase; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.7), 0 1px 0 rgb(255 255 255 / 0.12); clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 50%, 100% 100%, 0 100%, 4px 50%); rotate: -0.6deg; } .ds-muted { margin: 0; color: #30363c; font-size: 1rem; }"
+    },
+    {
+      "name": "Bench Rubber Key",
+      "kind": "button",
+      "refersTo": "bench-key",
+      "description": "Default admin button: rubber key with a skirt that collapses on press.",
+      "html": "<button class=\"ds-bkey\" type=\"button\">Tambah link</button>",
+      "css": ".ds-bkey { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 0; border-radius: 8px; background: linear-gradient(180deg, #3b4046, #2a2e33 60%); color: #f1f3f5; font-family: 'Barlow Condensed', sans-serif; font-size: 1.0625rem; font-weight: 600; cursor: pointer; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 3px 0 #111316, 0 4px 8px rgb(0 0 0 / 0.35); transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 120ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-bkey:hover { background: linear-gradient(180deg, #474d54, #2a2e33 60%); } .ds-bkey:active { transform: translateY(2px); box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.5), 0 1px 0 #111316, 0 1px 2px rgb(0 0 0 / 0.3); } .ds-bkey:focus-visible { outline: 3px solid #14171a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Save Key with Lamp",
+      "kind": "button",
+      "refersTo": "bench-key-save",
+      "description": "The big push button; its amber lamp lights and breathes while changes are unsaved.",
+      "html": "<button class=\"ds-save\" type=\"button\" data-dirty><span class=\"ds-lamp\"></span>Simpan</button>",
+      "css": ".ds-save { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 140px; min-height: 56px; padding: 0 24px 0 18px; border: 0; border-radius: 10px; background: linear-gradient(180deg, #3b4046, #2a2e33 60%); color: #f1f3f5; font-family: 'Barlow Condensed', sans-serif; font-size: 1.25rem; font-weight: 700; cursor: pointer; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 3px 0 #111316, 0 4px 8px rgb(0 0 0 / 0.35); transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 120ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-lamp { position: relative; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #6a7178, #3c4248 60%); box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.6), 0 0 0 2px #0d0f11; } .ds-save[data-dirty] .ds-lamp { background: radial-gradient(circle at 35% 30%, #fff1d6, #ffb547 55%); } .ds-save[data-dirty] .ds-lamp::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; background: radial-gradient(circle, rgb(255 181 71 / 0.75), transparent 68%); animation: ds-breathe 1.6s ease-in-out infinite alternate; } @keyframes ds-breathe { from { opacity: 0.35; } to { opacity: 1; } } .ds-save:hover { background: linear-gradient(180deg, #474d54, #2a2e33 60%); } .ds-save:active { transform: translateY(2px); box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.5), 0 1px 0 #111316, 0 1px 2px rgb(0 0 0 / 0.3); } .ds-save:focus-visible { outline: 3px solid #f3f3ef; outline-offset: 2px; } @media (prefers-reduced-motion: reduce) { .ds-save[data-dirty] .ds-lamp::after { animation: none; opacity: 0.8; } }"
+    },
+    {
+      "name": "Bench Field",
+      "kind": "input",
+      "refersTo": "bench-field",
+      "description": "Text field as a white label card inside a chrome border.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-flabel\">Nama</span><input class=\"ds-input\" value=\"Team PPA\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; max-width: 360px; color: #14171a; } .ds-flabel { font-family: 'Barlow Condensed', sans-serif; font-size: 1.0625rem; font-weight: 600; } .ds-input { box-sizing: border-box; width: 100%; min-height: 48px; padding: 10px 12px; border: 3px solid transparent; border-radius: 5px; background: linear-gradient(180deg, rgb(0 0 0 / 0.07), transparent 7px) padding-box, linear-gradient(#fbfaf5, #fbfaf5) padding-box, linear-gradient(160deg, #f7f8fa, #b6bdc5 35%, #5d646d 55%, #b6bdc5 75%, #f7f8fa) border-box; color: #14171a; font-family: Archivo, system-ui, sans-serif; font-size: 16px; line-height: 1.4; box-shadow: 0 1px 0 rgb(255 255 255 / 0.5), 0 -1px 0 rgb(0 0 0 / 0.2); } .ds-input:focus-visible { outline: 3px solid #14171a; outline-offset: 2px; } .ds-input[aria-invalid='true'] { background: linear-gradient(#fbfaf5, #fbfaf5) padding-box, linear-gradient(#8c1d17, #8c1d17) border-box; }"
+    },
+    {
+      "name": "Truck Toggle",
+      "kind": "custom",
+      "description": "Switch on a native checkbox: chrome hex-nut bezel, bat lever flips up for on, LED mirrors the state.",
+      "html": "<label class=\"ds-switch\"><input type=\"checkbox\" role=\"switch\" checked><span class=\"ds-toggle\"><span class=\"ds-lever\"></span></span><span class=\"ds-led\"></span><span>Radio di atas lemari</span></label>",
+      "css": ".ds-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; color: #14171a; font-family: 'Barlow Condensed', sans-serif; font-size: 1.0625rem; font-weight: 600; cursor: pointer; } .ds-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; } .ds-toggle { position: relative; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f7f8fa, #b6bdc5 45%, #5d646d); box-shadow: 0 2px 3px rgb(0 0 0 / 0.45), inset 0 0 0 5px rgb(0 0 0 / 0.08); } .ds-toggle::before { content: ''; position: absolute; inset: 9px; border-radius: 50%; background: #1b1e21; box-shadow: inset 0 1px 2px #000; } .ds-lever { position: absolute; left: 50%; bottom: 50%; width: 8px; height: 20px; margin-left: -4px; border-radius: 4px 4px 2px 2px; background: linear-gradient(90deg, #5d646d, #f7f8fa 45%, #b6bdc5); box-shadow: 0 1px 2px rgb(0 0 0 / 0.5); transform-origin: 50% 100%; rotate: 180deg; transition: rotate 140ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-switch input:checked + .ds-toggle .ds-lever { rotate: 0deg; } .ds-led { width: 9px; height: 9px; border-radius: 50%; background: #3c4248; box-shadow: inset 0 1px 1.5px rgb(0 0 0 / 0.5), 0 1px 0 rgb(255 255 255 / 0.3); } .ds-switch input:checked ~ .ds-led { background: #3ddc84; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25), 0 0 7px #3ddc84; } .ds-switch:has(input:focus-visible) .ds-toggle { outline: 3px solid #14171a; outline-offset: 2px; } .ds-switch:active .ds-toggle { scale: 0.96; }"
+    },
+    {
+      "name": "VFD Status Strip",
+      "kind": "custom",
+      "refersTo": "bench-status",
+      "description": "Save-bar status on smoked glass: green LED when saved, amber when unsaved, plain red text on error.",
+      "html": "<p class=\"ds-status\" data-state=\"dirty\"><span class=\"ds-sled\"></span><span>Ada perubahan belum disimpan</span></p>",
+      "css": ".ds-status { display: flex; align-items: center; gap: 10px; min-height: 40px; margin: 0; padding: 4px 14px 4px 12px; border-radius: 6px; background: linear-gradient(180deg, #121517, #090b0c); box-shadow: inset 0 2px 5px #000, 0 1px 0 rgb(255 255 255 / 0.08); color: #5ef2c8; font-family: Doto, monospace; font-size: 1.0625rem; font-weight: 900; text-shadow: 0 0 7px rgb(94 242 200 / 0.5); } .ds-sled { width: 9px; height: 9px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 7px #3ddc84; } .ds-status[data-state='dirty'] { color: #ffb547; text-shadow: 0 0 7px rgb(255 181 71 / 0.5); } .ds-status[data-state='dirty'] .ds-sled { background: #ffb547; box-shadow: 0 0 7px #ffb547; } .ds-status[data-state='error'] { color: #ff7a6e; text-shadow: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; } .ds-status[data-state='error'] .ds-sled { background: #ff7a6e; box-shadow: 0 0 7px #ff7a6e; }"
     }
   ],
   "narrative": {
-    "northStar": "The Hi-Fi Faceplate",
-    "overview": "The public page is one piece of audio equipment sitting on a desk. It is a single molded plastic or anodized slab, lit from the top left, with a speaker grille, the owner's avatar seated as a driver cone, four screws, a column of preset keys with indicator LEDs, small round tact switches for socials, and a power lamp at the foot. The base is neumorphic: every surface is the same material, pushed out or pressed in. Skeuomorphic hardware details give the visitor objects they recognize as buttons, so the page never looks like a stack of identical pills on a gradient.\n\nThe admin editor uses the same world as a service panel. Faders stand in for range inputs, slide switches with LEDs for checkboxes, segmented keys for radios, small preset keys for color swatches, and the live faceplate preview is pinned beside them. On the admin side clarity beats costume: the hardware vocabulary shows up as tactile shape and depth, never as decorative texture.\n\nEverything is derived at runtime. The admin picks two colors (a base material and an LED color) plus radius, depth, font, and key style. themeVars() in src/lib/site.ts computes every other shade from those picks, so a choice the admin makes cannot break contrast. The token values in this file are the default Kapur preset at depth 0.7.",
+    "northStar": "The Workshop Wall",
+    "overview": "The public page is a single, lit corner of a mechanic's workshop seen from the front. A truck head-unit radio stands on a powder-coated roll cab; the cab's drawers are the links, each with an aluminium pull and a white label card in a chrome holder. The owner's name is punched in Dymo tape on the lid, the bio is written in marker on a strip of masking tape, and the avatar is a vinyl sticker slapped on a little crooked. Behind the chest hangs a pegboard with tool silhouettes, a work lamp pools warm light from above, and the casters stand on concrete. Every layer stands for a physical object; nothing is a decorative panel.\n\nThe radio is the page's voice. Its VFD shows the owner's name in a dot-matrix glow and, while a drawer or preset key is hovered or focused, names that link with its channel number (`CH03`, `P2`), like a radio naming the station you just tuned to. The six rubber preset keys are the social accounts. The admin's whole palette is two picks (cabinet paint and display glow); `themeVars` derives every other surface from them so a pick can't break contrast.\n\nThe admin editor is the same workshop's service bench: riveted, brushed-steel plates screwed to a dark pegboard, each section labelled with a strip of Dymo tape, controls built from rubber keys, truck toggle switches, mixer faders and paint-sample chips, and a VFD status strip on a black anodized rail. The bench runs on its own fixed palette and never wears the page's paint. Density is low and touch-first: one column on phones, 46–104px targets, a centred rig at most 460px wide.",
     "keyCharacteristics": [
-      "One material per unit; every shade is a mix of the base toward white or black.",
-      "Light comes from the top left: a highlight shadow up-left, a dark shadow down-right, and a 1px bevel on raised parts.",
-      "State lives in LEDs and in press depth. Hue changes never carry state on their own.",
-      "Label-first keys: LED, glyph, label, arrow, in that order.",
-      "Text clears 4.5:1 on every surface it can sit on, enforced in code."
+      "One physical scene: pegboard wall, work lamp, radio, tool chest, concrete floor.",
+      "Links are drawers; link text always sits on a white label card, never on paint.",
+      "Two admin picks (paint, glow) drive every derived color; materials (card, rubber, tape, chrome) are fixed.",
+      "The VFD names whatever you point at or focus.",
+      "Motion plays once and settles: the lamp swings to rest, the display warms up, drawers settle home.",
+      "The admin bench is a separate, fixed steel-and-rubber palette with Dymo section tapes."
     ],
     "rules": [
-      { "name": "The One Material Rule", "body": "No color is picked by hand except base and LED. Every other value comes from themeVars(): light = luminance(base) > 0.18; face-top mixes base toward white by 22% (6% on dark bases); face-bottom mixes toward black by 3% (12% dark); ground mixes toward black by 7% (32% dark); hi mixes toward white by 75%×depth (10%×depth dark); lo mixes toward black by 20%×depth (55%×depth dark); led-off mixes toward black by 16% (35% dark). A near-black base (luminance < 0.012) is first lifted 14% toward white so it can still cast a darker shadow.", "section": "colors" },
-      { "name": "The Ink Floor Rule", "body": "Ink is the base hue darkened (or lightened, on dark plastics) until it clears 4.5:1 against base, face-top, and face-bottom together. Soft ink is ink pulled back toward the base only as far as 4.5:1 still holds. New text roles take one of these two inks. Never add a third grey.", "section": "colors" },
-      { "name": "The Panel Isolation Rule", "body": "Admin chrome uses a fixed Kapur plate (radius 12, depth 0.6). The admin's draft colors appear only inside the preview.", "section": "colors" },
-      { "name": "The Legend Rule", "body": "Every key reads label-first in sentence case. Do not use uppercase tracking, eyebrow kickers, or small caps.", "section": "typography" },
-      { "name": "The 16px Input Rule", "body": "Form controls never go below 16px (max(16px, 1em)), so iOS does not zoom the page.", "section": "typography" },
-      { "name": "The Press Flip Rule", "body": "Pressing a control moves it 1–2px down and swaps its raise shadow for press over 90ms (keys, tacts) or 120ms (admin buttons). A selected swatch key stays pressed in.", "section": "elevation" },
-      { "name": "The Top-Left Light Rule", "body": "Highlights always sit up-left and shade down-right. Never invert or rotate the light source for one component.", "section": "elevation" }
+      {
+        "name": "The Two Picks Rule",
+        "body": "The admin chooses exactly two colors, paint and glow. Every other page color is either derived by `themeVars` from those two or is a fixed material. No new surface takes a raw admin color.",
+        "section": "colors"
+      },
+      {
+        "name": "The Label Card Rule",
+        "body": "Link text is printed on the white label card (card-ink on card, 14.9:1), never on the paint. That is why the bright kuning paint and the near-black hitam paint both stay legible without changing the ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Glow Floor Rule",
+        "body": "Whatever glow the admin picks, the rendered glow is lifted toward white until it reaches 4.5:1 on #060708 and 3:1 on the drawer gap. It is text, LED and focus ring at once, so it may never go dark.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fixed Bench Rule",
+        "body": "The bench palette is fixed and prefixed `--b-`. The admin's draft colors live only inside the preview; no bench control ever wears them.",
+        "section": "colors"
+      },
+      {
+        "name": "The Material Face Rule",
+        "body": "Doto appears only on smoked glass (the VFD, the bench readouts and status strip), Permanent Marker only on masking tape. Neither is used as a general heading or body face.",
+        "section": "typography"
+      },
+      {
+        "name": "The Dymo Caps Rule",
+        "body": "Uppercase belongs to embossed or glowing things: Dymo tapes and VFD text. Labels, drawer cards, keys and body copy stay in sentence case. On the bench, the Dymo tape is the only uppercase.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plain Error Rule",
+        "body": "When the bench status reports an error it drops the dot matrix and the glow, switching to Barlow Condensed 700 in bench-danger-hot so the problem reads plainly.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lit From Above Rule",
+        "body": "Every object takes its highlight on the top edge and its shadow below. A surface with no top lip and no cast shadow is not part of the workshop.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Travel Rule",
+        "body": "Pressable things move the way the real part does: drawers come out toward you (lift and scale), keys go down into the fascia (translate down, skirt collapses), toggles flip their lever. Nothing presses by fading.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do derive every new color from base and LED through themeVars() and mix(). Kapur values are examples. They are not constants.",
-      "Do build new controls as raised or pressed parts of the same material, lit from the top left, with the bevel on raised parts.",
-      "Do keep a native input under every hardware-styled control, and keep every touch target at least 44px.",
-      "Do show state with an LED and with press depth, and mirror it in text or ARIA (switch LED plus checked state, lit key plus \"(utama)\").",
-      "Do honor prefers-contrast: more: add 1px soft-ink outlines to raised parts, switch soft text to full ink, and ring the lit LED.",
-      "Do keep press feedback at 90–140ms with cubic-bezier(0.23, 1, 0.32, 1), and turn transitions off under reduced motion."
+      "**Do** put every link label on the white label card (card-ink on card) so contrast holds on all five paints and any custom paint.",
+      "**Do** derive new page colors from paint and glow through `themeVars`; keep card, rubber, tape and chrome as fixed materials.",
+      "**Do** light new objects from above: a top-lip highlight, a dark lower edge, a cast shadow.",
+      "**Do** make presses travel like the real part: drawers out toward you (`translateY(-2px) scale(1.03)`), keys down (2–3px with the skirt collapsing).",
+      "**Do** give every hovered or focused link a `data-vfd` label and `data-slot` so the display can name it.",
+      "**Do** play motion once and let it settle; loop only while a state holds (the meter while tuned, the save lamp while unsaved).",
+      "**Do** gate hover styles behind `(hover: hover) and (pointer: fine)` and keep `:active` feedback for touch.",
+      "**Do** keep touch targets at 46px or more and wrap the preset keys to two rows under 360px.",
+      "**Do** use the 3px glow focus ring on the page and the 3px bench-ink / bench-tape-ink ring on the bench."
     ],
     "donts": [
-      "Don't add borders, colored or tinted shadows, or a second accent hue on the faceplate.",
-      "Don't fill a key or put text on the LED color. LED is light only. Text stays in ink or soft ink.",
-      "Don't let the admin's draft colors leak into editor chrome.",
-      "Don't stretch the unit beyond 440px or turn the keys into a full-width list on desktop.",
-      "Don't add uppercase eyebrows or kickers above names, headings, or panels."
+      "**Don't** print text directly on the powder-coat paint.",
+      "**Don't** let the admin's draft paint or glow reach a bench control; the bench palette is fixed.",
+      "**Don't** use Doto off the glass or Permanent Marker off the tape.",
+      "**Don't** add idle loops: the lamp, the meter and the marquee were bounded because they moved forever while visitors read.",
+      "**Don't** give hover or press feedback to things that do nothing (the knobs are decorative; the empty-state drawer is not a link).",
+      "**Don't** add a surface that isn't a workshop object (a floating card, a generic panel, a gradient banner)."
     ]
   }
 }

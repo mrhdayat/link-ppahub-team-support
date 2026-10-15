@@ -32,29 +32,3 @@ export function contrast(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
-
-/** Worst contrast of `fg` across every surface it may sit on (e.g. both ends of a gradient). */
-export function minContrast(fg: string, surfaces: string[]): number {
-  return Math.min(...surfaces.map((s) => contrast(fg, s)));
-}
-
-/** Ink tinted from the base hue, dark on light plastics and light on dark ones, ≥4.5:1 on every surface. */
-export function inkFor(base: string, surfaces: string[] = [base]): string {
-  // Keep a hint of the base hue, deepening the tint until it clears 4.5:1 (pure black/white at worst).
-  for (let t = 0.82; t <= 1.0001; t += 0.03) {
-    const dark = mix(base, "#000000", t);
-    const light = mix(base, "#ffffff", Math.min(1, t + 0.08));
-    const best = minContrast(dark, surfaces) >= minContrast(light, surfaces) ? dark : light;
-    if (minContrast(best, surfaces) >= 4.5) return best;
-  }
-  return minContrast("#000000", surfaces) >= minContrast("#ffffff", surfaces) ? "#000000" : "#ffffff";
-}
-
-/** Secondary ink: as soft as possible while keeping 4.5:1 on every surface. */
-export function softInkFor(base: string, ink: string, surfaces: string[] = [base]): string {
-  for (let t = 0.4; t > 0; t -= 0.05) {
-    const c = mix(ink, base, t);
-    if (minContrast(c, surfaces) >= 4.5) return c;
-  }
-  return ink;
-}

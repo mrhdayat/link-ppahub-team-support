@@ -1,18 +1,13 @@
 // Self-check: `npx tsx src/lib/site.check.ts`
 import assert from "node:assert/strict";
-import { contrast, minContrast } from "./color";
+import { contrast } from "./color";
 import { DEFAULT_SITE, PRESETS, isSafeUrl, parseSite, siteSchema, themeVars } from "./site";
 
-// Every preset and a few hostile picks keep body + secondary ink at WCAG AA on the plate
-// and on both ends of the key gradient.
+// Every preset and a few hostile picks keep drawers separable from their gaps.
 const bases = [...Object.values(PRESETS).map((p) => p.base), "#ffffff", "#000000", "#808080", "#ff0000", "#3a7bd5", "#ffff00"];
 for (const base of bases) {
   const v = themeVars({ ...DEFAULT_SITE.theme, base });
-  const surfaces = [v["--base"], v["--face-top"], v["--face-bottom"]];
-  assert.ok(minContrast(v["--ink"], surfaces) >= 4.5, `ink on ${base}`);
-  assert.ok(minContrast(v["--ink-soft"], surfaces) >= 4.5, `soft ink on ${base}`);
-  // Off LED cells and grille holes must stay visible, even on black.
-  assert.ok(contrast(v["--led-off"], v["--base"]) > 1.1, `led-off visible on ${base}`);
+  assert.ok(contrast(v["--paint"], v["--gap"]) > 1.25, `drawer gaps visible on ${base}`);
 }
 
 // Any glow pick stays readable on the VFD glass and visible as a focus ring in the drawer gaps.
