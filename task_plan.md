@@ -45,3 +45,11 @@ Permintaan: tampilan lebih menarik, mirip head unit truk / toolbox mekanik, moti
 - [x] T5 editor admin workshop (worker)
 - [x] T6 audit workshop (worker)
 - [ ] Integrasi, verifikasi, DESIGN.md update
+
+## Iterasi 3 — Rambu Navigasi (2026-10-15 malam)
+User: desain workshop kurang; tampil terbatas 6; minta "papan pengumuman" atau ikuti PRD baru "Rambu Navigasi" (ubah semua), mobile-first. Platform: tetap Next.js + admin (dipilih user).
+- [x] Skema CONFIG baru + self-check (681f17d), PRD disimpan (d56b98a)
+- [x] Halaman publik Rambu (d4b34e0), verifikasi 390 siang/malam, jalur 10 tautan lipat
+- [ ] T7 editor admin CONFIG (worker, retry ctx_88cafc3ed7bf)
+- [ ] T8 audit publik (worker ctx_cea4f04afddb)
+- [ ] Integrasi, build, DESIGN.md baru

@@ -14,7 +14,7 @@ web
 Halaman link-in-bio milik sendiri (alternatif Linktree) untuk tim. Satu halaman publik yang daftar link dan tampilannya diatur penuh oleh admin. Berhasil kalau pengunjung menemukan link yang benar dalam beberapa detik, dan admin bisa mengubah isi atau gaya tanpa bantuan developer.
 
 ## Positioning
-Di-host sendiri, tanpa akun pengunjung, tanpa iklan, tanpa branding pihak ketiga. Kustomisasi menyentuh cat, nyala layar, pegangan laci, scene, trim, tipografi, dan urutan, bukan hanya pilih preset.
+Di-host sendiri, tanpa akun pengunjung, tanpa iklan, tanpa branding pihak ketiga. Tetap rapi untuk puluhan tautan lewat jalur kategori, pencarian, dan tata letak yang menyesuaikan jumlah tautan.
 
 ## Capabilities and Constraints
 - Satu akun admin, password dari env `ADMIN_PASSWORD`. Tidak ada registrasi publik.
@@ -24,7 +24,7 @@ Di-host sendiri, tanpa akun pengunjung, tanpa iklan, tanpa branding pihak ketiga
 - Open: nama produk akhir, domain, logo/aset brand tim.
 
 ## Brand Commitments
-- Arah visual dipilih user: **hybrid tactile** yang skeuomorfik dan detail. Sejak 15 Okt 2026 dunianya **bengkel**: radio head unit truk di atas lemari perkakas mekanik (permintaan user: "mirip toolbox mekanik atau headunit truck", "sedetail dan semirip mungkin"). Kontras harus tetap memenuhi WCAG AA.
+- Sejak 15 Okt 2026 (malam) produk mengikuti **PRD Rambu Navigasi** dari pemilik (`PRD.md`): rambu lalu lintas + HUD teknologi + neubrutalism, huruf Overpass, token warna rambu tetap. Desain, copy, dan perilaku di PRD itu mengikat.
 
 ## Evidence on Hand
 Belum ada konten nyata (nama tim, link, avatar, logo). Isi awal adalah contoh yang diberi label jelas dan harus diganti admin; jangan mengarang klaim, angka, atau testimoni.
