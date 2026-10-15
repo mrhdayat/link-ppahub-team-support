@@ -1,26 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { flushSync } from "react-dom";
 import { z } from "zod";
-import { ArrowCounterClockwise, ArrowSquareOut, SignOut } from "@phosphor-icons/react";
-import { Faceplate } from "@/components/faceplate";
+import { ArrowSquareOut, Check, FloppyDisk, SignOut } from "@phosphor-icons/react";
+import { RambuPage } from "@/components/rambu/rambu-page";
 import { logout, save } from "@/app/actions";
 import { siteSchema, type Site } from "@/lib/site";
 import { Segmented, fid } from "./controls";
-import { PANEL } from "./panel";
-import { LinksSection, LookSection, ProfileSection, SocialsSection, type Update } from "./sections";
+import { KategoriSection, LinksSection, ProfilSection, StatusSection, type LinkView, type Update } from "./sections";
+import "@/components/rambu/tokens.css";
 import "./editor.css";
 
 // Indonesian copy for zod's generic messages; the schema's own messages still win.
 z.config(z.locales.id());
-
-function issuesOf(site: Site): Record<string, string> {
-  const r = siteSchema.safeParse(site);
-  const out: Record<string, string> = {};
-  if (!r.success) for (const i of r.error.issues) out[i.path.join(".")] ??= i.message;
-  return out;
-}
 
 /** Focus the field a validation path names, falling back to its nearest parent that has one. */
 function focusPath(path: string) {
@@ -41,22 +34,43 @@ export function Editor({ initial }: { initial: Site }) {
   const [draft, setDraft] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [toast, setToast] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [failure, setFailure] = useState("");
-  const [undo, setUndo] = useState<{ message: string; restore: (s: Site) => Site } | null>(null);
   const [view, setView] = useState<"atur" | "lihat">("atur");
+  const [linkView, setLinkView] = useState<LinkView>({ q: "", kat: "" });
+  const [open, setOpenSet] = useState<ReadonlySet<string>>(() => new Set());
+  const [leaving, setLeaving] = useState(false);
   const [live, setLive] = useState("");
   const [pending, startSave] = useTransition();
-  const toast = useRef<HTMLDivElement>(null);
+
+  const check = useMemo(() => siteSchema.safeParse(draft), [draft]);
+  // The preview shows the last draft that passes the schema, so a half-typed URL never breaks it.
+  const [preview, setPreview] = useState(initial);
+  if (check.success && check.data !== preview) setPreview(check.data);
+  const stale = !check.success;
 
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(saved), [draft, saved]);
   // Before the first save attempt fields stay quiet; afterwards errors track the draft live.
-  const errors = useMemo(() => (attempted ? issuesOf(draft) : {}), [attempted, draft]);
+  const errors = useMemo(() => {
+    const out: Record<string, string> = {};
+    if (attempted && !check.success) for (const i of check.error.issues) out[i.path.join(".")] ??= i.message;
+    return out;
+  }, [attempted, check]);
   const errorCount = Object.keys(errors).length;
 
   const update: Update = useCallback((fn) => {
     setDraft(fn);
     setFailure("");
+  }, []);
+  const setOpen = useCallback((id: string, on: boolean) => {
+    setOpenSet((s) => {
+      if (s.has(id) === on) return s;
+      const n = new Set(s);
+      if (on) n.add(id);
+      else n.delete(id);
+      return n;
+    });
   }, []);
 
   useEffect(() => {
@@ -66,36 +80,44 @@ export function Editor({ initial }: { initial: Site }) {
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  // The undo offer fades after 8 s, but never while the pointer or focus is on it.
   useEffect(() => {
-    if (!undo) return;
-    const t = setInterval(() => {
-      if (!toast.current?.matches(":hover, :focus-within")) setUndo(null);
-    }, 8000);
-    return () => clearInterval(t);
-  }, [undo]);
+    if (!toast) return;
+    const t = setTimeout(() => setToast(false), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
 
+  /** Bring a field into view: switch to "Atur", and for a link, clear the filter and unfold its row. */
   function showField(path: string) {
-    flushSync(() => setView("atur"));
+    const m = /^link\.(\d+)/.exec(path);
+    const link = m ? draft.link[Number(m[1])] : undefined;
+    flushSync(() => {
+      setView("atur");
+      if (link) {
+        setLinkView({ q: "", kat: "" });
+        setOpen(link.id, true);
+      }
+    });
     focusPath(path);
   }
 
   function onSave() {
-    setAttempted(true);
-    setFailure("");
-    const parsed = siteSchema.safeParse(draft);
-    if (!parsed.success) {
-      showField(parsed.error.issues[0]!.path.join("."));
+    flushSync(() => {
+      setAttempted(true);
+      setFailure("");
+    });
+    if (!check.success) {
+      showField(check.error.issues[0]!.path.join("."));
       return;
     }
     const snapshot = draft;
     startSave(async () => {
       try {
-        const r = await save(parsed.data);
+        const r = await save(check.data);
         if (r.ok) {
           setSaved(snapshot);
           setSavedAt(r.savedAt);
           setAttempted(false);
+          setToast(true);
         } else {
           setFailure(r.error);
           if (r.path) showField(r.path);
@@ -109,78 +131,73 @@ export function Editor({ initial }: { initial: Site }) {
   const state = pending ? "busy" : failure || errorCount ? "error" : dirty ? "dirty" : "saved";
   const status = pending
     ? "Menyimpan…"
-    : failure
-      ? failure
-      : errorCount
-        ? `${errorCount} isian perlu diperbaiki`
-        : dirty
-          ? "Belum disimpan"
-          : savedAt
-            ? `Tersimpan pukul ${clock(savedAt)}`
-            : "Tidak ada perubahan";
+    : failure || (errorCount
+      ? `${errorCount} isian perlu diperbaiki`
+      : dirty
+        ? "Belum disimpan"
+        : savedAt
+          ? `Tersimpan pukul ${clock(savedAt)}`
+          : "Tidak ada perubahan");
 
-  const props = {
-    site: draft,
-    update,
-    errors,
-    announce: setLive,
-    onRemoved: (message: string, restore: (s: Site) => Site) => setUndo({ message, restore }),
-  };
+  const props = { site: draft, update, errors, announce: setLive };
 
   return (
-    <div className="ed" style={PANEL} data-view={view}>
-      <header className="ed-top ui">
-        <h1>Editor halaman</h1>
-        <Segmented name="view" label="Tampilkan" hideLabel value={view} onChange={setView}
-          options={[{ value: "atur", label: "Atur" }, { value: "lihat", label: "Lihat" }]} />
+    <div className="ed" data-view={view}>
+      <header className="ed-top">
+        <div className="hazard" aria-hidden />
+        <div className="ed-top-row">
+          <h1>Editor rambu</h1>
+          <Segmented name="view" label="Tampilkan" hideLabel className="view-switch" value={view} onChange={setView}
+            options={[{ value: "atur", label: "Atur" }, { value: "lihat", label: "Lihat" }]} />
+        </div>
       </header>
 
-      <main className="ed-controls ui">
-        <ProfileSection {...props} />
-        <LinksSection {...props} />
-        <SocialsSection {...props} />
-        <LookSection {...props} />
+      <main className="ed-controls">
+        <ProfilSection {...props} />
+        <StatusSection {...props} />
+        <KategoriSection {...props} />
+        <LinksSection {...props} view={linkView} setView={setLinkView} open={open} setOpen={setOpen} />
       </main>
 
       <aside className="ed-preview" aria-label="Pratinjau halaman">
+        {stale && <p className="preview-note">Pratinjau menunggu isian yang valid.</p>}
         {/* Inert: the preview is a picture of the page, so its links don't navigate away from unsaved work. */}
         <div inert>
-          <Faceplate site={draft} boot={false} contained />
+          <RambuPage site={preview} preview />
         </div>
       </aside>
 
-      <div className="ed-bar ui">
-        {undo && (
-          <div className="toast" ref={toast} role="status">
-            <span>{undo.message}</span>
-            <button type="button" className="btn" onClick={() => { update(undo.restore); setUndo(null); setLive("Dikembalikan."); }}>
-              <ArrowCounterClockwise size={18} weight="bold" aria-hidden />
-              Urungkan
-            </button>
-          </div>
-        )}
-        <div className="bar-row">
-          {/* The VFD strip: dot-matrix glow for routine states, plain text when something needs fixing. */}
-          <p className="status" data-state={state} role={failure ? "alert" : "status"}>
-            <span className="led" aria-hidden />
-            <span key={state === "saved" ? savedAt ?? 0 : state}>{status}</span>
+      <div className="ed-bar">
+        {toast && (
+          <p className="toast" aria-hidden>
+            <Check size={18} weight="bold" aria-hidden />
+            Tersimpan
           </p>
-          <div className="bar-actions">
-            <a className="btn" href="/" target="_blank" rel="noopener">
-              <ArrowSquareOut size={18} weight="bold" aria-hidden />
-              Lihat halaman
-            </a>
-            <form action={logout}>
-              <button type="submit" className="btn">
-                <SignOut size={18} weight="bold" aria-hidden />
-                Keluar
-              </button>
-            </form>
-            <button type="button" className="btn save" data-dirty={dirty || undefined} disabled={!dirty || pending} onClick={onSave}>
-              <span className="lamp" aria-hidden />
-              {pending ? "Menyimpan…" : "Simpan"}
+        )}
+        <p className="bar-status" data-state={state} role={failure ? "alert" : "status"}>{status}</p>
+        <div className="bar-actions">
+          <a className="btn" href="/" target="_blank" rel="noopener">
+            <ArrowSquareOut size={18} weight="bold" aria-hidden />
+            <span className="btn-text">Lihat halaman</span>
+          </a>
+          <form action={logout}>
+            <button type="submit" className="btn" data-danger={leaving || undefined} onBlur={() => setLeaving(false)}
+              onClick={(e) => {
+                // Leaving with unsaved work takes a second press, not a dialog.
+                if (dirty && !leaving) {
+                  e.preventDefault();
+                  setLeaving(true);
+                }
+              }}>
+              <SignOut size={18} weight="bold" aria-hidden />
+              <span className="btn-text">{leaving ? "Buang & keluar" : "Keluar"}</span>
             </button>
-          </div>
+          </form>
+          <button type="button" className="btn btn-primary" data-dirty={dirty || undefined} disabled={!dirty || pending}
+            onClick={onSave}>
+            <FloppyDisk size={18} weight="bold" aria-hidden />
+            {pending ? "Menyimpan…" : "Simpan"}
+          </button>
         </div>
       </div>
       <p className="sr-only" aria-live="polite">{live}</p>
