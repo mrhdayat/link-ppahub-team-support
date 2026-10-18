@@ -2,7 +2,8 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import { ArrowDown, ArrowUp, Trash } from "@phosphor-icons/react";
-import type { Warna } from "@/lib/site";
+import type { Ikon, Warna } from "@/lib/site";
+import { KategoriIkon } from "@/components/rambu/signs";
 import { toast } from "./toast";
 
 /** "link.2.url" → "f-link-2-url": the DOM id a validation path points at. */
@@ -132,8 +133,11 @@ export function RowTools({ prefix, name, first, last, onMove, onRemove }: {
 }
 
 /** Small sign plate in a category colour. */
-export const Plate = ({ warna, small, children }: { warna: Warna | undefined; small?: boolean; children?: ReactNode }) => (
-  <span className="dplate" data-warna={warna ?? "none"} data-small={small || undefined}>{children}</span>
+export const Plate = ({ warna, ikon, small, children }: { warna: Warna | undefined; ikon?: Ikon; small?: boolean; children?: ReactNode }) => (
+  <span className="dplate" data-warna={warna ?? "none"} data-small={small || undefined}>
+    {ikon && <KategoriIkon ikon={ikon} />}
+    {children}
+  </span>
 );
 
 /** The public page's address, as visitors see it. */

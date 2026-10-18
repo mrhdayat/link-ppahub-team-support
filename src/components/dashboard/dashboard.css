@@ -71,11 +71,11 @@
 .plate-h:focus-visible { outline: var(--focus); }
 
 /* Sign colours. White text on green/blue/red is ≥ 6:1; yellow and white carry black. */
-:is(.dash, .login) [data-warna="green"] { background: var(--green); color: var(--white); }
-:is(.dash, .login) [data-warna="blue"] { background: var(--blue); color: var(--white); }
-:is(.dash, .login) [data-warna="red"] { background: var(--red); color: var(--white); }
-:is(.dash, .login) [data-warna="yellow"] { background: var(--yellow); color: var(--black); }
-:is(.dash, .login) [data-warna="white"] { background: var(--white); color: var(--black); }
+:is(.dash, .login) [data-warna="green"] { --sign: var(--green); background: var(--green); color: var(--white); }
+:is(.dash, .login) [data-warna="blue"] { --sign: var(--blue); background: var(--blue); color: var(--white); }
+:is(.dash, .login) [data-warna="red"] { --sign: var(--red); background: var(--red); color: var(--white); }
+:is(.dash, .login) [data-warna="yellow"] { --sign: var(--yellow); background: var(--yellow); color: var(--black); }
+:is(.dash, .login) [data-warna="white"] { --sign: var(--white); background: var(--white); color: var(--black); }
 :is(.dash, .login) [data-warna="none"] { background: repeating-linear-gradient(45deg, #fff 0 4px, #c9c5b9 4px 8px); color: var(--black); }
 
 .dplate {
@@ -92,7 +92,10 @@
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  gap: 6px;
 }
+.dplate .k-ikon { width: 1.25em; height: 1.25em; flex: none; --ikon-cut: var(--sign, var(--white)); }
+.swatch .dplate .k-ikon { width: 24px; height: 24px; }
 
 /* ---------- Fields ---------- */
 
@@ -372,6 +375,7 @@
   transition: transform var(--press-ms) var(--ease-out), box-shadow var(--press-ms) var(--ease-out);
 }
 .swatch input:checked + .dplate { transform: translate(3px, 3px); box-shadow: none; }
+.swatch input:checked + .dplate { outline: 3px solid var(--black); outline-offset: 3px; }
 .swatch input:focus-visible + .dplate { outline: var(--focus); outline-offset: 2px; }
 .d-search { position: relative; }
 .d-search svg {
@@ -488,12 +492,28 @@
 }
 .dash-brand {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   font-size: 1.125rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+.dash-brand span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-brand small {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--yellow);
+  color: var(--black);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+}
+.dash-logo { flex: none; width: 32px; height: 32px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #fff; }
+.login-logo { display: block; width: 72px; height: 72px; margin-bottom: var(--space-3); border-radius: 50%; background: #fff; border: var(--border-small); box-shadow: 3px 3px 0 var(--black); }
 .save-state {
   font-family: var(--font-hud), ui-monospace, monospace;
   font-size: 0.75rem;
@@ -1370,4 +1390,10 @@
     .modal[data-variant][open] .modal-box { transform: none !important; }
   }
   .sk, .icon-btn[data-busy] svg { animation: none; }
+}
+
+/* Phones: the team name needs the header row; the save state only shows while a save is running. */
+@media (max-width: 599px) {
+  .dash-brand small { display: none; }
+  .save-state:not([data-saving]) { display: none; }
 }

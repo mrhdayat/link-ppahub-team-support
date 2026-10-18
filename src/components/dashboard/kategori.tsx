@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, Check, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import type { Day } from "@/lib/analytics";
-import { WARNA, kategoriSchema, type Kategori, type Site } from "@/lib/site";
+import { IKON, WARNA, kategoriSchema, type Kategori, type Site } from "@/lib/site";
+import { IKON_NAMA } from "@/components/rambu/signs";
 import { Field, Plate, WARNA_NAME, focusLater, insertAt, slugify, swap, uniqueSlug } from "./controls";
 import { Confirm, Modal } from "./modal";
 import { fmt, sum } from "./stats";
@@ -114,7 +115,7 @@ export function KategoriTab({ site, days, commit }: { site: Site; days: Day[]; c
                   <span className="row-pos" aria-hidden>{i + 1}</span>
                   <div className="row-main">
                     <div className="row-title">
-                      <Plate warna={k.warna}>{k.nama}</Plate>
+                      <Plate warna={k.warna} ikon={k.ikon}>{k.nama}</Plate>
                     </div>
                     <span className="row-url">#jalur-{k.id}</span>
                     <span className="row-tags">
@@ -184,7 +185,7 @@ function KategoriForm({ open, kategori, site, commit, onClose }: {
   const start = useMemo<Kategori>(() => {
     if (kategori) return kategori;
     const used = new Set(site.kategori.map((k) => k.warna));
-    return { id: "", nama: "", warna: WARNA.find((w) => !used.has(w)) ?? "green" };
+    return { id: "", nama: "", warna: WARNA.find((w) => !used.has(w)) ?? "green", ikon: "umum" };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kategori]);
   const [d, setD] = useState(start);
@@ -250,11 +251,11 @@ function KategoriForm({ open, kategori, site, commit, onClose }: {
         }}>
           {formError && <p className="form-error" role="alert">Gagal menyimpan: {formError}</p>}
           <div className="kat-sample" aria-hidden>
-            <Plate warna={d.warna}>{d.nama || "Nama jalur"}</Plate>
+            <Plate warna={d.warna} ikon={d.ikon}>{d.nama || "Nama jalur"}</Plate>
           </div>
           <Field path="nama" label="Nama" error={show("nama")} hint={`${d.nama.length}/24`} ids={ids("nama")}>
             <input {...wire("nama", true)} value={d.nama} maxLength={24} autoComplete="off" data-autofocus=""
-              placeholder="mis. Sosial"
+              placeholder="mis. High Voltage"
               onChange={(e) => {
                 const nama = e.target.value;
                 setFormError("");
@@ -283,6 +284,20 @@ function KategoriForm({ open, kategori, site, commit, onClose }: {
                   <Plate warna={w}>
                     {d.warna === w && <Check size={20} weight="bold" aria-hidden />}
                     <span className="sr-only">{WARNA_NAME[w]}</span>
+                  </Plate>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="field">
+            <legend>Ikon plat</legend>
+            <div className="swatches">
+              {IKON.map((i) => (
+                <label key={i} className="swatch" title={IKON_NAMA[i]}>
+                  <input type="radio" name="kf-ikon" value={i} checked={d.ikon === i}
+                    onChange={() => setD((v) => ({ ...v, ikon: i }))} />
+                  <Plate warna={d.warna} ikon={i}>
+                    <span className="sr-only">{IKON_NAMA[i]}</span>
                   </Plate>
                 </label>
               ))}

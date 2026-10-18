@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { RambuPage } from "@/components/rambu/rambu-page";
-import { DEFAULT_SITE, siteSchema, WARNA, type Link, type Site } from "@/lib/site";
+import { DEFAULT_SITE, IKON, siteSchema, WARNA, type Link, type Site } from "@/lib/site";
 
 // Dev-only stress lab: every fixture enters through the same `site` prop the real page uses.
 // /lab?data=worst&live=1&dir=rtl — live=1 drops preview mode (sticky header, storage, shortcuts).
@@ -31,12 +31,12 @@ const WORST: Site = {
   whatsapp: "",
   teksBerjalan: [],
   kategori: [
-    { id: "toko", nama: "Toko", warna: "red" },
-    { id: "kelas", nama: "Kelas & Lokakarya Daring", warna: "yellow" },
-    { id: "sosial", nama: "Sosial 🌐", warna: "green" },
-    { id: "arab", nama: "متجر", warna: "blue" },
-    { id: "putih", nama: "Arsip", warna: "white" },
-    ...Array.from({ length: 7 }, (_, i) => ({ id: `k${i}`, nama: `Kategori ${i + 6}`, warna: WARNA[i % WARNA.length] })),
+    { id: "toko", nama: "Toko", warna: "red", ikon: "alat" },
+    { id: "kelas", nama: "Kelas & Lokakarya Daring", warna: "yellow", ikon: "dokumen" },
+    { id: "sosial", nama: "Sosial 🌐", warna: "green", ikon: "umum" },
+    { id: "arab", nama: "متجر", warna: "blue", ikon: "air" },
+    { id: "putih", nama: "Arsip", warna: "white", ikon: "perisai" },
+    ...Array.from({ length: 7 }, (_, i) => ({ id: `k${i}`, nama: `Kategori ${i + 6}`, warna: WARNA[i % WARNA.length], ikon: IKON[i % IKON.length] })),
   ],
   link: [
     link(0, "toko", { judul: "tokopedia.com/aleksandrawisniewskastudioofficial", catatan: "diskon 50% khusus pembelian lewat aplikasi s.d. 31 Desember!", utama: true, label: "promo", labelSampai: "2099-12-31" }),
@@ -62,7 +62,7 @@ const FIXTURES: Record<string, Site> = {
   demo: DEFAULT_SITE,
   worst: WORST,
   empty: { ...DEFAULT_SITE, link: [] },
-  one: { ...DEFAULT_SITE, kategori: [DEFAULT_SITE.kategori[0]], link: [link(0, "sosial", { judul: "Instagram", catatan: "@jo" })] },
+  one: { ...DEFAULT_SITE, kategori: [DEFAULT_SITE.kategori[0]], link: [link(0, DEFAULT_SITE.kategori[0].id, { judul: "Purchasing", catatan: "Apps Script" })] },
   many: { ...DEFAULT_SITE, link: Array.from({ length: 200 }, (_, i) => link(i, DEFAULT_SITE.kategori[i % 4].id, { utama: i < 2 })) },
   cats12: { ...WORST, whatsapp: DEFAULT_SITE.whatsapp, teksBerjalan: DEFAULT_SITE.teksBerjalan },
 };

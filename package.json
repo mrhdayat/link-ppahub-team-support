@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:setup": "tsx --env-file-if-exists=.env.local scripts/db-setup.ts",
+    "check": "tsx src/lib/site.check.ts && tsx src/components/dashboard/stats.check.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -29,6 +31,7 @@
     "dotenv": "^18.0.7",
     "drizzle-kit": "^0.31.11",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

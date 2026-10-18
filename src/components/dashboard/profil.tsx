@@ -130,12 +130,6 @@ export function ProfilSection({ site, update, errors }: Props) {
           }} />
       </Field>
 
-      <Field path="profil.inisial" label="Inisial" error={e("inisial")} hint="2 huruf di rambu wajik">
-        <input {...wire("profil.inisial", e("inisial"), true)} className="inisial" value={profil.inisial} maxLength={2}
-          autoCapitalize="characters" autoComplete="off" spellCheck={false}
-          onChange={(ev) => set({ inisial: ev.target.value.toUpperCase() })} />
-      </Field>
-
       <Field path="profil.bio" label="Bio" error={e("bio")}
         hint={<span aria-live="polite">{profil.bio.length}/140</span>}>
         <textarea {...wire("profil.bio", e("bio"), true)} value={profil.bio} maxLength={140} rows={3}

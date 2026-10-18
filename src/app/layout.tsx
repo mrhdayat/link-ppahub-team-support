@@ -9,8 +9,8 @@ const overpassMono = Overpass_Mono({ variable: "--font-hud", subsets: ["latin"],
 const THEME_INIT = `try{var t=localStorage.getItem("rambu-tema");if(t)document.documentElement.dataset.theme=t}catch(e){}`;
 
 export const metadata: Metadata = {
-  title: "Rambu Navigasi",
-  description: "Semua tautan dalam satu halaman.",
+  title: "TEAM SUPPORT",
+  description: "Berjaya di darat, laut dan udara. Semua tautan kerja TEAM SUPPORT dalam satu halaman.",
 };
 
 export const viewport: Viewport = {

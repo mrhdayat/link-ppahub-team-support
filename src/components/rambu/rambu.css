@@ -201,8 +201,24 @@
 .scan::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--blue); box-shadow: 0 0 12px var(--blue); }
 
 .hud-id { display: grid; justify-items: center; text-align: center; gap: var(--space-3); }
-.diamond { width: 92px; height: 92px; }
-.diamond-text { font-family: var(--font-sign), sans-serif; font-weight: 900; font-size: 30px; fill: var(--black); letter-spacing: 0.02em; }
+/* Team logo mounted like a round regulatory sign: white face, black rim, hard shadow. */
+.logo-sign {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  padding: 5px;
+  border: var(--border-small);
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 var(--black);
+}
+.logo-sign img { width: 100%; height: 100%; display: block; }
+
+/* Lane pictograms: drawn in the sign's text colour, knock-outs in the sign colour. */
+.k-ikon { width: 1.15em; height: 1.15em; flex: none; --ikon-cut: var(--sign, var(--white)); }
+.tab .k-ikon { width: 18px; height: 18px; }
+.plate .k-ikon { width: 26px; height: 26px; }
 .hud-name {
   margin: 0;
   font-size: 30px;

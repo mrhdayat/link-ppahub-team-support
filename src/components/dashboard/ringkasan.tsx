@@ -333,7 +333,7 @@ function TopLinks({ site, cur, all, n, onEditLink }: {
                     <td className="num rank">{rank + 1}</td>
                     <td>
                       <span className="cell-title">{r.l.judul}</span>
-                      <Plate warna={k?.warna} small>{k?.nama ?? "—"}</Plate>
+                      <Plate warna={k?.warna} ikon={k?.ikon} small>{k?.nama ?? "—"}</Plate>
                     </td>
                     <td className="num strong">{fmt(r.now)}</td>
                     <td className="num">{fmt(r.ever)}</td>
@@ -360,7 +360,7 @@ function TopLinks({ site, cur, all, n, onEditLink }: {
           <ul className="never-list">
             {never.map((r) => (
               <li key={r.l.id}>
-                <Plate warna={kat.get(r.l.kategori)?.warna} small><span className="sr-only">{kat.get(r.l.kategori)?.nama}</span></Plate>
+                <Plate warna={kat.get(r.l.kategori)?.warna} ikon={kat.get(r.l.kategori)?.ikon} small><span className="sr-only">{kat.get(r.l.kategori)?.nama}</span></Plate>
                 <span className="cell-title">{r.l.judul}</span>
                 <button type="button" className="icon-btn" aria-label={`Ubah ${r.l.judul}`} onClick={() => onEditLink(r.l.id)}>
                   <PencilSimple size={18} weight="bold" aria-hidden />
@@ -397,7 +397,7 @@ function PerKategori({ site, cur, n }: { site: Site; cur: Counts; n: number }) {
       <ul className="hbars">
         {rows.map((r) => (
           <li key={r.k.id}>
-            <Plate warna={r.k.warna} small>{r.k.nama}</Plate>
+            <Plate warna={r.k.warna} ikon={r.k.ikon} small>{r.k.nama}</Plate>
             <span className="hbar" aria-hidden><span style={{ width: `${(r.klik / max) * 100}%` }} /></span>
             <span className="hbar-v"><b>{fmt(r.klik)}</b> <span className="field-hint">{r.links} tautan</span></span>
           </li>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import seed from "./default-site.json";
 
 // Rambu Navigasi CONFIG. One document; the admin edits it, the public page renders it.
 
@@ -19,6 +20,8 @@ const slug = z.string().trim().regex(/^[a-z0-9-]{1,24}$/, "ID kategori: huruf ke
 export const WARNA = ["green", "blue", "red", "yellow", "white"] as const;
 export const LABELS = ["baru", "populer", "promo"] as const;
 export const STATUS = ["hijau", "kuning", "merah"] as const;
+/** Pictogram on each lane plate; drawn in components/rambu/signs.tsx. */
+export const IKON = ["simpan", "listrik", "air", "truk", "alat", "dokumen", "perisai", "umum"] as const;
 /** Indonesian time zones. Opening hours and label dates are the owner's, not the visitor's. */
 export const ZONA = { "Asia/Jakarta": "WIB", "Asia/Makassar": "WITA", "Asia/Jayapura": "WIT" } as const;
 export type Zona = keyof typeof ZONA;
@@ -27,6 +30,7 @@ export const kategoriSchema = z.object({
   id: slug,
   nama: z.string().trim().min(1, "Nama kategori wajib diisi").max(24),
   warna: z.enum(WARNA),
+  ikon: z.enum(IKON).catch("umum"),
 });
 
 export const linkSchema = z.object({
@@ -84,28 +88,11 @@ export type Site = z.infer<typeof siteSchema>;
 export type Kategori = z.infer<typeof kategoriSchema>;
 export type Link = z.infer<typeof linkSchema>;
 export type Warna = (typeof WARNA)[number];
+export type Ikon = (typeof IKON)[number];
 export type StatusWarna = (typeof STATUS)[number];
 
-export const DEFAULT_SITE: Site = {
-  profil: { nama: "Team PPA", inisial: "TP", bio: "Contoh isi. Ganti nama, bio, dan tautan ini dari halaman admin." },
-  status: { mode: "otomatis", zona: "Asia/Makassar", jamBuka: 9, jamTutup: 21, hariLibur: [0], manual: "hijau" },
-  balasMaksJam: 24,
-  tampilKlik: true,
-  whatsapp: "https://wa.me/620000000000",
-  teksBerjalan: ["Jalur kreatif aktif", "Konten baru tiap minggu"],
-  kategori: [
-    { id: "sosial", nama: "Sosial", warna: "green" },
-    { id: "karya", nama: "Karya", warna: "blue" },
-    { id: "toko", nama: "Toko", warna: "red" },
-    { id: "belajar", nama: "Belajar", warna: "yellow" },
-  ],
-  link: [
-    { id: "l1", judul: "Portofolio", url: "https://example.com/portofolio", kategori: "karya", catatan: "karya pilihan", utama: true },
-    { id: "l2", judul: "Toko online", url: "https://example.com/toko", kategori: "toko", catatan: "stiker, cetak, merch", utama: true },
-    { id: "l3", judul: "Instagram", url: "https://instagram.com", kategori: "sosial", catatan: "@contoh", utama: false },
-    { id: "l4", judul: "YouTube", url: "https://youtube.com", kategori: "sosial", catatan: "video terbaru", utama: false, label: "baru", labelSampai: "2026-12-31" },
-  ],
-};
+// The real page content; shown until the admin saves, and what `npm run db:setup` seeds into Neon.
+export const DEFAULT_SITE: Site = siteSchema.parse(seed);
 
 /** Stored data that no longer fits (old theme formats, hand edits) falls back to the default instead of breaking the page. */
 export function parseSite(raw: unknown): Site {

@@ -26,7 +26,7 @@ assert.deepEqual(laneLayout(6), { compact: true, visible: 6 });
 assert.deepEqual(laneLayout(9), { compact: true, visible: 6 });
 
 // Labels expire after labelSampai.
-const l = { ...DEFAULT_SITE.link[3] };
+const l = { ...DEFAULT_SITE.link[0], label: "baru" as const, labelSampai: "2026-12-31" };
 assert.equal(activeLabel(l, "2026-12-31"), "baru");
 assert.equal(activeLabel(l, "2027-01-01"), undefined);
 
@@ -40,6 +40,9 @@ assert.equal(statusAt(st, wita(18, 10)), "merah"); // Sunday
 assert.equal(statusAt(st, wita(15, 6)), "kuning"); // 06:00 WITA is 05:00 WIB / 22:00 UTC the day before
 assert.equal(statusAt({ ...st, zona: "Asia/Jakarta" }, wita(15, 9)), "kuning", "09:00 WITA is 08:00 WIB: not open yet in Jakarta");
 assert.equal(statusAt({ ...st, mode: "manual", manual: "kuning" }, wita(15, 10)), "kuning");
+// Stored categories from before icons existed get the generic one; the seed has an icon per category.
+assert.equal(siteSchema.parse({ ...DEFAULT_SITE, kategori: DEFAULT_SITE.kategori.map(({ ikon: _, ...k }) => k) }).kategori[0].ikon, "umum");
+assert.deepEqual(DEFAULT_SITE.kategori.map((k) => k.ikon), ["simpan", "listrik", "air", "truk"]);
 // Old stored data without a zone gets the default.
 assert.equal(siteSchema.parse({ ...DEFAULT_SITE, status: { ...st, zona: undefined } }).status.zona, "Asia/Makassar");
 

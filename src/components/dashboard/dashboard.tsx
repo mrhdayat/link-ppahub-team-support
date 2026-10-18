@@ -215,7 +215,8 @@ export function Dashboard({ initial, days: initialDays, today, initialTab }: {
       <header className="dash-top">
         <div className="hazard" aria-hidden />
         <div className="dash-top-row">
-          <p className="dash-brand">Panel rambu</p>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 32px static logo, already sized */}
+          <p className="dash-brand"><img className="dash-logo" src="/logo-ppa.png" alt="" width={32} height={32} /><span dir="auto">{site.profil.nama}</span> <small>Admin</small></p>
           <span className="save-state" data-saving={saving || undefined} aria-hidden>
             {saving ? "Menyimpan…" : "Tersimpan"}
           </span>

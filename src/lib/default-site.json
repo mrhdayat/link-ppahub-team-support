@@ -1,0 +1,476 @@
+{
+  "profil": {
+    "nama": "TEAM SUPPORT",
+    "inisial": "TS",
+    "bio": "Berjaya di darat, laut dan udara."
+  },
+  "status": {
+    "mode": "otomatis",
+    "zona": "Asia/Makassar",
+    "jamBuka": 9,
+    "jamTutup": 21,
+    "hariLibur": [
+      0
+    ],
+    "manual": "hijau"
+  },
+  "balasMaksJam": 24,
+  "tampilKlik": true,
+  "whatsapp": "",
+  "teksBerjalan": [
+    "Berjaya di darat, laut dan udara",
+    "SAVELINK · High Voltage · Dewatering · Truck"
+  ],
+  "kategori": [
+    {
+      "id": "savelink",
+      "nama": "SAVELINK",
+      "warna": "green",
+      "ikon": "simpan"
+    },
+    {
+      "id": "high-voltage",
+      "nama": "High Voltage",
+      "warna": "yellow",
+      "ikon": "listrik"
+    },
+    {
+      "id": "dewatering",
+      "nama": "Dewatering",
+      "warna": "blue",
+      "ikon": "air"
+    },
+    {
+      "id": "truck",
+      "nama": "Truck",
+      "warna": "red",
+      "ikon": "truk"
+    }
+  ],
+  "link": [
+    {
+      "id": "sl-purchasing",
+      "judul": "Purchasing Monitoring System",
+      "url": "https://script.google.com/a/macros/amm.id/s/AKfycbx_sjZ0FekoRvPRxSOK-akiKMXQBTNPFpEO9Di80B9FngST83OmiJNkNRHw2d8-vZ3mLA/exec",
+      "kategori": "savelink",
+      "catatan": "Apps Script",
+      "utama": false
+    },
+    {
+      "id": "sl-konsumsi",
+      "judul": "Pemesanan Konsumsi Non-Reguler",
+      "url": "https://one.ppabib.com/link/pemesanankonsumsi-nonreguler",
+      "kategori": "savelink",
+      "catatan": "PPA ONE",
+      "utama": false
+    },
+    {
+      "id": "sl-order-tool-pe",
+      "judul": "Order Tool PE",
+      "url": "https://docs.google.com/forms/u/0/d/e/1FAIpQLSdN4H0CFuuOkPQt3EBsRXASu6rL_3adGu8N42SDjxsyso15BQ/formResponse",
+      "kategori": "savelink",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "sl-stock-swi",
+      "judul": "Monitoring Stock SWI",
+      "url": "https://monitoringswibib.netlify.app/",
+      "kategori": "savelink",
+      "catatan": "Situs",
+      "utama": false
+    },
+    {
+      "id": "sl-apd",
+      "judul": "Pengambilan APD",
+      "url": "https://shera.ppabib.com/",
+      "kategori": "savelink",
+      "catatan": "SHERA",
+      "utama": false
+    },
+    {
+      "id": "sl-rpl-hv",
+      "judul": "Approval RPL High Voltage",
+      "url": "https://www.appsheet.com/start/1b22434b-8d03-4dbf-9c67-c7177ed8a880",
+      "kategori": "savelink",
+      "catatan": "AppSheet",
+      "utama": false
+    },
+    {
+      "id": "sl-rpl-dewatering",
+      "judul": "Approval RPL Dewatering",
+      "url": "https://www.appsheet.com/start/27e5e27d-f200-4ad8-a290-fc84256a5c5c",
+      "kategori": "savelink",
+      "catatan": "AppSheet",
+      "utama": false
+    },
+    {
+      "id": "sl-rpl-truck",
+      "judul": "Approval RPL Truck",
+      "url": "https://www.appsheet.com/start/f24ca3c1-3dd6-4bd9-a6ba-680e42ebfbba",
+      "kategori": "savelink",
+      "catatan": "AppSheet",
+      "utama": false
+    },
+    {
+      "id": "sl-evidence",
+      "judul": "Storage Evidence",
+      "url": "https://drive.google.com/drive/folders/1IB2cZ6einNHEoyZTPD18Xd-1ZXAbgLgP?usp=sharing",
+      "kategori": "savelink",
+      "catatan": "Google Drive",
+      "utama": false
+    },
+    {
+      "id": "sl-asset-plant",
+      "judul": "Monitoring Asset Plant",
+      "url": "https://docs.google.com/spreadsheets/d/1KnnZUpSUTfVrG_5kckx8_NT74k4vaPRp0Dyxochmd44/edit?gid=0#gid=0",
+      "kategori": "savelink",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "sl-absensi-bagong",
+      "judul": "Absensi Bagong Bulanan",
+      "url": "https://docs.google.com/spreadsheets/d/1jnAcEeLzjnLM3RsPCf3KBVG_IXtMUcKLAr898s8UQr8/edit?gid=1508531500#gid=1508531500",
+      "kategori": "savelink",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "sl-votp",
+      "judul": "Order VOTP",
+      "url": "https://votp.my.id/app/dashboard",
+      "kategori": "savelink",
+      "catatan": "Situs",
+      "utama": false
+    },
+    {
+      "id": "sl-cek-mcu",
+      "judul": "Cek Masa Aktif MCU, Permit & Danger Tag",
+      "url": "https://docs.google.com/spreadsheets/d/1mntr-jgVtwXi0Yq4_lCQLK-9FtkJdlvTQVR22KMiaUs/edit?gid=1221848520#gid=1221848520",
+      "kategori": "savelink",
+      "catatan": "Follow-up MCU BJM - PPA · Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "sl-form-visitor",
+      "judul": "Form Izin Visitor",
+      "url": "https://bit.ly/FormIzinVisitor",
+      "kategori": "savelink",
+      "catatan": "Monitoring manpower",
+      "utama": false
+    },
+    {
+      "id": "sl-form-akomodasi",
+      "judul": "Form Akomodasi Visitor",
+      "url": "https://bit.ly/PENGAJUAN_AKOMODASI_VISITOR",
+      "kategori": "savelink",
+      "catatan": "Monitoring manpower",
+      "utama": false
+    },
+    {
+      "id": "sl-cek-fatigue",
+      "judul": "Monitoring Cek Fatigue",
+      "url": "https://docs.google.com/spreadsheets/d/1xtNh9Lggh8kpswJJvFG6L4CG2nMsrFGxT2iZPPI6zxs/edit?usp=sharing",
+      "kategori": "savelink",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "sl-temuan-hv",
+      "judul": "Temuan HV",
+      "url": "https://docs.google.com/spreadsheets/d/1oij9onPZUYLLCD0Q7RAeKQfrhsJtR3cCnTzYlD8TZfE/edit?gid=652125563#gid=652125563",
+      "kategori": "savelink",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "sl-temuan-dewatering",
+      "judul": "Monitoring Temuan Inspeksi Dewatering",
+      "url": "https://docs.google.com/spreadsheets/d/1JpZzX5jQJFDzUw1Xe6vFZ0hzCkXEaeURTzLeLELbYtU/edit?hl=id&gid=0#gid=0",
+      "kategori": "savelink",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "hv-simper-permit",
+      "judul": "Pembuatan Simper & Permit",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScYVkFmG0k0yXZLMjZVd0rZyx87TOVZMR5jh-_Bubzgzh3t4A/viewform",
+      "kategori": "high-voltage",
+      "catatan": "Google Form",
+      "utama": true
+    },
+    {
+      "id": "hv-arrester",
+      "judul": "Monitoring Arrester & Grounding Genset",
+      "url": "https://docs.google.com/spreadsheets/d/1Qq6B9CSMbcNzEdE_J94OQqmuEB-7mjcG3fIAc4dnyMs/edit?usp=sharing",
+      "kategori": "high-voltage",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "hv-dangertag",
+      "judul": "Danger Tag",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSdDM7nX0lEEZFTC2L_6Bof-lUv9yI7JKtF7347sAiSY2hPDEw/viewform",
+      "kategori": "high-voltage",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "hv-ik-tar",
+      "judul": "IK, TAR, dll",
+      "url": "https://ppa-ppd.org",
+      "kategori": "high-voltage",
+      "catatan": "ppa-ppd.org",
+      "utama": false
+    },
+    {
+      "id": "hv-monitoring-order",
+      "judul": "Monitoring Order",
+      "url": "https://docs.google.com/spreadsheets/d/1PnX4PBXZCFsnfffpxj2rZEom9SvGMphA1e3jdUMzhgI/edit?usp=sharing",
+      "kategori": "high-voltage",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "hv-cco",
+      "judul": "Input CCO",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScI_7QGiy8yJEnHlm8Uz-cf8XQGcopQBSvrbszAl6U9KqAVHw/viewform",
+      "kategori": "high-voltage",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "hv-monitoring-cco",
+      "judul": "Monitoring CCO",
+      "url": "https://docs.google.com/spreadsheets/d/1P1NU_NlxiyTygVzqv8ezGVwnNmlmHdqQbUihyrSS4wE/edit?resourcekey=&gid=1867487338#gid=1867487338",
+      "kategori": "high-voltage",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "hv-monitoring-unit",
+      "judul": "Dashboard Monitoring Unit",
+      "url": "https://docs.google.com/spreadsheets/d/1eY-m-UullDk-fsAYRWUp8TbFFOI3wFcx6cxaTtRLX3A/edit?gid=0#gid=0",
+      "kategori": "high-voltage",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "hv-partbook",
+      "judul": "Partbook HV",
+      "url": "https://drive.google.com/drive/folders/1s5KBWYNqtcDvYpECWX3XyALKCZXFOKbN",
+      "kategori": "high-voltage",
+      "catatan": "Google Drive",
+      "utama": false
+    },
+    {
+      "id": "hv-fppk",
+      "judul": "Form FPPK",
+      "url": "https://ppa-pltbib.id/pems/FPPK/formfppk.php",
+      "kategori": "high-voltage",
+      "catatan": "PEMS",
+      "utama": false
+    },
+    {
+      "id": "hv-ss",
+      "judul": "Link SS",
+      "url": "https://forms.gle/QeiswgkA4VbGrg9fA",
+      "kategori": "high-voltage",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "hv-sunmori",
+      "judul": "Temuan Sunmori",
+      "url": "https://bit.ly/MonitoringKetidaksesuaianSUNMORI2026",
+      "kategori": "high-voltage",
+      "catatan": "Monitoring ketidaksesuaian 2026",
+      "utama": false
+    },
+    {
+      "id": "dw-dashboard",
+      "judul": "Dashboard Dewatering",
+      "url": "https://sites.google.com/ppa.co.id/dewatering",
+      "kategori": "dewatering",
+      "catatan": "Google Sites",
+      "utama": false
+    },
+    {
+      "id": "dw-ik",
+      "judul": "IK Dewatering",
+      "url": "https://shorturl.at/RiudK",
+      "kategori": "dewatering",
+      "catatan": "Shortlink",
+      "utama": false
+    },
+    {
+      "id": "dw-populasi",
+      "judul": "Populasi Unit",
+      "url": "https://shorturl.at/vxLzB",
+      "kategori": "dewatering",
+      "catatan": "Shortlink",
+      "utama": false
+    },
+    {
+      "id": "dw-partbook",
+      "judul": "Partbook & Shop Manual",
+      "url": "https://shorturl.at/3MQCy",
+      "kategori": "dewatering",
+      "catatan": "Shortlink",
+      "utama": false
+    },
+    {
+      "id": "dw-simper-permit",
+      "judul": "Pembuatan Simper & Permit",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScYVkFmG0k0yXZLMjZVd0rZyx87TOVZMR5jh-_Bubzgzh3t4A/viewform",
+      "kategori": "dewatering",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "dw-dangertag",
+      "judul": "Danger Tag",
+      "url": "https://training-she.ppabib.com",
+      "kategori": "dewatering",
+      "catatan": "Training SHE",
+      "utama": false
+    },
+    {
+      "id": "dw-monitoring-rpl",
+      "judul": "Monitoring RPL Dewatering",
+      "url": "https://docs.google.com/spreadsheets/d/1wv3Q91QQlm1kqgeYX6JJU_kQRqEghlqtIGDnDuHpNE8/edit?gid=1137351243#gid=1137351243",
+      "kategori": "dewatering",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "dw-input-cco",
+      "judul": "Input CCO",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScEPjCyUzPqfvje1aAWmro0TDlFpBJZ-Hxg1m_FdHY9GM2bvg/viewform?usp=dialog",
+      "kategori": "dewatering",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "dw-monitoring-cco",
+      "judul": "Monitoring CCO",
+      "url": "https://shorturl.at/msGNW",
+      "kategori": "dewatering",
+      "catatan": "Shortlink",
+      "utama": false
+    },
+    {
+      "id": "dw-tar",
+      "judul": "Form TAR",
+      "url": "https://forms.gle/yM8MGYga1j8D8Ahm8",
+      "kategori": "dewatering",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "dw-wo-lifting",
+      "judul": "Work Order Lifting",
+      "url": "https://forms.gle/Tvz6VJMN2ZBJNYxe9",
+      "kategori": "dewatering",
+      "catatan": "Big crane & lowboy · Google Form",
+      "utama": false
+    },
+    {
+      "id": "dw-ppa-one",
+      "judul": "PPA ONE Website",
+      "url": "https://one.ppabib.com/",
+      "kategori": "dewatering",
+      "catatan": "Portal PPA",
+      "utama": true
+    },
+    {
+      "id": "dw-portal-hc",
+      "judul": "Portal HC",
+      "url": "https://sites.google.com/ppa.co.id/hc-ppa-bib/beranda",
+      "kategori": "dewatering",
+      "catatan": "Google Sites",
+      "utama": false
+    },
+    {
+      "id": "dw-portal-apk",
+      "judul": "Portal APK",
+      "url": "https://playstore.starasia.tech/applications",
+      "kategori": "dewatering",
+      "catatan": "Unduh aplikasi",
+      "utama": false
+    },
+    {
+      "id": "dw-ss",
+      "judul": "Link SS",
+      "url": "https://forms.gle/QeiswgkA4VbGrg9fA",
+      "kategori": "dewatering",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "dw-fppk",
+      "judul": "Create FPPK",
+      "url": "https://plant.ppabib.com/pems/FPPK/FPPK.php",
+      "kategori": "dewatering",
+      "catatan": "PEMS",
+      "utama": false
+    },
+    {
+      "id": "tr-simper-permit",
+      "judul": "Pengajuan Simper & Permit",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScYVkFmG0k0yXZLMjZVd0rZyx87TOVZMR5jh-_Bubzgzh3t4A/viewform",
+      "kategori": "truck",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "tr-dangertag",
+      "judul": "Danger Tag",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSdDM7nX0lEEZFTC2L_6Bof-lUv9yI7JKtF7347sAiSY2hPDEw/viewform",
+      "kategori": "truck",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "tr-monitoring-unit",
+      "judul": "Dashboard Monitoring Unit",
+      "url": "https://docs.google.com/spreadsheets/d/1eY-m-UullDk-fsAYRWUp8TbFFOI3wFcx6cxaTtRLX3A/edit?gid=0#gid=0",
+      "kategori": "truck",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "tr-input-cco",
+      "judul": "Input CCO",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSeflZQXnI2dfHf0d4fhRKpLUu9kI1ErSJb_syhmW7PFOrjmMg/viewform?usp=dialog",
+      "kategori": "truck",
+      "catatan": "Google Form",
+      "utama": false
+    },
+    {
+      "id": "tr-smart-sprayer",
+      "judul": "Install Smart Sprayer 3 Mode",
+      "url": "https://docs.google.com/spreadsheets/d/1USzFdkR7IaKvhu0Wxzt4kuAdSBQA_4eZUGO-0-USv6c/edit?hl=id&gid=0#gid=0",
+      "kategori": "truck",
+      "catatan": "Project · Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "tr-cover-transmisi",
+      "judul": "Install Cover Transmisi WT",
+      "url": "https://docs.google.com/spreadsheets/d/1USzFdkR7IaKvhu0Wxzt4kuAdSBQA_4eZUGO-0-USv6c/edit?hl=id&gid=435296588#gid=435296588",
+      "kategori": "truck",
+      "catatan": "Project · Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "tr-air-sus",
+      "judul": "Install Operator Air Sus Sany ke Axor",
+      "url": "https://docs.google.com/spreadsheets/d/1USzFdkR7IaKvhu0Wxzt4kuAdSBQA_4eZUGO-0-USv6c/edit?hl=id&gid=596161922#gid=596161922",
+      "kategori": "truck",
+      "catatan": "Project WT CT · Spreadsheet",
+      "utama": false
+    }
+  ]
+}

@@ -155,7 +155,7 @@ export function Tautan({ site, days, commit, edit, setEdit }: {
                   <span className="row-pos" aria-hidden>{i + 1}</span>
                   <div className="row-main">
                     <div className="row-title">
-                      <Plate warna={k?.warna} small>{k?.nama ?? "Tanpa kategori"}</Plate>
+                      <Plate warna={k?.warna} ikon={k?.ikon} small>{k?.nama ?? "Tanpa kategori"}</Plate>
                       <span className="row-judul">{l.judul}</span>
                     </div>
                     <span className="row-url">{l.url.replace(/^https?:\/\//, "")}</span>
@@ -319,7 +319,7 @@ function LinkForm({ open, link, site, commit, onClose }: {
           </LField>
           <LField k="catatan" label="Catatan" error={show("catatan")} hint={`${d.catatan.length}/60 · opsional`}>
             <input {...w("catatan", true)} value={d.catatan} maxLength={60} autoComplete="off"
-              placeholder="mis. karya pilihan" onChange={(e) => set({ catatan: e.target.value })} />
+              placeholder="mis. Google Form" onChange={(e) => set({ catatan: e.target.value })} />
           </LField>
 
           <div className="field">

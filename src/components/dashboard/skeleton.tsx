@@ -4,7 +4,10 @@ export function DashboardSkeleton() {
     <div className="dash" aria-busy="true">
       <header className="dash-top">
         <div className="hazard" aria-hidden />
-        <div className="dash-top-row"><p className="dash-brand">Panel rambu</p></div>
+        <div className="dash-top-row">
+          {/* eslint-disable-next-line @next/next/no-img-element -- 32px static logo, already sized */}
+          <p className="dash-brand"><img className="dash-logo" src="/logo-ppa.png" alt="" width={32} height={32} /><span>Admin</span></p>
+        </div>
       </header>
       <nav className="dash-nav" aria-hidden>
         <ul>{Array.from({ length: 5 }, (_, i) => <li key={i}><span className="sk sk-nav" /></li>)}</ul>

@@ -12,7 +12,7 @@ import { isTab } from "@/components/dashboard/tabs";
 import "@/components/rambu/tokens.css";
 import "@/components/dashboard/dashboard.css";
 
-export const metadata: Metadata = { title: "Panel rambu", robots: { index: false } };
+export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
 export default function AdminPage({ searchParams }: PageProps<"/admin">) {
   return (

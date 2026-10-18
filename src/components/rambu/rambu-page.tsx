@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ZONA, activeLabel, clockIn, laneLayout, statusAt, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
 import { X } from "@phosphor-icons/react/dist/ssr";
-import { Arrow, Diamond, Octagon, SunMoon, UTurn } from "./signs";
+import Image from "next/image";
+import { Arrow, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
 import "./tokens.css";
 import "./rambu.css";
 
@@ -320,7 +321,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
             </button>
             {lanes.map(({ k, links }) => (
               <button key={k.id} type="button" className="tab" data-warna={k.warna} aria-pressed={tab === k.id} onClick={() => pickTab(k.id)}>
-                {k.nama} <span className="tab-n">{links.length}</span>
+                <KategoriIkon ikon={k.ikon} /> {k.nama} <span className="tab-n">{links.length}</span>
               </button>
             ))}
           </nav>
@@ -335,7 +336,9 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           <span className="bracket" data-c="br" aria-hidden />
           <span className="scan" aria-hidden />
           <div className="hud-id">
-            <Diamond text={profil.inisial} />
+            <span className="logo-sign">
+              <Image src="/logo-ppa.png" alt="Logo PPA" width={96} height={96} priority />
+            </span>
             <div>
               <h1 ref={nameRef} className="hud-name" tabIndex={-1} dir="auto">
                 {profil.nama}
@@ -379,7 +382,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
               ref={search}
               id="cari"
               type="search"
-              placeholder="Cari: toko, video, kelas…"
+              placeholder="Cari: CCO, permit, monitoring…"
               autoComplete="off"
               enterKeyHint="search"
               value={query}
@@ -448,6 +451,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           return (
             <section key={k.id} id={`jalur-${k.id}`} className="lane" aria-labelledby={`plate-${k.id}`}>
               <h2 id={`plate-${k.id}`} className="plate" data-warna={k.warna}>
+                <KategoriIkon ikon={k.ikon} />
                 <span>
                   Jalur <bdi>{k.nama}</bdi>
                 </span>{" "}
@@ -506,7 +510,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
             </a>
             <div className="stop-copy">
               <p className="stop-title">Berhenti sebentar</p>
-              <p>Mau kerja sama atau pesan karya? Langsung chat saja.</p>
+              <p>Butuh bantuan tim support? Langsung chat saja.</p>
               <div className="limit">
                 <span className="limit-sign" aria-hidden>
                   {site.balasMaksJam}

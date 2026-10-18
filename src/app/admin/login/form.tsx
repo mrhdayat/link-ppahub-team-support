@@ -24,7 +24,9 @@ export function LoginForm() {
     <div className="login">
       <div className="hazard" aria-hidden />
       <form className="panel login-panel" action={action}>
-        <h1 className="plate-h" data-warna="yellow">Masuk ke panel</h1>
+        {/* eslint-disable-next-line @next/next/no-img-element -- static logo, already sized */}
+        <img className="login-logo" src="/logo-ppa.png" alt="Logo PPA" width={72} height={72} />
+        <h1 className="plate-h" data-warna="yellow">Masuk ke panel TEAM SUPPORT</h1>
         <div className="field" data-invalid={state.error ? "" : undefined}>
           <label htmlFor="password">Password</label>
           <input

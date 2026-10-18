@@ -1,6 +1,6 @@
-import { neon } from "@neondatabase/serverless";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { ensureSchema, sql } from "./db";
 import { clockIn, type Zona } from "./site";
 
 // First-party, aggregate-only counters: one number per (day, key). No IPs, no cookies, no user agents stored.
@@ -10,14 +10,9 @@ export type Counts = Record<string, number>;
 export type Day = { day: string; counts: Counts };
 
 const FILE = path.join(process.cwd(), "data", "analytics.json");
-const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
 
 export const EVENT_KEYS = ["view", "wa", "share", "qr"] as const;
 export const isLinkKey = (k: string) => /^l:[\w-]{1,40}$/.test(k);
-
-async function ensureTable() {
-  await sql!`create table if not exists hits (day date not null, k text not null, n integer not null default 0, primary key (day, k))`;
-}
 
 async function readFileStore(): Promise<Record<string, Counts>> {
   try {
@@ -33,7 +28,7 @@ let queue: Promise<unknown> = Promise.resolve();
 export async function recordHit(k: string, zona: Zona, now = new Date()): Promise<void> {
   const day = clockIn(zona, now).date;
   if (sql) {
-    await ensureTable();
+    await ensureSchema();
     await sql`insert into hits (day, k, n) values (${day}, ${k}, 1) on conflict (day, k) do update set n = hits.n + 1`;
     return;
   }
@@ -50,7 +45,7 @@ export async function recordHit(k: string, zona: Zona, now = new Date()): Promis
 /** Every stored day, oldest first. */
 export async function readDays(): Promise<Day[]> {
   if (sql) {
-    await ensureTable();
+    await ensureSchema();
     const rows = (await sql`select to_char(day, 'YYYY-MM-DD') as day, k, n from hits order by day`) as { day: string; k: string; n: number }[];
     const by = new Map<string, Counts>();
     for (const r of rows) (by.get(r.day) ?? by.set(r.day, {}).get(r.day)!)[r.k] = Number(r.n);
@@ -87,7 +82,7 @@ export const linkTaps = (c: Counts) => Object.entries(c).reduce((s, [k, n]) => (
 /** Wipe every counter (admin "reset statistik"). */
 export async function resetHits(): Promise<void> {
   if (sql) {
-    await ensureTable();
+    await ensureSchema();
     await sql`delete from hits`;
     return;
   }
