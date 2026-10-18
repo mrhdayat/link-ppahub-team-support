@@ -26,7 +26,7 @@ Tanpa `DATABASE_URL`, data disimpan di `data/site.json`. Isi awal (4 kategori, 5
 
 ## Database (Neon)
 
-1. Buat database Neon. Org Neon akun ini dikelola Vercel, jadi buat lewat Vercel: `vercel integration add neon --name link-teamppa` (pilih region Singapore), atau Vercel → Storage → Create Database → Neon.
+1. Database Neon `link-teamppa` (project `autumn-bird-28712909`, aws-us-east-1) dibuat lewat integrasi Vercel, karena org Neon akun ini dikelola Vercel: `vercel integration add neon --name link-teamppa --no-connect`.
 2. Salin connection string **pooled** ke `.env.local` sebagai `DATABASE_URL`.
 3. Buat tabel dan isi CONFIG awal:
 
@@ -42,7 +42,7 @@ npm run db:setup -- --force # timpa CONFIG di Neon dengan data/site.json
 
 ## Deploy
 
-Di Vercel atau hosting serverless lain, **wajib** isi `DATABASE_URL`, `ADMIN_PASSWORD` (min. 12 karakter), dan sebaiknya `SESSION_SECRET`. Disk serverless tidak permanen, jadi `data/site.json` akan hilang. `vercel.json` menaruh fungsi di `sin1` (Singapura) supaya dekat dengan database. Di VPS atau server biasa, file lokal sudah cukup.
+Di Vercel atau hosting serverless lain, **wajib** isi `DATABASE_URL`, `ADMIN_PASSWORD` (min. 12 karakter), dan sebaiknya `SESSION_SECRET`. Disk serverless tidak permanen, jadi `data/site.json` akan hilang. `vercel.json` menaruh fungsi di `iad1` (Washington), satu region dengan database Neon di us-east-1. Halaman publik tetap dilayani dari CDN terdekat karena dirender statis. Di VPS atau server biasa, file lokal sudah cukup.
 
 ## Cek
 
