@@ -88,8 +88,9 @@ export function Ringkasan({
   const clicks = linkTaps(c);
   const pViews = p.view ?? 0;
   const pClicks = linkTaps(p);
-  const ratio = views ? (clicks / views) * 100 : null;
-  const pRatio = pViews ? (pClicks / pViews) * 100 : null;
+  // Taps per visit, not a percentage: one visit can tap several signs, so a share would pass 100%.
+  const ratio = views ? clicks / views : null;
+  const pRatio = pViews ? pClicks / pViews : null;
   const vs = `${n} hari sebelumnya`;
 
   return (
@@ -98,7 +99,7 @@ export function Ringkasan({
       <ul className="kpis" aria-label={`Angka ${n} hari terakhir`}>
         <Kpi label="Kunjungan" value={fmtCompact(views)} delta={<Delta cur={views} prev={pViews} vs={vs} />} />
         <Kpi label="Klik tautan" value={fmtCompact(clicks)} delta={<Delta cur={clicks} prev={pClicks} vs={vs} />} />
-        <Kpi label="Rasio klik" value={ratio === null ? "–" : pct(ratio)} hint="klik ÷ kunjungan"
+        <Kpi label="Klik per kunjungan" value={ratio === null ? "–" : `${perVisit.format(ratio)}×`} hint="rata-rata tautan diklik tiap kunjungan"
           delta={<Delta cur={ratio} prev={pRatio} vs={vs} points />} />
         <Kpi label="Chat WhatsApp" value={fmtCompact(c.wa ?? 0)} delta={<Delta cur={c.wa ?? 0} prev={p.wa ?? 0} vs={vs} />} />
         <Kpi label="Bagikan + QR" value={fmtCompact((c.share ?? 0) + (c.qr ?? 0))}
@@ -138,13 +139,15 @@ function Kpi({ label, value, hint, delta }: { label: string; value: string; hint
 }
 
 /** Change vs the previous equal period: arrow shape + sign + words, never colour alone. */
+const perVisit = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 });
+
 function Delta({ cur, prev, vs, points }: { cur: number | null; prev: number | null; vs: string; points?: boolean }) {
   if (cur === null || prev === null) return <span className="delta" data-dir="flat">Belum bisa dibandingkan</span>;
   const diff = cur - prev;
   const dir = diff > 0 ? "up" : diff < 0 ? "down" : "flat";
   let text: string;
   if (dir === "flat") text = `Sama dengan ${vs}`;
-  else if (points) text = `${diff > 0 ? "+" : "−"}${fmtCompact(Math.round(Math.abs(diff) * 10) / 10)} poin dari ${vs}`;
+  else if (points) text = `${diff > 0 ? "+" : "−"}${perVisit.format(Math.abs(diff))}× dari ${vs}`;
   else if (!prev) text = `+${fmt(diff)} dari 0 (${vs})`;
   else text = `${diff > 0 ? "+" : "−"}${pct(Math.abs(diff / prev) * 100)} dari ${vs}`;
   return (

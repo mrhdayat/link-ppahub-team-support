@@ -53,3 +53,11 @@ User: desain workshop kurang; tampil terbatas 6; minta "papan pengumuman" atau i
 - [ ] T7 editor admin CONFIG (worker, retry ctx_88cafc3ed7bf)
 - [ ] T8 audit publik (worker ctx_cea4f04afddb)
 - [ ] Integrasi, build, DESIGN.md baru
+
+## Iterasi 4 — Analitik + dashboard (2026-10-16..18)
+- [x] "dilewati" dihapus → jumlah klik per tautan (tampilKlik), /api/hit + /api/hits, Neon/file (8b4cd5b, d7d00ad)
+- [x] Bug preview admin kosong: marquee melebarkan preview (contain: inline-size)
+- [x] T9 dashboard: Ringkasan analitik, CRUD tautan/kategori, profil, pengaturan, satu Toaster (merge 72d6d19)
+- [x] Rasio klik → klik per kunjungan
+- [ ] Neon: menunggu user `npx neon@latest login`, lalu link project + env + migrasi data
+- [ ] Deploy Vercel (butuh persetujuan user)
