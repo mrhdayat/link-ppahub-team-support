@@ -4,16 +4,27 @@ import { useActionState } from "react";
 import { SignIn } from "@phosphor-icons/react";
 import { login, type LoginState } from "@/app/actions";
 import "@/components/rambu/tokens.css";
-import "@/components/editor/editor.css";
+import "@/components/dashboard/dashboard.css";
+
+// Login errors stay inline under the field (no toasts): one message, replaced on each try.
+async function attempt(prev: LoginState, form: FormData): Promise<LoginState> {
+  try {
+    return await login(prev, form);
+  } catch (e) {
+    // fetch() rejects with a TypeError when the network is down; anything else (e.g. the redirect) is the framework's.
+    if (e instanceof TypeError) return { error: "Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi." };
+    throw e;
+  }
+}
 
 export function LoginForm() {
-  const [state, action, pending] = useActionState<LoginState, FormData>(login, {});
+  const [state, action, pending] = useActionState<LoginState, FormData>(attempt, {});
 
   return (
     <div className="login">
       <div className="hazard" aria-hidden />
       <form className="panel login-panel" action={action}>
-        <h1 className="plate-h" data-warna="yellow">Masuk ke editor</h1>
+        <h1 className="plate-h" data-warna="yellow">Masuk ke panel</h1>
         <div className="field" data-invalid={state.error ? "" : undefined}>
           <label htmlFor="password">Password</label>
           <input

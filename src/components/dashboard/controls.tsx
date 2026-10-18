@@ -3,6 +3,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { ArrowDown, ArrowUp, Trash } from "@phosphor-icons/react";
 import type { Warna } from "@/lib/site";
+import { toast } from "./toast";
 
 /** "link.2.url" → "f-link-2-url": the DOM id a validation path points at. */
 export const fid = (path: string) => `f-${path.replace(/\./g, "-")}`;
@@ -59,16 +60,20 @@ export function initialsOf(nama: string): string {
 }
 
 export function Field({
-  path, label, error, hint, children,
-}: { path: string; label: string; error?: string; hint?: ReactNode; children: ReactNode }) {
+  path, label, error, hint, children, ids,
+}: {
+  path: string; label: string; error?: string; hint?: ReactNode; children: ReactNode;
+  ids?: { input: string; err: string; hint: string };
+}) {
+  const input = ids?.input ?? fid(path);
   return (
     <div className="field" data-invalid={error ? "" : undefined}>
       <div className="field-head">
-        <label htmlFor={fid(path)}>{label}</label>
-        {hint && <span className="field-hint" id={`${fid(path)}-hint`}>{hint}</span>}
+        <label htmlFor={input}>{label}</label>
+        {hint && <span className="field-hint" id={ids?.hint ?? `${fid(path)}-hint`}>{hint}</span>}
       </div>
       {children}
-      {error && <p className="field-error" id={`${fid(path)}-err`}>{error}</p>}
+      {error && <p className="field-error" id={ids?.err ?? `${fid(path)}-err`}>{error}</p>}
     </div>
   );
 }
@@ -127,9 +132,31 @@ export function RowTools({ prefix, name, first, last, onMove, onRemove }: {
 }
 
 /** Small sign plate in a category colour. */
-export const Plate = ({ warna, children }: { warna: Warna | undefined; children?: ReactNode }) => (
-  <span className="plate" data-warna={warna ?? "none"}>{children}</span>
+export const Plate = ({ warna, small, children }: { warna: Warna | undefined; small?: boolean; children?: ReactNode }) => (
+  <span className="dplate" data-warna={warna ?? "none"} data-small={small || undefined}>{children}</span>
 );
+
+/** The public page's address, as visitors see it. */
+export const publicUrl = () => `${location.origin}/`;
+
+export async function copyText(text: string, done: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success(done);
+  } catch {
+    toast.error(`Gagal menyalin. Salin manual: ${text}`);
+  }
+}
+
+/** Save a Blob or data URL as a file through a temporary link. */
+export function download(name: string, data: Blob | string) {
+  const href = typeof data === "string" ? data : URL.createObjectURL(data);
+  const a = Object.assign(document.createElement("a"), { href, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  if (typeof data !== "string") setTimeout(() => URL.revokeObjectURL(href), 1000);
+}
 
 /** Whole-number box. A cleared box is NaN in the draft, which the schema refuses, so the admin can clear and retype. */
 export function NumberInput({ value, onValue, ...rest }: Omit<ComponentProps<"input">, "value" | "type"> & {
