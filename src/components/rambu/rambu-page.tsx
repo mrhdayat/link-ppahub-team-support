@@ -11,6 +11,9 @@ import { Arrow, Hauler, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
 import { norm, search as searchLinks, type Range } from "./search";
 import "./tokens.css";
 import "./rambu.css";
+// Dunia rambu (W1): weather/shift HUD cells, K3 strip, boom gate, headlight, road markings, seasonal theme.
+import { CuacaCell, RambuK3, ShiftCell, dunia } from "./world/hud-extras";
+import { Gate, KmJarak, Suasana } from "./world/effects";
 
 const THEME_KEY = "rambu-tema";
 const VIEW_KEY = "rambu-dilihat";
@@ -321,6 +324,8 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   const showGantry = !searching && !tab && gantry.length > 0;
   const lampu = now ? statusAt(status, now) : null;
   const laneNo = (id: string) => lanes.findIndex((l) => l.k.id === id) + 1;
+  // Dunia rambu: today's K3 message (tape + strip) and the seasonal theme.
+  const { k3, tema } = dunia(site, today);
 
   // ↓/↑ walk the search box and the results; Esc from anywhere in them clears the search.
   const roam = (e: ReactKeyboardEvent) => {
@@ -423,7 +428,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   };
 
   return (
-    <div className="rambu" data-preview={preview || undefined} data-booted={booted || undefined}>
+    <div className="rambu" data-preview={preview || undefined} data-booted={booted || undefined} data-tema={tema}>
       {!preview && lanes.length > 0 && (
         <a
           className="skip"
@@ -437,12 +442,15 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
         </a>
       )}
 
+      {/* Dunia rambu: road-edge markings + night headlight */}
+      {!preview && <Suasana />}
+
       <header className="topbar">
         <div className="tape">
           <div className="tape-run" aria-hidden>
             {[0, 1].map((n) => (
               <span key={n}>
-                {tapeItems(site.teksBerjalan.length ? site.teksBerjalan : [profil.nama]).map((t, i) => (
+                {tapeItems([...(k3 ? [`K3 · ${k3}`] : []), ...(site.teksBerjalan.length ? site.teksBerjalan : [profil.nama])]).map((t, i) => (
                   <span key={i} className="tape-item" dir="auto">
                     {t}
                   </span>
@@ -476,6 +484,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           <span className="bracket" data-c="bl" aria-hidden />
           <span className="bracket" data-c="br" aria-hidden />
           <span className="scan" aria-hidden />
+          {!preview && <Gate />}
           <div className="hud-id">
             <span className="logo-sign">
               <Image src="/logo-ppa.png" alt="Logo PPA" width={96} height={96} priority />
@@ -511,8 +520,12 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
               <dt>Rute</dt>
               <dd>{site.link.length} tujuan</dd>
             </div>
+            {/* Dunia rambu: next shift change + site weather */}
+            <ShiftCell shift={site.shift} own={own} />
+            <CuacaCell cuaca={site.cuaca} />
           </dl>
         </section>
+        <RambuK3 teks={k3} />
 
         {lanes.length > 0 && (
           <div className="finder">
@@ -721,7 +734,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
             <span className="km-cap" />
             <span className="km-face">
               KM
-              <b>0</b>
+              <KmJarak preview={preview} />
             </span>
           </div>
           <p>Titik awal semua rute.</p>
