@@ -32,7 +32,8 @@ assert.equal(activeLabel(l, "2027-01-01"), undefined);
 
 // Status lamp: open hours, closed hours, day off, manual override.
 // Times are given in UTC; the owner is on WITA (UTC+8), whatever the visitor's machine says.
-const st = DEFAULT_SITE.status; // 9–21 WITA, Sunday off
+// A fixed schedule: the seed's own hours follow whatever the admin last set.
+const st = { ...DEFAULT_SITE.status, mode: "otomatis" as const, zona: "Asia/Makassar" as const, jamBuka: 9, jamTutup: 21, hariLibur: [0] }; // 9–21 WITA, Sunday off
 const wita = (d: number, h: number) => new Date(Date.UTC(2026, 9, d, h - 8));
 assert.equal(statusAt(st, wita(15, 10)), "hijau"); // Thursday 10:00 WITA
 assert.equal(statusAt(st, wita(15, 22)), "kuning");

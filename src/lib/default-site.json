@@ -7,11 +7,9 @@
   "status": {
     "mode": "otomatis",
     "zona": "Asia/Makassar",
-    "jamBuka": 9,
-    "jamTutup": 21,
-    "hariLibur": [
-      0
-    ],
+    "jamBuka": 5,
+    "jamTutup": 24,
+    "hariLibur": [],
     "manual": "hijau"
   },
   "balasMaksJam": 24,
@@ -19,12 +17,13 @@
   "whatsapp": "",
   "teksBerjalan": [
     "Berjaya di darat, laut dan udara",
-    "SAVELINK · High Voltage · Dewatering · Truck"
+    "SAVELINK · High Voltage · Dewatering · Truck",
+    "Jaga kesehatan tubuh dan pastikan selalu aman dan selamat"
   ],
   "kategori": [
     {
       "id": "savelink",
-      "nama": "SAVELINK",
+      "nama": "GENERAL",
       "warna": "green",
       "ikon": "simpan"
     },
@@ -470,6 +469,80 @@
       "url": "https://docs.google.com/spreadsheets/d/1USzFdkR7IaKvhu0Wxzt4kuAdSBQA_4eZUGO-0-USv6c/edit?hl=id&gid=596161922#gid=596161922",
       "kategori": "truck",
       "catatan": "Project WT CT · Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "m6cb0vyj",
+      "judul": "COMEX MANAGEMENT",
+      "url": "https://plant.ppabib.com/pems/FPPK/FPPK.php",
+      "kategori": "savelink",
+      "catatan": "",
+      "utama": false,
+      "label": "baru"
+    },
+    {
+      "id": "pm2nz6wt",
+      "judul": "MONITORING PENGAMBILAN PART BY WO",
+      "url": "https://docs.google.com/spreadsheets/d/1MpmQaNpJaWjJZWiHIRqQCogrk5mzFxTpAAxMMcwBsSw/edit?gid=1168234338#gid=1168234338",
+      "kategori": "savelink",
+      "catatan": "SPREADSHEETS",
+      "utama": false,
+      "label": "baru"
+    },
+    {
+      "id": "gn-drone-crc",
+      "judul": "Drone Synergi CRC",
+      "url": "https://drone.votp.my.id",
+      "kategori": "savelink",
+      "catatan": "Monitoring progress repair by CRC",
+      "utama": false
+    },
+    {
+      "id": "gn-ofa",
+      "judul": "Dashboard OFA",
+      "url": "https://ofa.ppa-bib.net/dashboard",
+      "kategori": "savelink",
+      "catatan": "On Board Fleet Analis",
+      "utama": false
+    },
+    {
+      "id": "gn-gps-publik",
+      "judul": "Monitoring GPS Unit",
+      "url": "http://103.88.153.214:8084/vms/",
+      "kategori": "savelink",
+      "catatan": "Akses publik",
+      "utama": false
+    },
+    {
+      "id": "gn-gps-lokal",
+      "judul": "Monitoring GPS Unit (Lokal)",
+      "url": "http://172.16.0.248/vms/",
+      "kategori": "savelink",
+      "catatan": "Hanya dari jaringan kantor",
+      "utama": false
+    },
+    {
+      "id": "gn-izin-keluar-lv",
+      "judul": "Surat Izin Keluar LV",
+      "url": "https://docs.google.com/spreadsheets/d/1hzgvHBnLMMyXV0ZIvjHzps-pELH03boLcIDwsa3QIJ8/edit?gid=761714840#gid=761714840",
+      "kategori": "savelink",
+      "catatan": "Spreadsheet",
+      "utama": false
+    },
+    {
+      "id": "gn-used-equipment",
+      "judul": "Summary Used Equipment",
+      "url": "https://sites.google.com/ppa.co.id/bib02/used-equipment-bib",
+      "kategori": "savelink",
+      "catatan": "Google Sites",
+      "utama": false
+    },
+    {
+      "id": "gn-modm",
+      "judul": "MODM · Multi Dept Order Monitoring",
+      "url": "https://log.ppabisa.com/",
+      "kategori": "savelink",
+      "catatan": "log.ppabisa.com",
       "utama": false
     }
   ]
