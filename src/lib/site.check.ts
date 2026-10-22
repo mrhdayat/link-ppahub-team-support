@@ -1,7 +1,7 @@
 // Self-check: `npx tsx src/lib/site.check.ts`
 import assert from "node:assert/strict";
 import { lastDays, linkTaps, totals, type Day } from "./analytics";
-import { DEFAULT_SITE, activeLabel, buka24, isSafeUrl, laneLayout, parseSite, siteSchema, statusAt } from "./site";
+import { DEFAULT_SITE, activeLabel, buka24, isOfficeOnly, labelFor, lanesOf, linksIn, nextShift, safetyTalkFor, temaFor, isSafeUrl, laneLayout, parseSite, siteSchema, statusAt } from "./site";
 
 // Only openable schemes pass.
 assert.ok(isSafeUrl("https://wa.me/62812"));
@@ -50,6 +50,38 @@ assert.ok(buka24(allDay) && !buka24(st));
 assert.equal(statusAt(allDay, wita(15, 0)), "hijau");
 assert.equal(statusAt(allDay, wita(15, 23)), "hijau");
 assert.equal(statusAt(allDay, wita(18, 12)), "merah"); // Sunday is still a day off
+// Extra lanes, automatic BARU, office-only links, K3 rotation, shift countdown, calendar themes.
+{
+  const base = { ...DEFAULT_SITE.link[0], kategoriLain: [] as string[] };
+  const multi = { ...base, kategoriLain: [DEFAULT_SITE.kategori[1].id, base.kategori] };
+  assert.deepEqual(lanesOf(multi), [base.kategori, DEFAULT_SITE.kategori[1].id], "own lane first, no repeats");
+  assert.equal(bad({ link: [{ ...base, kategoriLain: ["tidak-ada"] }] }), false, "unknown extra lane");
+  const s2 = { ...DEFAULT_SITE, link: [multi] };
+  assert.equal(linksIn(s2, DEFAULT_SITE.kategori[1].id).length, 1);
+  const fresh = { ...base, label: undefined, dibuat: "2026-10-20" };
+  assert.equal(labelFor(fresh, "2026-10-20"), "baru");
+  assert.equal(labelFor(fresh, "2026-10-26"), "baru");
+  assert.equal(labelFor(fresh, "2026-10-27"), undefined, "BARU lasts 7 days");
+  assert.equal(labelFor({ ...fresh, label: "promo" }, "2026-10-21"), "promo", "admin label wins");
+  assert.equal(labelFor({ ...base, label: undefined, dibuat: undefined }, "2026-10-21"), undefined);
+  for (const u of ["http://172.16.0.248/vms/", "http://10.1.2.3", "http://192.168.1.10:8080", "http://localhost:3000", "http://nas.local"]) assert.ok(isOfficeOnly(u), u);
+  for (const u of ["http://103.88.153.214:8084/vms/", "http://172.32.0.1", "https://docs.google.com"]) assert.ok(!isOfficeOnly(u), u);
+  const talks = [{ teks: "A" }, { teks: "B" }, { teks: "Hari K3", tanggal: "2026-10-22" }];
+  assert.equal(safetyTalkFor(talks, "2026-10-22"), "Hari K3");
+  assert.notEqual(safetyTalkFor(talks, "2026-10-23"), safetyTalkFor(talks, "2026-10-24"), "undated ones rotate daily");
+  assert.equal(safetyTalkFor([], "2026-10-22"), undefined);
+  assert.deepEqual(nextShift(["06:00", "18:00"], 17, 30), { at: "18:00", minutes: 30 });
+  assert.deepEqual(nextShift(["06:00", "18:00"], 23, 0), { at: "06:00", minutes: 420 }, "wraps past midnight");
+  assert.deepEqual(nextShift(["06:00"], 6, 0), { at: "06:00", minutes: 1440 }, "exactly at change: next one is tomorrow");
+  assert.equal(temaFor("otomatis", "2026-08-17"), "hut-ri");
+  assert.equal(temaFor("otomatis", "2026-01-12"), "bulan-k3");
+  assert.equal(temaFor("otomatis", "2026-02-13"), "standar");
+  assert.equal(temaFor("hut-ppa", "2026-08-17"), "hut-ppa", "manual pick wins");
+  // Stored data from before these fields parses with defaults.
+  const old = siteSchema.parse({ ...DEFAULT_SITE, safetyTalk: undefined, shift: undefined, cuaca: undefined, tema: undefined });
+  assert.deepEqual(old.shift, ["06:00", "18:00"]);
+  assert.equal(old.tema, "otomatis");
+}
 // Old stored data without a zone gets the default.
 assert.equal(siteSchema.parse({ ...DEFAULT_SITE, status: { ...st, zona: undefined } }).status.zona, "Asia/Makassar");
 

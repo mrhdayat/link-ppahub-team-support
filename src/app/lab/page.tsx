@@ -14,12 +14,19 @@ const link = (i: number, kategori: string, patch: Partial<Link> = {}): Link => (
   judul: `Tujuan ${i + 1}`,
   url: `https://example.com/${i}`,
   kategori,
+  kategoriLain: [],
   catatan: "",
+  kataKunci: "",
+  panduan: "",
   utama: false,
   ...patch,
 });
 
 const WORST: Site = {
+  safetyTalk: [{ teks: "Gunakan APD lengkap sebelum masuk area tambang, cek ulang tali pengaman dan sepatu safety" }],
+  shift: ["06:00", "14:00", "22:00"],
+  cuaca: { aktif: true, nama: "Site dengan nama sangat panjang", lat: -3.6, lon: 115.6 },
+  tema: "otomatis",
   profil: {
     nama: "Aleksandra Wiśniewska-Kowalczyk · Studio",
     inisial: "AW",
