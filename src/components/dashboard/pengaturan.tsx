@@ -1,14 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { ArrowCounterClockwise, CopySimple, DownloadSimple, QrCode, SignOut, UploadSimple } from "@phosphor-icons/react";
-import { logout } from "@/app/actions";
-import { resetStats } from "@/app/admin/actions";
-import { siteSchema, type Site } from "@/lib/site";
-import { copyText, download, publicUrl } from "./controls";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  ArrowClockwise, ArrowCounterClockwise, ClockCounterClockwise, CopySimple, DownloadSimple, Key, QrCode, SignOut, UploadSimple,
+} from "@phosphor-icons/react";
+import { changePassword, logout } from "@/app/actions";
+import { listHistory, resetStats, restoreVersion, type VersionInfo } from "@/app/admin/actions";
+import { ZONA, siteSchema, type Site } from "@/lib/site";
+import { Field, copyText, download, publicUrl, wire } from "./controls";
 import { Confirm } from "./modal";
 import { EXPIRED, sessionExpired, toast } from "./toast";
+import { ago } from "./stats";
 import type { Commit } from "./dashboard";
+import "./insight.css";
 
 /** "link.3.url" → "tautan ke-4, kolom url": where in the file the problem is, in words. */
 function where(path: PropertyKey[]): string {
@@ -18,8 +22,9 @@ function where(path: PropertyKey[]): string {
   return path.map(String).join(".") || "berkas";
 }
 
-export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset }: {
+export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset, onRestored }: {
   site: Site; commit: Commit; unsaved: boolean; onLogout: () => void; onStatsReset: () => void;
+  onRestored: (s: Site) => void;
 }) {
   const file = useRef<HTMLInputElement>(null);
   const [importErr, setImportErr] = useState("");
@@ -150,6 +155,8 @@ export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset }: {
         {importErr && <p className="field-error" id="imp-err">Berkas ditolak. {importErr}.</p>}
       </section>
 
+      <Riwayat site={site} unsaved={unsaved} onRestored={onRestored} />
+
       <section className="panel" aria-labelledby="set-stats">
         <h3 className="panel-title" id="set-stats">Statistik</h3>
         <p className="field-hint">Menghapus semua angka kunjungan dan klik. Tautan dan pengaturan tidak berubah.</p>
@@ -160,6 +167,8 @@ export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset }: {
           </button>
         </div>
       </section>
+
+      <GantiPassword />
 
       <section className="panel" aria-labelledby="set-akun">
         <h3 className="panel-title" id="set-akun">Sesi</h3>
@@ -190,5 +199,192 @@ export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset }: {
         <p>Semua angka kunjungan dan klik dihapus permanen. Ini tidak bisa diurungkan.</p>
       </Confirm>
     </div>
+  );
+}
+
+/* ---------- Version history ---------- */
+
+const SHOWN = 10;
+
+function Riwayat({ site, unsaved, onRestored }: { site: Site; unsaved: boolean; onRestored: (s: Site) => void }) {
+  const [versions, setVersions] = useState<VersionInfo[] | null>(null);
+  const [error, setError] = useState("");
+  const [all, setAll] = useState(false);
+  const [pick, setPick] = useState<VersionInfo | null>(null);
+  const [pending, setPending] = useState(false);
+  const zona = site.status.zona;
+  const at = new Intl.DateTimeFormat("id-ID", { timeZone: zona, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  const load = useCallback(async () => {
+    try {
+      const r = await listHistory();
+      if (r.ok) {
+        setVersions(r.versions);
+        setError("");
+      } else if (EXPIRED.test(r.error)) sessionExpired(() => void load());
+      else setError(r.error);
+    } catch {
+      setError("Server tidak terjangkau.");
+    }
+  }, []);
+
+  // Each save adds a version and changes every diff, so reload once the save queue is idle.
+  useEffect(() => {
+    if (!unsaved) void load();
+  }, [site, unsaved, load]);
+
+  async function restore() {
+    if (!pick) return;
+    setPending(true);
+    try {
+      const r = await restoreVersion(pick.id);
+      if (r.ok) {
+        onRestored(r.site);
+        setPick(null);
+        toast.success("Versi dipulihkan. Isi sebelumnya tersimpan di riwayat.");
+      } else if (EXPIRED.test(r.error)) sessionExpired(() => void restore());
+      else toast.error(`Gagal memulihkan: ${r.error} Coba lagi.`);
+    } catch {
+      toast.error("Gagal memulihkan: server tidak terjangkau. Coba lagi.", [{ label: "Coba lagi", onClick: () => void restore() }]);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const shown = all ? versions : versions?.slice(0, SHOWN);
+  const now = Date.now();
+
+  return (
+    <section className="panel" aria-labelledby="set-hist">
+      <div className="panel-head">
+        <h3 className="panel-title" id="set-hist">Riwayat versi</h3>
+        <button type="button" className="icon-btn" aria-label="Muat ulang riwayat" onClick={() => void load()}>
+          <ArrowClockwise size={20} weight="bold" aria-hidden />
+        </button>
+      </div>
+      <p className="field-hint">Isi halaman sebelum tiap perubahan, 50 terakhir. Memulihkan juga menyimpan isi sekarang ke riwayat.</p>
+      <div aria-live="polite">
+        {error ? (
+          <p className="field-error">Gagal memuat riwayat: {error}</p>
+        ) : !versions ? (
+          <p className="field-hint">Memuat riwayat…</p>
+        ) : versions.length === 0 ? (
+          <p className="field-hint">Belum ada versi. Riwayat mulai terisi setelah perubahan berikutnya disimpan.</p>
+        ) : (
+          <ul className="hist">
+            {shown!.map((v) => {
+              const same = v.changes !== null && v.changes.length === 0;
+              return (
+                <li key={v.id}>
+                  <div>
+                    <span className="hist-when">{ago(v.savedAt, now)}</span>
+                    <span className="hist-meta">
+                      {at.format(new Date(v.savedAt))} {ZONA[zona]} · {v.links} tautan · {v.kategori} kategori{v.note && ` · ${v.note}`}
+                    </span>
+                    <span className="hist-diff">
+                      {v.changes === null ? "Format lama, tidak bisa dipulihkan."
+                        : same ? "Sama dengan isi sekarang."
+                        : <>Jika dipulihkan: {v.changes.join(", ")}</>}
+                    </span>
+                  </div>
+                  <button type="button" className="btn" disabled={v.changes === null || same || unsaved}
+                    aria-label={`Pulihkan versi ${at.format(new Date(v.savedAt))}`} onClick={() => setPick(v)}>
+                    <ClockCounterClockwise size={18} weight="bold" aria-hidden />
+                    Pulihkan
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+      {versions && versions.length > SHOWN && (
+        <button type="button" className="btn btn-quiet" aria-expanded={all} onClick={() => setAll((a) => !a)}>
+          {all ? `Tampilkan ${SHOWN} terbaru` : `Tampilkan semua (${versions.length})`}
+        </button>
+      )}
+
+      <Confirm open={!!pick} title="Pulihkan versi ini?" confirmLabel="Pulihkan" pending={pending}
+        onClose={() => setPick(null)} onConfirm={() => void restore()}>
+        <p>
+          Halaman kembali seperti {pick && at.format(new Date(pick.savedAt))} {ZONA[zona]}: {pick?.links} tautan, {pick?.kategori} kategori.
+        </p>
+        {pick?.changes && <p>Perubahan: {pick.changes.join(", ")}.</p>}
+        <p className="field-hint">Isi sekarang disimpan ke riwayat, jadi bisa dipulihkan lagi.</p>
+      </Confirm>
+    </section>
+  );
+}
+
+/* ---------- Password ---------- */
+
+type PwField = "current" | "next" | "confirm";
+
+function GantiPassword() {
+  const [v, setV] = useState<Record<PwField, string>>({ current: "", next: "", confirm: "" });
+  const [err, setErr] = useState<{ field?: PwField; msg: string } | null>(null);
+  const [pending, setPending] = useState(false);
+
+  function fail(field: PwField | undefined, msg: string) {
+    setErr({ field, msg });
+    if (field) requestAnimationFrame(() => document.getElementById(`f-pw-${field}`)?.focus());
+  }
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (pending) return;
+    // Same rules as the server, checked here first so the admin hears at once.
+    if (!v.current) return fail("current", "Isi password sekarang.");
+    if (v.next.length < 12) return fail("next", "Minimal 12 karakter.");
+    if (v.next === v.current) return fail("next", "Harus beda dari password sekarang.");
+    if (v.confirm !== v.next) return fail("confirm", "Tidak sama dengan password baru.");
+    setPending(true);
+    try {
+      const r = await changePassword(v.current, v.next, v.confirm);
+      if (r.ok) {
+        setV({ current: "", next: "", confirm: "" });
+        setErr(null);
+        toast.success("Password diganti. Perangkat lain keluar otomatis.");
+      } else if (EXPIRED.test(r.error)) sessionExpired();
+      else fail(r.field, r.error);
+    } catch {
+      toast.error("Gagal mengganti password: server tidak terjangkau. Coba lagi.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const input = (field: PwField, label: string, auto: string, hint?: string) => {
+    const e = err?.field === field ? err.msg : undefined;
+    return (
+      <Field path={`pw.${field}`} label={label} error={e} hint={hint}>
+        <input {...wire(`pw.${field}`, e, !!hint)} type="password" autoComplete={auto} value={v[field]} maxLength={200}
+          onChange={(ev) => {
+            setV((o) => ({ ...o, [field]: ev.target.value }));
+            if (err?.field === field) setErr(null);
+          }} />
+      </Field>
+    );
+  };
+
+  return (
+    <section className="panel" aria-labelledby="set-pw">
+      <h3 className="panel-title" id="set-pw">Ganti password</h3>
+      <form className="pw-form" onSubmit={(e) => void submit(e)} noValidate>
+        {/* Lets password managers pair the new password with this account. */}
+        <input type="text" name="username" autoComplete="username" value="admin" readOnly hidden />
+        {input("current", "Password sekarang", "current-password")}
+        {input("next", "Password baru", "new-password", "minimal 12 karakter")}
+        {input("confirm", "Ulangi password baru", "new-password")}
+        {err && !err.field && <p className="field-error" role="alert">{err.msg}</p>}
+        <div className="row-actions">
+          <button type="submit" className="btn btn-primary" disabled={pending}>
+            <Key size={18} weight="bold" aria-hidden />
+            {pending ? "Mengganti…" : "Ganti password"}
+          </button>
+        </div>
+        <p className="field-hint">Perangkat lain yang sedang masuk akan keluar. Perangkat ini tetap masuk.</p>
+      </form>
+    </section>
   );
 }
