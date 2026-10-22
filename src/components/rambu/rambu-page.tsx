@@ -1,15 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ZONA, activeLabel, buka24, clockIn, laneLayout, statusAt, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
-import { X } from "@phosphor-icons/react/dist/ssr";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import {
+  ZONA, buka24, clockIn, isOfficeOnly, labelFor, laneLayout, lanesOf, linksIn, statusAt,
+  type Kategori, type Link, type Site, type StatusWarna,
+} from "@/lib/site";
+import { QrCode, X } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
-import { Arrow, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
+import { Arrow, Hauler, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
+import { norm, search as searchLinks, type Range } from "./search";
 import "./tokens.css";
 import "./rambu.css";
 
 const THEME_KEY = "rambu-tema";
 const VIEW_KEY = "rambu-dilihat";
+const TAMPILAN_KEY = "rambu-tampilan";
 
 /** Fire-and-forget tap counter; survives the page navigating away. */
 function hit(k: string) {
@@ -21,13 +26,50 @@ function hit(k: string) {
 
 const fmt = new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 });
 
-const norm = (s: string) => s.toLocaleLowerCase("id").normalize("NFD").replace(/[̀-ͯ]/g, "");
 const pad = (n: number) => String(n).padStart(2, "0");
 const jam = (h: number) => `${pad(h % 24)}.00`;
 const isExternal = (u: string) => u.startsWith("https://") || u.startsWith("http://");
 const LABEL_TEXT = { baru: "BARU", populer: "POPULER", promo: "PROMO" } as const;
 const GROUND = { light: "#e7e3d8", dark: "#1c1c1c" } as const; // --ground, for the browser chrome
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** A 10ms tick on phones that can; never with reduced motion. Callers skip it in the admin preview. */
+const buzz = () => !reduced() && navigator.vibrate?.(10);
+
+/** Text with the search's matched parts wrapped in <mark>. */
+function Marked({ text, at }: { text: string; at?: Range[] }) {
+  if (!at?.length) return text;
+  const out: ReactNode[] = [];
+  let from = 0;
+  at.forEach(([s, e], i) => {
+    out.push(text.slice(from, s), <mark key={i}>{text.slice(s, e)}</mark>);
+    from = e;
+  });
+  out.push(text.slice(from));
+  return out;
+}
+
+/** Easter egg horn: two detuned square waves, quiet, about a third of a second. */
+function honk() {
+  try {
+    const ctx = new AudioContext();
+    const gain = ctx.createGain();
+    const t = ctx.currentTime;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.04, t + 0.02);
+    gain.gain.setValueAtTime(0.04, t + 0.28);
+    gain.gain.linearRampToValueAtTime(0, t + 0.34);
+    gain.connect(ctx.destination);
+    for (const f of [311, 392]) {
+      const o = ctx.createOscillator();
+      o.type = "square";
+      o.frequency.value = f;
+      o.connect(gain);
+      o.start(t);
+      o.stop(t + 0.35);
+    }
+    setTimeout(() => ctx.close(), 600);
+  } catch {}
+}
 
 /** Tape copy repeated until one copy is wider than a desktop screen, so the loop never shows a gap. */
 function tapeItems(items: string[]): string[] {
@@ -53,16 +95,18 @@ function paintChrome(dark: boolean) {
 export function RambuPage({ site, preview = false }: { site: Site; preview?: boolean }) {
   const { profil, status, kategori } = site;
 
-  // Lanes: categories that actually have links, in CONFIG order.
-  const lanes = useMemo(
-    () => kategori.map((k) => ({ k, links: site.link.filter((l) => l.kategori === k.id) })).filter((lane) => lane.links.length > 0),
-    [kategori, site.link],
-  );
+  // Lanes: categories that actually have links, in CONFIG order. A link sits in every lane of lanesOf().
+  const lanes = useMemo(() => kategori.map((k) => ({ k, links: linksIn(site, k.id) })).filter((lane) => lane.links.length > 0), [kategori, site]);
   const katById = useMemo(() => new Map(kategori.map((k) => [k.id, k])), [kategori]);
-  const gantry = useMemo(() => site.link.filter((l) => l.utama && katById.has(l.kategori)).slice(0, 2), [site.link, katById]);
+  const routed = useMemo(() => site.link.filter((l) => katById.has(l.kategori)), [site.link, katById]);
+  const gantry = useMemo(() => routed.filter((l) => l.utama).slice(0, 2), [routed]);
 
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<string | null>(null);
+  const [sorot, setSorot] = useState<string | null>(null); // lane opened from a #jalur- link, highlighted briefly
+  const [ringkas, setRingkas] = useState(false);
+  const [klakson, setKlakson] = useState(false);
+  const klaksonAt = useRef(-Infinity);
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [taps, setTaps] = useState<Record<string, number>>({});
   const [dark, setDark] = useState(false);
@@ -72,7 +116,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Arrival motion plays once; after this flips, re-mounted signs (tab, search, fold) appear instantly.
   const [booted, setBooted] = useState(false);
-  const [qr, setQr] = useState("");
+  const [qr, setQr] = useState<{ src: string; lane?: Kategori }>({ src: "" });
   const search = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const tabsRef = useRef<HTMLElement>(null);
@@ -105,16 +149,21 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
     const d = t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     setDark(d);
     if (t) paintChrome(d);
+    try {
+      setRingkas(localStorage.getItem(TAMPILAN_KEY) === "ringkas");
+    } catch {}
   }, [preview, site.tampilKlik]);
 
-  // #jalur-<id> opens that lane.
+  // #jalur-<id> (a shared link or a lane QR) opens that lane and points it out.
   useEffect(() => {
     if (preview) return;
     const fromHash = () => {
       // Only #jalur-<id> (or no hash) picks a lane; other fragments such as the skip link's #cari leave the tab alone.
       if (location.hash && !location.hash.startsWith("#jalur-")) return;
       const id = decodeURIComponent(location.hash.slice("#jalur-".length));
-      setTab(lanes.some((l) => l.k.id === id) ? id : null);
+      const known = lanes.some((l) => l.k.id === id);
+      setTab(known ? id : null);
+      setSorot(known ? id : null);
     };
     fromHash();
     addEventListener("hashchange", fromHash);
@@ -161,6 +210,14 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
     if (lane && lane.getBoundingClientRect().top < header) lane.scrollIntoView({ block: "start" });
   }, [tab, preview]);
 
+  // Arriving on #jalur-<id>: the lane is brought under the header and its plate flashes for a moment.
+  useEffect(() => {
+    if (!sorot) return;
+    document.getElementById(`jalur-${sorot}`)?.scrollIntoView({ block: "start" });
+    const t = setTimeout(() => setSorot(null), 1600);
+    return () => clearTimeout(t);
+  }, [sorot]);
+
   const toggleTheme = () => {
     const next = !dark;
     setDark(next);
@@ -174,14 +231,36 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
   const pickTab = (id: string | null) => {
     setBooted(true);
     setTab(id);
-    if (!preview) history.replaceState(null, "", id ? `#jalur-${id}` : location.pathname + location.search);
+    if (preview) return;
+    if (id !== tab) buzz();
+    history.replaceState(null, "", id ? `#jalur-${id}` : location.pathname + location.search);
   };
 
   // Count the tap, and bump the visible number right away so the visitor sees their own tap land.
   const tapped = (id: string) => {
     if (preview) return;
+    buzz();
     hit(`l:${id}`);
     setTaps((t) => ({ ...t, [id]: (t[id] ?? 0) + 1 }));
+  };
+
+  const pickTampilan = (r: boolean) => {
+    setBooted(true);
+    setRingkas(r);
+    if (preview) return;
+    try {
+      localStorage.setItem(TAMPILAN_KEY, r ? "ringkas" : "kartu");
+    } catch {}
+  };
+
+  const onQuery = (v: string) => {
+    setBooted(true);
+    setQuery(v);
+    // "klakson": a hauler drives past with a horn. Once per 10s; never in the preview or with reduced motion.
+    if (preview || norm(v.trim()) !== "klakson" || reduced() || performance.now() - klaksonAt.current < 10_000) return;
+    klaksonAt.current = performance.now();
+    setKlakson(true);
+    honk();
   };
 
   // The text stays while the toast fades out; a second flash restarts the timer instead of being cut short.
@@ -210,39 +289,67 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
     }
   };
 
-  const showQr = async () => {
+  // The page QR, or one lane's (its URL opens straight onto that lane).
+  const showQr = async (lane?: Kategori) => {
     if (!preview) hit("qr");
     const { toDataURL } = await import("qrcode");
-    setQr(await toDataURL(location.href.split("#")[0], { margin: 1, width: 480, errorCorrectionLevel: "M" }));
+    const url = location.href.split("#")[0] + (lane ? `#jalur-${encodeURIComponent(lane.id)}` : "");
+    setQr({ src: await toDataURL(url, { margin: 1, width: 480, errorCorrectionLevel: "M" }), lane });
     dialog.current?.showModal();
   };
 
   // Filtering.
-  const q = norm(query.trim());
-  const searching = q.length > 0;
-  const matches = (l: Link, k: Kategori) => norm(`${l.judul} ${l.catatan} ${k.nama}`).includes(q);
+  const searching = norm(query.trim()).length > 0;
+  const laneName = useCallback((id: string) => katById.get(id)?.nama, [katById]);
+  // One ranked list, each link once; a picked tab narrows it to that lane.
+  const hits = useMemo(
+    () => (searching ? searchLinks(tab ? routed.filter((l) => lanesOf(l).includes(tab)) : routed, laneName, query) : []),
+    [searching, routed, tab, laneName, query],
+  );
   // The owner's clock: opening hours, label dates and the HUD time all read in their zone.
   const own = now ? clockIn(status.zona, now) : null;
   const today = own?.date ?? "";
   // Until the visitor's date is known, a label with an end date stays hidden rather than flash an expired one.
-  const label = (l: Link) => (today ? activeLabel(l, today) : l.labelSampai ? undefined : l.label);
+  const label = (l: Link) => (today ? labelFor(l, today) : l.labelSampai ? undefined : l.label);
 
-  const shownLanes = lanes
-    .filter((lane) => !tab || lane.k.id === tab)
-    .map((lane) => ({
-      ...lane,
-      links: lane.links.filter((l) => (searching ? matches(l, lane.k) : tab ? true : !l.utama)),
-    }))
-    .filter((lane) => lane.links.length > 0);
-  const resultCount = shownLanes.reduce((n, l) => n + l.links.length, 0);
+  const shownLanes = searching
+    ? []
+    : lanes
+        .filter((lane) => !tab || lane.k.id === tab)
+        .map((lane) => ({ ...lane, links: tab ? lane.links : lane.links.filter((l) => !l.utama) }))
+        .filter((lane) => lane.links.length > 0);
   const showGantry = !searching && !tab && gantry.length > 0;
   const lampu = now ? statusAt(status, now) : null;
+  const laneNo = (id: string) => lanes.findIndex((l) => l.k.id === id) + 1;
 
-  const sign = (l: Link, k: Kategori, i: number, laneNo: number, compact: boolean) => {
+  // ↓/↑ walk the search box and the results; Esc from anywhere in them clears the search.
+  const roam = (e: ReactKeyboardEvent) => {
+    if (!searching || (e.target as HTMLElement).closest(".panduan")) return; // a guide popover handles its own keys
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setQuery("");
+      search.current?.focus();
+      return;
+    }
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    const stops = [search.current, ...document.querySelectorAll<HTMLElement>(".hasil .sign")].filter((x) => !!x);
+    const i = stops.indexOf(document.activeElement as HTMLElement);
+    const next = stops[Math.min(Math.max(i + (e.key === "ArrowDown" ? 1 : -1), 0), stops.length - 1)];
+    if (i < 0 || next === stops[i]) return;
+    e.preventDefault();
+    next.focus();
+    next.scrollIntoView({ block: "nearest" });
+  };
+
+  /** One sign. `k` is the lane it stands in (its colour); the link's other lanes show as "juga di". */
+  const sign = (l: Link, k: Kategori, i: number, km: string, compact: boolean, at?: { judul: Range[]; catatan: Range[] }) => {
     const lb = label(l);
     const ext = isExternal(l.url);
+    const office = isOfficeOnly(l.url);
+    const also = lanesOf(l).filter((id) => id !== k.id).flatMap((id) => katById.get(id) ?? []);
+    const tip = `panduan-${k.id}-${l.id}`;
     return (
-      <li key={l.id} style={{ "--i": i } as CSSProperties}>
+      <li key={l.id} style={{ "--i": i } as CSSProperties} data-info={l.panduan ? "" : undefined}>
         <a
           className="sign"
           data-warna={k.warna}
@@ -256,27 +363,61 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           <Arrow dir={compact ? "up-right" : "right"} />
           <span className="sign-body">
             <span className="sign-title">
-              <bdi>{l.judul}</bdi>
+              <bdi>
+                <Marked text={l.judul} at={at?.judul} />
+              </bdi>
               {lb && (
                 <span className="tag" data-label={lb}>
                   {LABEL_TEXT[lb]}
                 </span>
               )}
+              {office && (
+                <span className="tag" data-label="kantor" aria-hidden>
+                  Jaringan kantor
+                </span>
+              )}
             </span>
             {l.catatan && (
               <span className="sign-note" dir="auto">
-                {l.catatan}
+                <Marked text={l.catatan} at={at?.catatan} />
+              </span>
+            )}
+            {also.length > 0 && (
+              <span className="juga">
+                juga di{" "}
+                {also.map((x) => (
+                  <span key={x.id} className="mini-plate" data-warna={x.warna}>
+                    {x.nama}
+                  </span>
+                ))}
               </span>
             )}
           </span>
           {!compact && (
             <span className="sign-km" aria-hidden>
-              KM {laneNo}.{i + 1}
+              KM {km}
             </span>
           )}
           {site.tampilKlik && taps[l.id] > 0 && <span className="taps">{fmt.format(taps[l.id])}× klik</span>}
+          {office && <span className="sr-only"> (hanya bisa dibuka dari jaringan kantor)</span>}
           {ext && <span className="sr-only"> (tab baru)</span>}
         </a>
+        {l.panduan && (
+          <>
+            <button type="button" className="info" popoverTarget={tip} aria-label={`Panduan ${l.judul}`}>
+              i
+            </button>
+            <div id={tip} popover="auto" className="panduan" role="dialog" aria-label={`Panduan ${l.judul}`}>
+              <p className="panduan-title" dir="auto">
+                {l.judul}
+              </p>
+              <p dir="auto">{l.panduan}</p>
+              <button type="button" className="act" data-warna="yellow" popoverTarget={tip} popoverTargetAction="hide">
+                Tutup
+              </button>
+            </div>
+          </>
+        )}
       </li>
     );
   };
@@ -317,7 +458,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
         {lanes.length > 0 && (
           <nav ref={tabsRef} className="tabs" aria-label="Jalur">
             <button type="button" className="tab" aria-pressed={!tab} onClick={() => pickTab(null)}>
-              Semua <span className="tab-n">{site.link.length}</span>
+              Semua <span className="tab-n">{routed.length}</span>
             </button>
             {lanes.map(({ k, links }) => (
               <button key={k.id} type="button" className="tab" data-warna={k.warna} aria-pressed={tab === k.id} onClick={() => pickTab(k.id)}>
@@ -374,35 +515,49 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
         </section>
 
         {lanes.length > 0 && (
-          <div className="search" role="search">
-            <label htmlFor="cari" className="sr-only">
-              Cari tujuan
-            </label>
-            <input
-              ref={search}
-              id="cari"
-              type="search"
-              placeholder="Cari: CCO, permit, monitoring…"
-              autoComplete="off"
-              enterKeyHint="search"
-              value={query}
-              onChange={(e) => (setBooted(true), setQuery(e.target.value))}
-              onKeyDown={(e) => e.key === "Escape" && setQuery("")}
-            />
-            {query && (
-              <button type="button" className="search-clear" onClick={() => (setQuery(""), search.current?.focus())} aria-label="Hapus pencarian">
-                <X weight="bold" aria-hidden />
+          <div className="finder">
+            <div className="search" role="search">
+              <label htmlFor="cari" className="sr-only">
+                Cari tujuan
+              </label>
+              <input
+                ref={search}
+                id="cari"
+                type="search"
+                placeholder="Cari: CCO, permit, monitoring…"
+                autoComplete="off"
+                enterKeyHint="search"
+                aria-describedby="cari-hint"
+                value={query}
+                onChange={(e) => onQuery(e.target.value)}
+                onKeyDown={(e) => (searching ? roam(e) : e.key === "Escape" && setQuery(""))}
+              />
+              {query && (
+                <button type="button" className="search-clear" onClick={() => (setQuery(""), search.current?.focus())} aria-label="Hapus pencarian">
+                  <X weight="bold" aria-hidden />
+                </button>
+              )}
+              {!preview && (
+                <kbd className="search-key" aria-hidden>
+                  /
+                </kbd>
+              )}
+              <span id="cari-hint" className="sr-only">
+                Panah bawah untuk menelusuri hasil, Esc untuk menghapus.
+              </span>
+            </div>
+            <div className="tampilan" role="group" aria-label="Tampilan">
+              <button type="button" aria-pressed={!ringkas} onClick={() => pickTampilan(false)}>
+                Kartu
               </button>
-            )}
-            {!preview && (
-              <kbd className="search-key" aria-hidden>
-                /
-              </kbd>
-            )}
+              <button type="button" aria-pressed={ringkas} onClick={() => pickTampilan(true)}>
+                Ringkas
+              </button>
+            </div>
           </div>
         )}
         <p className="sr-only" aria-live="polite">
-          {searching ? `${resultCount} tujuan ditemukan` : ""}
+          {searching ? `${hits.length} tujuan ditemukan` : ""}
         </p>
 
         {showGantry && (
@@ -442,25 +597,51 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           </section>
         )}
 
+        {searching && hits.length > 0 && (
+          <section className="lane hasil" aria-labelledby="plate-hasil" onKeyDown={roam}>
+            <h2 id="plate-hasil" className="plate" data-warna="yellow">
+              <span>Hasil pencarian</span> <span className="plate-n">{hits.length}</span>
+            </h2>
+            <ul className="signs" data-compact={(!ringkas && laneLayout(hits.length).compact) || undefined} data-ringkas={ringkas || undefined}>
+              {hits.map((h, i) => {
+                const k = katById.get(h.link.kategori)!;
+                const lane = lanes.find((x) => x.k.id === k.id)?.links ?? [];
+                const km = `${laneNo(k.id)}.${lane.indexOf(h.link) + 1}`;
+                return sign(h.link, k, i, km, !ringkas && laneLayout(hits.length).compact, h);
+              })}
+            </ul>
+          </section>
+        )}
+
         {shownLanes.map(({ k, links }) => {
-          const laneNo = lanes.findIndex((l) => l.k.id === k.id) + 1;
-          const { compact, visible } = laneLayout(links.length);
-          const expanded = searching || open.has(k.id);
+          const no = laneNo(k.id);
+          const layout = laneLayout(links.length);
+          // Ringkas: one line per sign, every sign shown, no fold.
+          const compact = !ringkas && layout.compact;
+          const visible = ringkas ? links.length : layout.visible;
+          const expanded = open.has(k.id);
           const shown = expanded ? links : links.slice(0, visible);
           const hidden = links.length - visible;
           return (
-            <section key={k.id} id={`jalur-${k.id}`} className="lane" aria-labelledby={`plate-${k.id}`}>
-              <h2 id={`plate-${k.id}`} className="plate" data-warna={k.warna}>
-                <KategoriIkon ikon={k.ikon} />
-                <span>
-                  Jalur <bdi>{k.nama}</bdi>
-                </span>{" "}
-                <span className="plate-n">{lanes.find((x) => x.k.id === k.id)?.links.length ?? links.length}</span>
-              </h2>
-              <ul className="signs" data-compact={compact || undefined}>
-                {shown.map((l, i) => sign(l, k, i, laneNo, compact))}
+            <section key={k.id} id={`jalur-${k.id}`} className="lane" aria-labelledby={`plate-${k.id}`} data-sorot={sorot === k.id || undefined}>
+              <div className="lane-head">
+                <h2 id={`plate-${k.id}`} className="plate" data-warna={k.warna}>
+                  <KategoriIkon ikon={k.ikon} />
+                  <span>
+                    Jalur <bdi>{k.nama}</bdi>
+                  </span>{" "}
+                  <span className="plate-n">{lanes.find((x) => x.k.id === k.id)?.links.length ?? links.length}</span>
+                </h2>
+                {!preview && (
+                  <button type="button" className="plate-qr" onClick={() => showQr(k)} aria-label={`Kode QR jalur ${k.nama}`}>
+                    <QrCode weight="bold" aria-hidden />
+                  </button>
+                )}
+              </div>
+              <ul className="signs" data-compact={compact || undefined} data-ringkas={ringkas || undefined}>
+                {shown.map((l, i) => sign(l, k, i, `${no}.${i + 1}`, compact))}
               </ul>
-              {!searching && hidden > 0 && (
+              {hidden > 0 && (
                 <button
                   type="button"
                   className="fold"
@@ -489,7 +670,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
           );
         })}
 
-        {searching && resultCount === 0 && (
+        {searching && hits.length === 0 && (
           <p className="empty">
             Tujuan tidak ditemukan. Coba kata lain, atau{" "}
             <button type="button" className="link-btn" onClick={() => (setQuery(""), pickTab(null))}>
@@ -528,7 +709,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
             <button type="button" className="act" data-warna="yellow" onClick={share}>
               Bagikan
             </button>
-            <button type="button" className="act" onClick={showQr}>
+            <button type="button" className="act" onClick={() => showQr()}>
               Kode QR
             </button>
           </div>
@@ -574,15 +755,25 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
               if (e.target === e.currentTarget && out) e.currentTarget.close();
             }}
           >
-            <h2 id="qr-title">Pindai untuk mampir</h2>
-            <p>Arahkan kamera HP ke kode ini untuk membuka halaman.</p>
+            <h2 id="qr-title">{qr.lane ? <>Jalur <bdi>{qr.lane.nama}</bdi></> : "Pindai untuk mampir"}</h2>
+            <p>{qr.lane ? "Pindai untuk langsung membuka jalur ini." : "Arahkan kamera HP ke kode ini untuk membuka halaman."}</p>
             {/* PNG data URL generated by the qrcode package from this page's own URL; no visitor input reaches it. */}
             {/* eslint-disable-next-line @next/next/no-img-element -- generated data URL */}
-            {qr && <img className="qr-code" src={qr} alt="Kode QR halaman ini" width={240} height={240} />}
-            <button type="button" className="act" data-warna="yellow" onClick={() => dialog.current?.close()}>
-              Tutup
-            </button>
+            {qr.src && <img className="qr-code" src={qr.src} alt={qr.lane ? `Kode QR jalur ${qr.lane.nama}` : "Kode QR halaman ini"} width={240} height={240} />}
+            <div className="qr-actions">
+              <a className="act" href={qr.src || undefined} download={`qr-${qr.lane ? `jalur-${qr.lane.id}` : "halaman"}.png`}>
+                Unduh PNG
+              </a>
+              <button type="button" className="act" data-warna="yellow" onClick={() => dialog.current?.close()}>
+                Tutup
+              </button>
+            </div>
           </dialog>
+          {klakson && (
+            <div className="klakson" aria-hidden onAnimationEnd={() => setKlakson(false)}>
+              <Hauler />
+            </div>
+          )}
           <p className="toast" role="status" data-show={toast.show || undefined}>
             {toast.msg}
           </p>

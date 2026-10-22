@@ -54,6 +54,25 @@ export function SunMoon({ dark }: { dark: boolean }) {
   );
 }
 
+/** Mining dump truck, side view, facing right: the "klakson" easter egg. */
+export function Hauler() {
+  return (
+    <svg viewBox="0 0 120 64" aria-hidden focusable="false">
+      <g stroke="var(--black)" strokeWidth="3" strokeLinejoin="round">
+        <path d="M4 14h66l-6 26H10z" fill="var(--yellow)" />
+        <path d="M70 22h22l12 12v10H66z" fill="var(--yellow)" />
+        <path d="M78 26h11l7 7H78z" fill="#9fd3ff" />
+        <path d="M6 40h100v8H6z" fill="var(--beam)" />
+        <circle cx="24" cy="50" r="11" fill="var(--black)" />
+        <circle cx="88" cy="50" r="11" fill="var(--black)" />
+      </g>
+      <circle cx="24" cy="50" r="4" fill="var(--white)" />
+      <circle cx="88" cy="50" r="4" fill="var(--white)" />
+      <path d="M14 20h48M14 27h46" stroke="var(--black)" strokeWidth="2.5" opacity="0.35" />
+    </svg>
+  );
+}
+
 /** Lane pictograms, drawn like road-sign symbols: bold, flat, one colour (currentColor). */
 const IKON_PATH: Record<Ikon, ReactNode> = {
   // bookmark holding a chain link: saved links
@@ -121,7 +140,7 @@ export const IKON_NAMA: Record<Ikon, string> = {
 
 export function KategoriIkon({ ikon, className = "" }: { ikon: Ikon; className?: string }) {
   return (
-    <svg className={`k-ikon ${className}`} viewBox="0 0 24 24" aria-hidden focusable="false">
+    <svg className={`k-ikon ${className}`} data-ikon={ikon} viewBox="0 0 24 24" aria-hidden focusable="false">
       {IKON_PATH[ikon] ?? IKON_PATH.umum}
     </svg>
   );
