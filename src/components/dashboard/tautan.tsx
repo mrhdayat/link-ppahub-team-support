@@ -2,21 +2,25 @@
 
 import { useMemo, useState, type Dispatch, type KeyboardEvent, type ReactNode, type SetStateAction } from "react";
 import {
-  ArrowDown, ArrowUp, CopySimple, MagnifyingGlass, PencilSimple, Plus, Star, Trash,
+  ArrowDown, ArrowUp, Check, CopySimple, MagnifyingGlass, PencilSimple, Plus, Star, Trash,
 } from "@phosphor-icons/react";
 import type { Day } from "@/lib/analytics";
-import { LABELS, linkSchema, type Link, type Site } from "@/lib/site";
+import { LABELS, clockIn, isBaru, isOfficeOnly, lanesOf, linkSchema, linksIn, type Link, type Site } from "@/lib/site";
 import { Field, Plate, focusLater, insertAt, newId, swap } from "./controls";
 import { Confirm, Modal } from "./modal";
 import { fmt, sum } from "./stats";
 import { EXPIRED, toast } from "./toast";
 import type { Commit } from "./dashboard";
+import "./forms.css";
 
 export type LinkEdit = { mode: "add" } | { mode: "edit"; id: string } | null;
 
 const LINK_MAX = 200;
 const UTAMA_MAX = 2;
 export const LABEL_NAME: Record<(typeof LABELS)[number], string> = { baru: "Baru", populer: "Populer", promo: "Promo" };
+
+/** Today on the owner's clock: the date a new link is stamped with. */
+const todayOf = (site: Site) => clockIn(site.status.zona, new Date()).date;
 
 type Filter = { q: string; kat: string; label: string; utama: boolean };
 const NO_FILTER: Filter = { q: "", kat: "", label: "", utama: false };
@@ -33,8 +37,8 @@ export function Tautan({ site, days, commit, edit, setEdit }: {
   const visible = site.link
     .map((l, i) => ({ l, i }))
     .filter(({ l }) =>
-      (!f.kat || l.kategori === f.kat) && (!f.label || (f.label === "none" ? !l.label : l.label === f.label))
-      && (!f.utama || l.utama) && (!q || `${l.judul} ${l.url} ${l.catatan}`.toLocaleLowerCase("id").includes(q)));
+      (!f.kat || lanesOf(l).includes(f.kat)) && (!f.label || (f.label === "none" ? !l.label : l.label === f.label))
+      && (!f.utama || l.utama) && (!q || `${l.judul} ${l.url} ${l.catatan} ${l.kataKunci}`.toLocaleLowerCase("id").includes(q)));
   const filtered = f.q !== "" || f.kat !== "" || f.label !== "" || f.utama;
   const utamaCount = site.link.filter((l) => l.utama).length;
   const full = site.link.length >= LINK_MAX;
@@ -54,7 +58,7 @@ export function Tautan({ site, days, commit, edit, setEdit }: {
   }
 
   async function duplicate(l: Link) {
-    const copy: Link = { ...l, id: newId(), judul: `${l.judul} (salinan)`.slice(0, 48), utama: false };
+    const copy: Link = { ...l, id: newId(), judul: `${l.judul} (salinan)`.slice(0, 48), utama: false, dibuat: todayOf(site) };
     const r = await commit((s) => {
       const i = s.link.findIndex((x) => x.id === l.id);
       return { ...s, link: insertAt(s.link, i < 0 ? s.link.length : i + 1, copy) };
@@ -105,13 +109,13 @@ export function Tautan({ site, days, commit, edit, setEdit }: {
         <div className="filters">
           <div className="d-search">
             <MagnifyingGlass size={20} weight="bold" aria-hidden />
-            <input type="search" aria-label="Cari tautan" placeholder="Cari judul, alamat, catatan" value={f.q}
+            <input type="search" aria-label="Cari tautan" placeholder="Cari judul, alamat, kata kunci" value={f.q}
               onChange={(e) => setF((v) => ({ ...v, q: e.target.value }))} />
           </div>
           <select aria-label="Saring kategori" value={f.kat} onChange={(e) => setF((v) => ({ ...v, kat: e.target.value }))}>
             <option value="">Semua kategori</option>
             {site.kategori.map((k) => (
-              <option key={k.id} value={k.id}>{k.nama} ({site.link.filter((l) => l.kategori === k.id).length})</option>
+              <option key={k.id} value={k.id}>{k.nama} ({linksIn(site, k.id).length})</option>
             ))}
           </select>
           <select aria-label="Saring label" value={f.label} onChange={(e) => setF((v) => ({ ...v, label: e.target.value }))}>
@@ -156,6 +160,14 @@ export function Tautan({ site, days, commit, edit, setEdit }: {
                   <div className="row-main">
                     <div className="row-title">
                       <Plate warna={k?.warna} ikon={k?.ikon} small>{k?.nama ?? "Tanpa kategori"}</Plate>
+                      {l.kategoriLain.length > 0 && (
+                        <span className="row-lain">
+                          <span className="sr-only">juga di</span>
+                          {l.kategoriLain.map((id) => katOf.get(id)).map((x) => x && (
+                            <Plate key={x.id} warna={x.warna} ikon={x.ikon} small>{x.nama}</Plate>
+                          ))}
+                        </span>
+                      )}
                       <span className="row-judul">{l.judul}</span>
                     </div>
                     <span className="row-url">{l.url.replace(/^https?:\/\//, "")}</span>
@@ -209,13 +221,22 @@ export function Tautan({ site, days, commit, edit, setEdit }: {
 
 /* ---------- Add / edit form (drawer on desktop, full-screen sheet on phones) ---------- */
 
-type Draft = { judul: string; url: string; kategori: string; catatan: string; utama: boolean; label: string; labelSampai: string };
-const FIELDS = ["judul", "url", "kategori", "catatan", "utama", "label", "labelSampai"] as const;
+type Draft = {
+  judul: string; url: string; kategori: string; kategoriLain: string[]; catatan: string; kataKunci: string; panduan: string;
+  utama: boolean; label: string; labelSampai: string;
+};
+const FIELDS = ["judul", "url", "kategori", "kategoriLain", "catatan", "kataKunci", "panduan", "utama", "label", "labelSampai"] as const;
 
 const toDraft = (l: Link | undefined, kategori: string): Draft => ({
-  judul: l?.judul ?? "", url: l?.url ?? "", kategori: l?.kategori ?? kategori, catatan: l?.catatan ?? "",
+  judul: l?.judul ?? "", url: l?.url ?? "", kategori: l?.kategori ?? kategori, kategoriLain: l?.kategoriLain ?? [],
+  catatan: l?.catatan ?? "", kataKunci: l?.kataKunci ?? "", panduan: l?.panduan ?? "",
   utama: l?.utama ?? false, label: l?.label ?? "", labelSampai: l?.labelSampai ?? "",
 });
+
+/** "2026-10-28" → "28 Okt 2026". */
+const tanggal = (d: string) =>
+  new Date(`${d}T00:00:00Z`).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const plusDays = (d: string, n: number) => new Date(Date.parse(`${d}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 /** "instagram.com/x" → "https://instagram.com/x". Leaves mailto:, tel: and full URLs alone. */
 const withScheme = (u: string) =>
@@ -233,6 +254,11 @@ function LinkForm({ open, link, site, commit, onClose }: {
   const [formError, setFormError] = useState("");
   const dirty = JSON.stringify(d) !== JSON.stringify(start);
   const id = link?.id ?? "baru";
+  const today = todayOf(site);
+  // Stamped once when the link is made; editing never moves it.
+  const dibuat = link ? link.dibuat : today;
+  const baru = isBaru({ dibuat } as Link, today);
+  const office = isOfficeOnly(d.url);
 
   const otherUtama = site.link.filter((l) => l.utama && l.id !== link?.id);
   const utamaBlocked = !d.utama && otherUtama.length >= UTAMA_MAX;
@@ -260,7 +286,7 @@ function LinkForm({ open, link, site, commit, onClose }: {
       document.getElementById(`lf-${bad}`)?.focus();
       return;
     }
-    const value: Link = linkSchema.parse({ id: link?.id ?? newId(), ...d, label: d.label || undefined });
+    const value: Link = linkSchema.parse({ id: link?.id ?? newId(), ...d, label: d.label || undefined, dibuat });
     setPending(true);
     const r = await commit(
       (s) =>
@@ -274,9 +300,9 @@ function LinkForm({ open, link, site, commit, onClose }: {
     else if (!EXPIRED.test(r.error)) setFormError(r.error);
   }
 
-  const w = (k: (typeof FIELDS)[number], hint?: boolean) => {
+  const w = (k: (typeof FIELDS)[number], hint?: boolean, more?: string | false) => {
     const e = show(k);
-    const by = [e && `lf-${k}-err`, hint && `lf-${k}-hint`].filter(Boolean).join(" ");
+    const by = [e && `lf-${k}-err`, hint && `lf-${k}-hint`, more].filter(Boolean).join(" ");
     return { id: `lf-${k}`, "aria-invalid": e ? true : undefined, "aria-describedby": by || undefined, onBlur: () => blur(k) };
   };
 
@@ -302,7 +328,7 @@ function LinkForm({ open, link, site, commit, onClose }: {
               onChange={(e) => set({ judul: e.target.value })} />
           </LField>
           <LField k="url" label="Alamat (URL)" error={show("url")} hint="https://, mailto: atau tel:">
-            <input {...w("url", true)} type="url" inputMode="url" autoCapitalize="off" spellCheck={false}
+            <input {...w("url", true, office && "lf-url-office")} type="url" inputMode="url" autoCapitalize="off" spellCheck={false}
               placeholder="https://contoh.com" value={d.url}
               onChange={(e) => set({ url: e.target.value.trim() })}
               onBlur={() => {
@@ -310,16 +336,62 @@ function LinkForm({ open, link, site, commit, onClose }: {
                 const fixed = withScheme(d.url);
                 if (fixed !== d.url) set({ url: fixed });
               }} />
+            <p className="lf-office" aria-live="polite">
+              {office && (
+                <span id="lf-url-office">
+                  <span className="d-tag" data-tone="yellow">Jaringan kantor</span>{" "}
+                  Link ini hanya bisa dibuka dari jaringan kantor; pengunjung melihat tanda Jaringan kantor.
+                </span>
+              )}
+            </p>
           </LField>
           <LField k="kategori" label="Kategori" error={show("kategori")}>
-            <select {...w("kategori")} value={d.kategori} onChange={(e) => set({ kategori: e.target.value })}>
+            <select {...w("kategori")} value={d.kategori}
+              onChange={(e) => set({ kategori: e.target.value, kategoriLain: d.kategoriLain.filter((x) => x !== e.target.value) })}>
               {!site.kategori.some((k) => k.id === d.kategori) && <option value={d.kategori}>Pilih kategori</option>}
               {site.kategori.map((k) => <option key={k.id} value={k.id}>{k.nama}</option>)}
             </select>
           </LField>
+          {site.kategori.length > 1 && (
+            <fieldset className="field" aria-describedby="lf-kategoriLain-hint">
+              <div className="field-head">
+                <legend>Jalur lain</legend>
+                <span className="field-hint" id="lf-kategoriLain-hint">opsional</span>
+              </div>
+              <div className="lanes">
+                {site.kategori.filter((k) => k.id !== d.kategori).map((k, i) => {
+                  const on = d.kategoriLain.includes(k.id);
+                  return (
+                    <label key={k.id} className="lane-toggle">
+                      <input type="checkbox" id={i === 0 ? "lf-kategoriLain" : undefined} checked={on}
+                        onChange={() => set({
+                          // Keep the lanes in category order, whatever order they were ticked in.
+                          kategoriLain: site.kategori.map((x) => x.id)
+                            .filter((x) => x !== d.kategori && (x === k.id ? !on : d.kategoriLain.includes(x))),
+                        })} />
+                      <Plate warna={k.warna} ikon={k.ikon}>
+                        {k.nama}
+                        {on && <Check size={16} weight="bold" aria-hidden />}
+                      </Plate>
+                    </label>
+                  );
+                })}
+              </div>
+              {show("kategoriLain") && <p className="field-error">{show("kategoriLain")}</p>}
+            </fieldset>
+          )}
           <LField k="catatan" label="Catatan" error={show("catatan")} hint={`${d.catatan.length}/60 · opsional`}>
             <input {...w("catatan", true)} value={d.catatan} maxLength={60} autoComplete="off"
               placeholder="mis. Google Form" onChange={(e) => set({ catatan: e.target.value })} />
+          </LField>
+          <LField k="kataKunci" label="Kata kunci pencarian" error={show("kataKunci")} hint="mis. apd, helm, sepatu">
+            <input {...w("kataKunci", true)} value={d.kataKunci} maxLength={120} autoComplete="off" autoCapitalize="off"
+              placeholder="pisahkan dengan koma" onChange={(e) => set({ kataKunci: e.target.value })} />
+          </LField>
+          <LField k="panduan" label="Panduan singkat" error={show("panduan")}
+            hint={<><span aria-live="polite">{d.panduan.length}/280</span> · tampil di tombol ⓘ</>}>
+            <textarea {...w("panduan", true)} value={d.panduan} maxLength={280} rows={3}
+              placeholder="mis. Login pakai NRP, lalu pilih menu Absensi." onChange={(e) => set({ panduan: e.target.value })} />
           </LField>
 
           <div className="field">
@@ -348,6 +420,7 @@ function LinkForm({ open, link, site, commit, onClose }: {
                 onChange={(e) => set({ labelSampai: e.target.value })} />
             </LField>
           </div>
+          {baru && !d.label && <p className="field-hint">Label BARU otomatis sampai {tanggal(plusDays(dibuat!, 6))}.</p>}
         </form>
       </Modal>
 
@@ -363,7 +436,7 @@ function LinkForm({ open, link, site, commit, onClose }: {
 }
 
 function LField({ k, label, error, hint, children }: {
-  k: string; label: string; error?: string; hint?: string; children: ReactNode;
+  k: string; label: string; error?: string; hint?: ReactNode; children: ReactNode;
 }) {
   return (
     <Field path={k} label={label} error={error} hint={hint} ids={{ input: `lf-${k}`, err: `lf-${k}-err`, hint: `lf-${k}-hint` }}>
