@@ -53,6 +53,11 @@ export function uniqueSlug(base: string, taken: string[]): string {
   }
 }
 
+/** Checks the schema can't express: the same shift time twice. */
+export function shiftIssues(shift: string[]): { path: string; message: string }[] {
+  return shift.flatMap((t, i) => (t && shift.indexOf(t) < i ? [{ path: `shift.${i}`, message: "Jam ini sudah ada" }] : []));
+}
+
 /** Two-letter sign initials: first letters of the first two words, or the first two letters of one word. */
 export function initialsOf(nama: string): string {
   const words = nama.trim().split(/\s+/).filter(Boolean);
@@ -162,12 +167,12 @@ export function download(name: string, data: Blob | string) {
   if (typeof data !== "string") setTimeout(() => URL.revokeObjectURL(href), 1000);
 }
 
-/** Whole-number box. A cleared box is NaN in the draft, which the schema refuses, so the admin can clear and retype. */
+/** Whole-number box (pass `step` for decimals). A cleared box is NaN in the draft, which the schema refuses, so the admin can clear and retype. */
 export function NumberInput({ value, onValue, ...rest }: Omit<ComponentProps<"input">, "value" | "type"> & {
   value: number; onValue: (n: number) => void;
 }) {
   return (
-    <input {...rest} type="number" inputMode="numeric" step={1} value={Number.isNaN(value) ? "" : value}
+    <input inputMode="numeric" step={1} {...rest} type="number" value={Number.isNaN(value) ? "" : value}
       onChange={(e) => onValue(e.target.valueAsNumber)} />
   );
 }

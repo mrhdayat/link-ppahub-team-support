@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, Check, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import type { Day } from "@/lib/analytics";
-import { IKON, WARNA, kategoriSchema, type Kategori, type Site } from "@/lib/site";
+import { IKON, WARNA, kategoriSchema, lanesOf, type Kategori, type Link, type Site } from "@/lib/site";
 import { IKON_NAMA } from "@/components/rambu/signs";
 import { Field, Plate, WARNA_NAME, focusLater, insertAt, slugify, swap, uniqueSlug } from "./controls";
 import { Confirm, Modal } from "./modal";
@@ -13,12 +13,29 @@ import type { Commit } from "./dashboard";
 
 const KATEGORI_MAX = 12;
 
-/** Rename/recolour category `from`, re-pointing its links when the id changes. */
+/** Rename/recolour category `from`, re-pointing its links (main and extra lanes) when the id changes. */
 function replaceKategori(s: Site, from: string, k: Kategori): Site {
+  const to = (x: string) => (x === from ? k.id : x);
   return {
     ...s,
     kategori: s.kategori.map((x) => (x.id === from ? k : x)),
-    link: from === k.id ? s.link : s.link.map((l) => (l.kategori === from ? { ...l, kategori: k.id } : l)),
+    link: from === k.id ? s.link : s.link.map((l) => ({ ...l, kategori: to(l.kategori), kategoriLain: l.kategoriLain.map(to) })),
+  };
+}
+
+/**
+ * Remove category `id`. Links whose main lane it is move to `to`; links that only use it as an extra lane
+ * lose that lane. A moved link never keeps `to` as an extra lane too.
+ */
+export function dropKategori(s: Site, id: string, to?: string): Site {
+  return {
+    ...s,
+    kategori: s.kategori.filter((x) => x.id !== id),
+    link: s.link.map((l) => {
+      if (!lanesOf(l).includes(id)) return l;
+      const kategori = l.kategori === id && to ? to : l.kategori;
+      return { ...l, kategori, kategoriLain: l.kategoriLain.filter((x) => x !== id && x !== kategori) };
+    }),
   };
 }
 
@@ -31,11 +48,11 @@ export function KategoriTab({ site, days, commit }: { site: Site; days: Day[]; c
   const all = useMemo(() => sum(days), [days]);
   const stats = useMemo(() => {
     const m = new Map<string, { links: number; klik: number }>();
-    for (const l of site.link) {
-      const s = m.get(l.kategori) ?? { links: 0, klik: 0 };
+    for (const l of site.link) for (const k of lanesOf(l)) {
+      const s = m.get(k) ?? { links: 0, klik: 0 };
       s.links++;
       s.klik += all[`l:${l.id}`] ?? 0;
-      m.set(l.kategori, s);
+      m.set(k, s);
     }
     return m;
   }, [site.link, all]);
@@ -53,34 +70,42 @@ export function KategoriTab({ site, days, commit }: { site: Site; days: Day[]; c
 
   async function remove(k: Kategori, to?: string) {
     const at = site.kategori.findIndex((x) => x.id === k.id);
-    const moved = site.link.filter((l) => l.kategori === k.id).map((l) => l.id);
-    if (moved.length && !to) return;
+    const moved = site.link.filter((l) => l.kategori === k.id).length;
+    const extra = site.link.filter((l) => l.kategori !== k.id && l.kategoriLain.includes(k.id)).length;
+    if (moved && !to) return;
+    // Lanes of every touched link, so undo puts back exactly what was there.
+    const before = new Map<string, Pick<Link, "kategori" | "kategoriLain">>(site.link
+      .filter((l) => lanesOf(l).includes(k.id)).map((l) => [l.id, { kategori: l.kategori, kategoriLain: l.kategoriLain }]));
     setPending(true);
-    const r = await commit((s) => ({
-      ...s,
-      link: to ? s.link.map((l) => (l.kategori === k.id ? { ...l, kategori: to } : l)) : s.link,
-      kategori: s.kategori.filter((x) => x.id !== k.id),
-    }));
+    const r = await commit((s) => dropKategori(s, k.id, to));
     setPending(false);
     setRemoving(null);
     if (!r.ok) return;
     focusLater("kt-add");
     const toName = site.kategori.find((x) => x.id === to)?.nama;
-    toast.undo(moved.length ? `Kategori dihapus, ${moved.length} tautan pindah ke ${toName}` : "Kategori dihapus", () => {
+    const msg = ["Kategori dihapus", moved && `${moved} tautan pindah ke ${toName}`, extra && `jalur tambahan dilepas dari ${extra} tautan`];
+    toast.undo(msg.filter(Boolean).join(", "), () => {
       void commit((s) => {
         if (s.kategori.some((x) => x.id === k.id)) return s;
-        const ids = new Set(moved);
+        const kategori = insertAt(s.kategori, Math.min(at, s.kategori.length), k);
+        const ids = new Set(kategori.map((x) => x.id));
         return {
           ...s,
-          kategori: insertAt(s.kategori, Math.min(at, s.kategori.length), k),
-          link: s.link.map((l) => (ids.has(l.id) ? { ...l, kategori: k.id } : l)),
+          kategori,
+          link: s.link.map((l) => {
+            const b = before.get(l.id);
+            if (!b) return l;
+            // A lane deleted meanwhile can't come back with it.
+            return ids.has(b.kategori) ? { ...l, ...b, kategoriLain: b.kategoriLain.filter((x) => ids.has(x)) } : l;
+          }),
         };
       }, { done: "Kategori dikembalikan" });
     });
   }
 
   const others = removing ? site.kategori.filter((x) => x.id !== removing.id) : [];
-  const usedBy = removing ? (stats.get(removing.id)?.links ?? 0) : 0;
+  const usedBy = removing ? site.link.filter((l) => l.kategori === removing.id).length : 0;
+  const extraBy = removing ? site.link.filter((l) => l.kategori !== removing.id && l.kategoriLain.includes(removing.id)).length : 0;
 
   return (
     <div className="sec">
@@ -156,15 +181,21 @@ export function KategoriTab({ site, days, commit }: { site: Site; days: Day[]; c
         site={site} commit={commit} onClose={() => setEdit(null)} />
 
       {others.length > 0 ? (
-        <Confirm open={!!removing} title={`Hapus kategori ${removing?.nama ?? ""}?`} confirmLabel="Pindahkan & hapus" danger
-          pending={pending} onClose={() => setRemoving(null)} onConfirm={() => removing && void remove(removing, moveTo)}>
-          <p>{usedBy} tautan masih memakai kategori ini. Pindahkan dulu ke kategori lain, lalu kategori ini dihapus.</p>
-          <div className="field">
-            <label htmlFor="kt-move-to">Pindahkan tautan ke…</label>
-            <select id="kt-move-to" value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
-              {others.map((x) => <option key={x.id} value={x.id}>{x.nama}</option>)}
-            </select>
-          </div>
+        <Confirm open={!!removing} title={`Hapus kategori ${removing?.nama ?? ""}?`} confirmLabel={usedBy ? "Pindahkan & hapus" : "Hapus"}
+          danger pending={pending} onClose={() => setRemoving(null)}
+          onConfirm={() => removing && void remove(removing, usedBy ? moveTo : undefined)}>
+          {usedBy > 0 && <p>{usedBy} tautan memakai kategori ini sebagai jalur utama. Pindahkan dulu ke kategori lain, lalu kategori ini dihapus.</p>}
+          {extraBy > 0 && (
+            <p>{extraBy} tautan memakai kategori ini sebagai jalur tambahan. Jalur itu dilepas; tautannya tetap tampil di jalur lainnya.</p>
+          )}
+          {usedBy > 0 && (
+            <div className="field">
+              <label htmlFor="kt-move-to">Pindahkan tautan ke…</label>
+              <select id="kt-move-to" value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
+                {others.map((x) => <option key={x.id} value={x.id}>{x.nama}</option>)}
+              </select>
+            </div>
+          )}
         </Confirm>
       ) : (
         <Modal open={!!removing} title="Kategori masih dipakai" onClose={() => setRemoving(null)}
