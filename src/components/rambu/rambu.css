@@ -894,7 +894,10 @@ li[data-info] .sign[data-compact] { padding-bottom: 50px; }
 
 @media (min-width: 400px) {
   .hud-id { grid-template-columns: auto 1fr; justify-items: start; text-align: left; gap: var(--space-4); }
-  .hud-data { grid-template-columns: 1.4fr 1fr 1fr; }
+}
+/* Three cells in a row only once the status line ("dibuka 24 jam" + lamps) fits on one line. */
+@media (min-width: 460px) {
+  .hud-data { grid-template-columns: 1.8fr 1fr 1fr; }
   .hud-status { grid-column: auto; border-bottom: 0; }
   .hud-status + .hud-cell { border-left: var(--border-small); }
 }

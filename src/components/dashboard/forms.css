@@ -28,6 +28,14 @@
   box-shadow: 3px 3px 0 var(--black);
   transition: transform var(--press-ms) var(--ease-out), box-shadow var(--press-ms) var(--ease-out);
 }
+/* Off: a white plate with a dashed rim, so only the picked lanes read as lit signs. */
+.lane-toggle input:not(:checked) + .dplate {
+  background: var(--white);
+  color: var(--black);
+  border-style: dashed;
+  box-shadow: none;
+  --ikon-cut: var(--white);
+}
 .lane-toggle input:checked + .dplate {
   transform: translate(3px, 3px);
   box-shadow: none;

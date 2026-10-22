@@ -737,7 +737,7 @@ export function RambuPage({ site, preview = false }: { site: Site; preview?: boo
               <KmJarak preview={preview} />
             </span>
           </div>
-          <p>Titik awal semua rute.</p>
+          <p>Ujung jalan. Putar balik untuk kembali ke atas.</p>
         </footer>
       </main>
 
