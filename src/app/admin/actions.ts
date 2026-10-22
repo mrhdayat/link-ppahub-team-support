@@ -58,3 +58,28 @@ export async function restoreVersion(id: number): Promise<{ ok: true; site: Site
   updateTag("site");
   return { ok: true, site: p.data };
 }
+
+export type Wilayah = { code: string; name: string };
+
+/**
+ * One level of Indonesia's region tree from wilayah.id (no key; it has no CORS, so the admin asks through here):
+ * "" → provinsi, "63" → kab/kota, "63.10" → kecamatan, "63.10.12" → desa. The code is checked before it reaches the URL.
+ */
+export async function wilayah(parent: string): Promise<{ ok: true; items: Wilayah[] } | { ok: false; error: string }> {
+  if (!(await isAdmin())) return { ok: false, error: EXPIRED };
+  if (typeof parent !== "string" || !/^(\d{2}(\.\d{2}){0,2})?$/.test(parent)) return { ok: false, error: "Kode wilayah tidak dikenal." };
+  const kind = parent === "" ? "provinces" : ["regencies", "districts", "villages"][parent.split(".").length - 1];
+  try {
+    const r = await fetch(`https://wilayah.id/api/${kind}${parent ? `/${parent}` : ""}.json`, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return { ok: false, error: `Daftar wilayah tidak bisa dimuat (${r.status}).` };
+    const j = (await r.json()) as { data?: unknown } | unknown[];
+    const rows = (Array.isArray(j) ? j : (j as { data?: unknown }).data) as unknown;
+    if (!Array.isArray(rows)) return { ok: false, error: "Format daftar wilayah berubah." };
+    const items = rows
+      .filter((x): x is Wilayah => typeof x?.code === "string" && typeof x?.name === "string")
+      .map((x) => ({ code: x.code, name: x.name }));
+    return { ok: true, items };
+  } catch {
+    return { ok: false, error: "Daftar wilayah tidak bisa dimuat. Periksa koneksi lalu coba lagi." };
+  }
+}

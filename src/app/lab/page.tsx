@@ -25,7 +25,7 @@ const link = (i: number, kategori: string, patch: Partial<Link> = {}): Link => (
 const WORST: Site = {
   safetyTalk: [{ teks: "Gunakan APD lengkap sebelum masuk area tambang, cek ulang tali pengaman dan sepatu safety" }],
   shift: ["06:00", "14:00", "22:00"],
-  cuaca: { aktif: true, nama: "Site dengan nama sangat panjang", lat: -3.6, lon: 115.6 },
+  cuaca: { aktif: true, nama: "Site dengan nama sangat panjang", lat: -3.4337, lon: 115.5287, adm4: "63.10.12.2003", sumber: "gabungan" },
   tema: "otomatis",
   profil: {
     nama: "Aleksandra Wiśniewska-Kowalczyk · Studio",

@@ -89,3 +89,11 @@
 @media (prefers-reduced-motion: reduce) {
   .lane-toggle .dplate { transition: none; }
 }
+
+/* ---------- Lokasi BMKG ---------- */
+
+.lokasi-grid { display: grid; gap: var(--space-2); }
+@media (min-width: 600px) { .lokasi-grid { grid-template-columns: 1fr 1fr; } }
+.lokasi-level { display: grid; gap: 4px; font-weight: 700; font-size: 0.875rem; }
+.lokasi-level select { min-height: var(--tap-min); font-size: 1rem; }
+.lokasi-bmkg code { font-family: var(--font-hud), monospace; font-weight: 700; }

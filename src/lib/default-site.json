@@ -694,9 +694,11 @@
   ],
   "cuaca": {
     "aktif": true,
-    "nama": "Site BIB",
-    "lat": -3.6,
-    "lon": 115.6
+    "nama": "Mangkalapi · PPA",
+    "lat": -3.4337,
+    "lon": 115.5287,
+    "adm4": "63.10.12.2003",
+    "sumber": "gabungan"
   },
   "tema": "otomatis"
 }

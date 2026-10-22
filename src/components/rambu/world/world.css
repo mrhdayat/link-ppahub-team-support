@@ -176,3 +176,6 @@
 .rambu[data-tema="hut-ppa"] .tape-run { color: var(--white); }
 .rambu[data-tema="hut-ppa"] .bracket { border-color: var(--red); }
 .rambu[data-tema="hut-ppa"] .scan::before { background: var(--red); box-shadow: 0 0 12px var(--red); }
+
+/* Data credit (BMKG asks for it): small, quiet, still ≥ 4.5:1. */
+.hud-data .cuaca-sumber { margin-top: 6px; font-size: 12px; font-weight: 500; opacity: 0.85; }

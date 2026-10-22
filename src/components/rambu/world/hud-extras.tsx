@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { nextShift, safetyTalkFor, temaFor, type Site } from "@/lib/site";
-import { bacaCuaca, kondisi, sisaWaktu, waspada, type Cuaca, type Langit } from "./world";
+import { awasHujan, bacaBmkg, bacaCuaca, gabung, sisaWaktu, type Langit, type Laporan } from "./world";
 import "./world.css";
 
 /**
@@ -28,56 +28,79 @@ export function ShiftCell({ shift, own }: { shift: string[]; own: { hour: number
 
 const CACHE_MS = 30 * 60_000;
 
-/** Site weather from Open-Meteo (no key), cached per tab for 30 minutes. Fails silently: no cell, no error. */
+const getJson = (url: string, signal: AbortSignal) =>
+  fetch(url, { signal }).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))));
+
+/**
+ * Site weather, no API keys: BMKG (official, by village code) for condition, temperature and rain in mm,
+ * Open-Meteo (by coordinates) for the rain chance. Either one alone is enough; cached per tab for 30 minutes.
+ * Fails silently: no cell, no error.
+ */
 export function CuacaCell({ cuaca }: { cuaca: Site["cuaca"] }) {
-  const { aktif, nama, lat, lon } = cuaca;
+  const { aktif, nama, lat, lon, adm4, sumber } = cuaca;
   // undefined = loading, null = failed
-  const [c, setC] = useState<Cuaca | null>();
+  const [c, setC] = useState<Laporan | null>();
 
   useEffect(() => {
     if (!aktif) return;
-    const key = `rambu-cuaca:${lat},${lon}`;
+    const key = `rambu-cuaca2:${sumber}:${adm4}:${lat},${lon}`;
     try {
       const hit = JSON.parse(sessionStorage.getItem(key) ?? "null");
       if (hit && Date.now() - hit.t < CACHE_MS) return setC(hit.c);
     } catch {}
     const ctl = new AbortController();
     // Debounced: the admin preview re-renders on every keystroke in the coordinates.
-    const t = setTimeout(() => {
-      const url =
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-        "&current=temperature_2m,weather_code&daily=precipitation_probability_max,precipitation_sum&timezone=Asia%2FMakassar&forecast_days=2";
-      fetch(url, { signal: ctl.signal })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((j) => {
-          const v = bacaCuaca(j);
-          setC(v ?? null);
-          try {
-            if (v) sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), c: v }));
-          } catch {}
-        })
-        .catch(() => !ctl.signal.aborted && setC(null));
+    const t = setTimeout(async () => {
+      const om =
+        sumber !== "bmkg"
+          ? getJson(
+              `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+                "&current=temperature_2m,weather_code&daily=precipitation_probability_max&timezone=Asia%2FMakassar&forecast_days=2",
+              ctl.signal,
+            ).then(bacaCuaca)
+          : Promise.resolve(undefined);
+      const bmkg =
+        sumber !== "open-meteo"
+          ? getJson(`https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4=${encodeURIComponent(adm4)}`, ctl.signal).then((j) => bacaBmkg(j, new Date()))
+          : Promise.resolve(undefined);
+      const [b, o] = await Promise.allSettled([bmkg, om]);
+      if (ctl.signal.aborted) return;
+      const v = gabung(b.status === "fulfilled" ? b.value : undefined, o.status === "fulfilled" ? o.value : undefined);
+      setC(v ?? null);
+      try {
+        if (v) sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), c: v }));
+      } catch {}
     }, 400);
     return () => (clearTimeout(t), ctl.abort());
-  }, [aktif, lat, lon]);
+  }, [aktif, lat, lon, adm4, sumber]);
 
   if (!aktif || c === null) return null;
-  const k = c && kondisi(c.kode);
-  const awas = !!c && waspada(c);
+  const awas = !!c && awasHujan(c);
+  // Number and unit never split across lines (NBSP).
+  const mm = (n: number) => `${String(n).replace(".", ",")}\u00a0mm`;
+  const pct = (n: number | undefined) => `${n ?? "--"}%`;
   return (
     <div className="hud-cell hud-wide hud-cuaca" data-waspada={awas || undefined}>
       <dt>
         Cuaca · <bdi>{nama}</bdi>
       </dt>
-      {/* Same two lines while loading ("--"), so the HUD doesn't grow when the forecast lands. */}
+      {/* Same lines while loading ("--"), so the HUD doesn't grow when the forecast lands. */}
       <dd>
-        {k ? <LangitIkon langit={k.langit} /> : <span className="cuaca-ikon" />}
-        <span>{c ? `${Math.round(c.suhu)}°C ${k?.teks}` : "--°C"}</span>
+        {c ? <LangitIkon langit={c.langit} /> : <span className="cuaca-ikon" />}
+        <span>{c ? `${Math.round(c.suhu)}°C ${c.teks}` : "--°C"}</span>
       </dd>
-      <dd className="cuaca-hujan">
-        Hujan hari ini {c ? c.hujan[0] : "--"}% · besok {c ? c.hujan[1] : "--"}%
-      </dd>
+      {(!c || c.hujan) && (
+        <dd className="cuaca-hujan">
+          Peluang hujan {pct(c?.hujan?.[0])} · besok {pct(c?.hujan?.[1])}
+        </dd>
+      )}
+      {c?.mm && (
+        <dd className="cuaca-hujan">
+          Curah hujan {mm(c.mm[0])} · besok {mm(c.mm[1])}
+        </dd>
+      )}
       {awas && <dd className="cuaca-waspada">Waspada hujan — siaga dewatering</dd>}
+      {c && <dd className="cuaca-sumber">Sumber: {c.sumber.join(" · ")}</dd>}
     </div>
   );
 }

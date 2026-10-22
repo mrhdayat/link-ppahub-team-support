@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { flushSync } from "react-dom";
 import { ArrowCounterClockwise, Crosshair, FloppyDisk, MapPin, Plus, X } from "@phosphor-icons/react";
 import {
-  STATUS, TEMA, ZONA, buka24, clockIn, safetyTalkFor, siteSchema, temaFor, type Site, type StatusWarna, type Tema, type Zona,
+  STATUS, SUMBER_CUACA, TEMA, ZONA, buka24, clockIn, safetyTalkFor, siteSchema, temaFor, type Site, type StatusWarna, type Tema, type Zona,
 } from "@/lib/site";
 import { Field, NumberInput, RowTools, Segmented, fid, focusLater, initialsOf, shiftIssues, swap, wire } from "./controls";
 import { toast } from "./toast";
 import type { Commit } from "./dashboard";
+import { wilayah, type Wilayah } from "@/app/admin/actions";
 import "./forms.css";
 
 export const PROFIL_KEYS = ["profil", "status", "balasMaksJam", "whatsapp", "teksBerjalan", "safetyTalk", "shift", "cuaca", "tema"] as const;
@@ -437,8 +438,13 @@ export function CuacaSection({ site, update, errors }: Props) {
             aria-describedby={fid("cuaca.aktif-hint")} onChange={(ev) => set({ aktif: ev.target.checked })} />
           <span>Tampilkan cuaca</span>
         </label>
-        <p className="field-hint" id={fid("cuaca.aktif-hint")}>Cuaca di lokasi site, dari Open-Meteo.</p>
+        <p className="field-hint" id={fid("cuaca.aktif-hint")}>Cuaca di lokasi site dari BMKG dan Open-Meteo. Keduanya gratis, tanpa API key.</p>
       </div>
+      <Segmented name="cuaca-sumber" label="Sumber data" id={fid("cuaca.sumber")} value={cuaca.sumber}
+        onChange={(sumber) => set({ sumber })}
+        options={SUMBER_CUACA.map((v) => ({ value: v, label: SUMBER_NAME[v] }))} />
+      <p className="field-hint">{SUMBER_HINT[cuaca.sumber]}</p>
+      <LokasiBmkg adm4={cuaca.adm4} onPick={(patch) => set(patch)} />
       <Field path="cuaca.nama" label="Nama lokasi" error={e("nama")} hint={`${cuaca.nama.length}/40`}>
         <input {...wire("cuaca.nama", e("nama"), true)} value={cuaca.nama} maxLength={40} autoComplete="off"
           placeholder="mis. Site BIB" onChange={(ev) => set({ nama: ev.target.value })} />
@@ -467,6 +473,103 @@ export function CuacaSection({ site, update, errors }: Props) {
         )}
       </div>
     </section>
+  );
+}
+
+const SUMBER_NAME: Record<Site["cuaca"]["sumber"], string> = { gabungan: "Gabungan", bmkg: "BMKG", "open-meteo": "Open-Meteo" };
+const SUMBER_HINT: Record<Site["cuaca"]["sumber"], string> = {
+  gabungan: "Kondisi, suhu, dan curah hujan (mm) dari BMKG; peluang hujan (%) dari Open-Meteo. Kalau satu tidak menjawab, yang lain tetap tampil.",
+  bmkg: "Hanya BMKG: data resmi per desa (kondisi, suhu, curah hujan mm).",
+  "open-meteo": "Hanya Open-Meteo: memakai koordinat di bawah, termasuk peluang hujan (%).",
+};
+const LEVELS = [
+  { label: "Provinsi", len: 2 },
+  { label: "Kabupaten/kota", len: 5 },
+  { label: "Kecamatan", len: 8 },
+  { label: "Desa/kelurahan", len: 13 },
+] as const;
+const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
+
+/**
+ * BMKG forecasts are per village. Pick it down the region tree (wilayah.id, via a server action);
+ * the village's coordinates come from BMKG itself, so Open-Meteo looks at the same spot.
+ */
+function LokasiBmkg({ adm4, onPick }: { adm4: string; onPick: (patch: Partial<Site["cuaca"]>) => void }) {
+  // Chosen code per level; the village level is the saved adm4.
+  const [sel, setSel] = useState<string[]>(() => LEVELS.map((l) => adm4.slice(0, l.len)));
+  const [lists, setLists] = useState<(Wilayah[] | undefined)[]>([]);
+  const [checking, setChecking] = useState(false);
+
+  useEffect(() => setSel(LEVELS.map((l) => adm4.slice(0, l.len))), [adm4]);
+
+  // Load each level whose parent is chosen (provinces need no parent).
+  const parents = ["", ...sel.slice(0, 3)];
+  const parentKey = parents.join("|");
+  useEffect(() => {
+    let live = true;
+    parents.forEach((p, i) => {
+      if (i > 0 && !p) return;
+      void wilayah(p).then((r) => {
+        if (!live) return;
+        if (!r.ok) return toast.error(r.error);
+        setLists((ls) => Object.assign([...ls], { [i]: r.items }));
+      });
+    });
+    return () => void (live = false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parentKey]);
+
+  async function pickDesa(code: string) {
+    setChecking(true);
+    try {
+      const r = await fetch(`https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4=${encodeURIComponent(code)}`);
+      const j = r.ok ? await r.json() : null;
+      const l = j?.lokasi;
+      if (typeof l?.lat === "number" && typeof l?.lon === "number") {
+        const desa = typeof l.desa === "string" ? l.desa.slice(0, 40) : "";
+        onPick({ adm4: code, lat: round4(l.lat), lon: round4(l.lon), ...(desa && { nama: desa }) });
+        toast.success(`Lokasi cuaca: ${l.desa}, ${l.kecamatan}. Koordinat diambil dari BMKG.`);
+      } else {
+        onPick({ adm4: code });
+        toast.info("BMKG belum punya prakiraan untuk desa ini. Cuaca memakai Open-Meteo dari koordinat di bawah.");
+      }
+    } catch {
+      onPick({ adm4: code });
+      toast.error("BMKG tidak bisa dihubungi. Kode desa tetap disimpan; cek lagi nanti.");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  return (
+    <fieldset className="field lokasi-bmkg" aria-busy={checking || undefined}>
+      <legend>Lokasi BMKG</legend>
+      <div className="lokasi-grid">
+        {LEVELS.map((lv, i) => {
+          const list = lists[i];
+          const disabled = (i > 0 && !sel[i - 1]) || !list;
+          return (
+            <label key={lv.label} className="lokasi-level">
+              <span>{lv.label}</span>
+              <select value={sel[i]} disabled={disabled || checking}
+                onChange={(ev) => {
+                  const code = ev.target.value;
+                  const next = sel.map((v, k) => (k < i ? v : k === i ? code : ""));
+                  setSel(next);
+                  setLists((ls) => ls.map((x, k) => (k > i ? undefined : x)));
+                  if (i === LEVELS.length - 1 && code) void pickDesa(code);
+                }}>
+                <option value="">{list ? `Pilih ${lv.label.toLowerCase()}` : i > 0 && !sel[i - 1] ? "—" : "Memuat…"}</option>
+                {list?.map((w) => <option key={w.code} value={w.code}>{w.name}</option>)}
+              </select>
+            </label>
+          );
+        })}
+      </div>
+      <p className="field-hint">
+        Kode desa BMKG: <code>{adm4}</code>{checking ? " · mengecek BMKG…" : ""}. Data wilayah dari wilayah.id.
+      </p>
+    </fieldset>
   );
 }
 

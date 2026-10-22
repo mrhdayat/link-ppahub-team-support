@@ -25,6 +25,8 @@ export const STATUS = ["hijau", "kuning", "merah"] as const;
 /** Pictogram on each lane plate; drawn in components/rambu/signs.tsx. */
 export const IKON = ["simpan", "listrik", "air", "truk", "alat", "dokumen", "perisai", "umum"] as const;
 /** Indonesian time zones. Opening hours and label dates are the owner's, not the visitor's. */
+/** Weather source: both (BMKG condition + Open-Meteo rain chance), or one of them. */
+export const SUMBER_CUACA = ["gabungan", "bmkg", "open-meteo"] as const;
 /** Page theme. "otomatis" follows the calendar (Agustus → HUT RI, 12 Jan–12 Feb → Bulan K3 Nasional). */
 export const TEMA = ["otomatis", "standar", "hut-ri", "bulan-k3", "hut-ppa"] as const;
 export const ZONA = { "Asia/Jakarta": "WIB", "Asia/Makassar": "WITA", "Asia/Jayapura": "WIT" } as const;
@@ -87,10 +89,18 @@ export const siteSchema = z
     safetyTalk: z.array(z.object({ teks: z.string().trim().min(1).max(120), tanggal: date.optional().catch(undefined) })).max(60).default([]),
     // Shift change times, owner's zone.
     shift: z.array(hhmm).max(4).default(["06:00", "18:00"]),
-    // Weather for the HUD (Open-Meteo, no key). Coordinates of the site.
+    // Weather for the HUD, no API keys: BMKG (official, per village code adm4) and/or Open-Meteo (lat/lon).
     cuaca: z
-      .object({ aktif: z.boolean(), nama: z.string().trim().max(40), lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) })
-      .default({ aktif: true, nama: "Site BIB", lat: -3.6, lon: 115.6 }),
+      .object({
+        aktif: z.boolean(),
+        nama: z.string().trim().max(40),
+        lat: z.number().min(-90).max(90),
+        lon: z.number().min(-180).max(180),
+        // Kepmendagri village code; default Mangkalapi (Kec. Teluk Kepayang, Tanah Bumbu), the PPA site.
+        adm4: z.string().regex(/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/, "Kode desa: 00.00.00.0000").catch("63.10.12.2003").default("63.10.12.2003"),
+        sumber: z.enum(SUMBER_CUACA).catch("gabungan").default("gabungan"),
+      })
+      .default({ aktif: true, nama: "Mangkalapi · PPA", lat: -3.4337, lon: 115.5287, adm4: "63.10.12.2003", sumber: "gabungan" }),
     tema: z.enum(TEMA).default("otomatis"),
   })
   .superRefine((s, ctx) => {
