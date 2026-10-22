@@ -1,7 +1,14 @@
 import { cookies } from "next/headers";
-import { createHmac, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scrypt, scryptSync, timingSafeEqual } from "node:crypto";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
+import { ensureSchema, sql } from "./db";
 
-// Single admin. Password from ADMIN_PASSWORD; session is an HMAC-signed expiry in an httpOnly cookie.
+// Single admin. Password from the panel (admin_secret, scrypt) when set, else ADMIN_PASSWORD.
+// Session is an HMAC-signed "expiry.version" in an httpOnly cookie; the version is the stored password's,
+// so changing the password invalidates every other session.
+// Recovery if the panel password is lost: delete the admin_secret row (or data/admin-secret.json) and ADMIN_PASSWORD works again.
 const COOKIE = "admin_session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
@@ -26,9 +33,61 @@ function safeEqual(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-export function checkPassword(input: string): boolean {
+/* ---------- Stored password ---------- */
+
+type Secret = { hash: string; version: number };
+const SECRET_FILE = path.join(process.cwd(), "data", "admin-secret.json");
+const scryptAsync = promisify(scrypt) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
+
+// ponytail: read on every isAdmin (one indexed row), so a change signs out sessions on every instance at once.
+async function readSecret(): Promise<Secret | null> {
+  if (sql) {
+    await ensureSchema();
+    const rows = (await sql`select hash, version from admin_secret where key = 'admin'`) as Secret[];
+    return rows[0] ? { hash: rows[0].hash, version: Number(rows[0].version) } : null;
+  }
+  try {
+    return JSON.parse(await readFile(SECRET_FILE, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+/** "scrypt$<salt b64url>$<hash b64url>" */
+async function hashPassword(pw: string): Promise<string> {
+  const salt = randomBytes(16);
+  return `scrypt$${salt.toString("base64url")}$${(await scryptAsync(pw, salt, 32)).toString("base64url")}`;
+}
+
+async function verifyHash(pw: string, stored: string): Promise<boolean> {
+  const [alg, salt, hash] = stored.split("$");
+  if (alg !== "scrypt" || !salt || !hash) return false;
+  const want = Buffer.from(hash, "base64url");
+  const got = await scryptAsync(pw, Buffer.from(salt, "base64url"), want.length);
+  return got.length === want.length && timingSafeEqual(got, want);
+}
+
+/** Stores a new password and bumps the version. Returns the new version. */
+export async function setPassword(pw: string): Promise<number> {
+  const hash = await hashPassword(pw);
+  if (sql) {
+    await ensureSchema();
+    const rows = (await sql`insert into admin_secret (key, hash, version) values ('admin', ${hash}, 1)
+      on conflict (key) do update set hash = excluded.hash, version = admin_secret.version + 1, updated_at = now()
+      returning version`) as { version: number }[];
+    return Number(rows[0]!.version);
+  }
+  const version = ((await readSecret())?.version ?? 0) + 1;
+  await mkdir(path.dirname(SECRET_FILE), { recursive: true });
+  await writeFile(SECRET_FILE, JSON.stringify({ hash, version }), { mode: 0o600 });
+  return version;
+}
+
+export async function checkPassword(input: string): Promise<boolean> {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected) return false;
+  const stored = await readSecret();
+  if (stored) return verifyHash(input, stored.hash);
   // Compare fixed-length digests so length differences don't leak through timing.
   const h = (s: string) => createHmac("sha256", "pw-compare").update(s).digest("base64url");
   return safeEqual(h(input), h(expected));
@@ -71,9 +130,10 @@ export function clearFailures(ip: string) {
   failures.delete(ip);
 }
 
+/** Issues (or re-issues) this browser's session for the current password version. */
 export async function startSession() {
-  const exp = String(Date.now() + MAX_AGE * 1000);
-  (await cookies()).set(COOKIE, `${exp}.${sign(exp)}`, {
+  const value = `${Date.now() + MAX_AGE * 1000}.${(await readSecret())?.version ?? 0}`;
+  (await cookies()).set(COOKIE, `${value}.${sign(value)}`, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -89,6 +149,8 @@ export async function endSession() {
 export async function isAdmin(): Promise<boolean> {
   const raw = (await cookies()).get(COOKIE)?.value;
   if (!raw || !process.env.ADMIN_PASSWORD) return false;
-  const [exp, mac] = raw.split(".");
-  return !!exp && !!mac && safeEqual(mac, sign(exp)) && Number(exp) > Date.now();
+  // Pre-version cookies ("exp.mac") fail the shape check: a one-time sign-out after this shipped.
+  const [exp, ver, mac] = raw.split(".");
+  if (!exp || !ver || !mac || !safeEqual(mac, sign(`${exp}.${ver}`)) || Number(exp) <= Date.now()) return false;
+  return Number(ver) === ((await readSecret())?.version ?? 0);
 }

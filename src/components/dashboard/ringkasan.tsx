@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { ArrowClockwise, ArrowSquareOut, CopySimple, PencilSimple } from "@phosphor-icons/react";
-import type { Counts, Day } from "@/lib/analytics";
-import type { Site } from "@/lib/site";
+import type { Counts, Day, HourRow } from "@/lib/analytics";
+import { lanesOf, type Site } from "@/lib/site";
 import { Plate, Segmented, copyText, publicUrl } from "./controls";
 import {
-  addDays, bucket, dayLabel, fmt, fmtCompact, isLinkKey, linkTaps, pct, rangeLabel, span, sum, ticks,
+  HARI_PANJANG, HARI_SINGKAT, addDays, bucket, busiest, busyLabel, dayLabel, fmt, fmtCompact, fmtRatio, hourGrid, hourLabel,
+  isLinkKey, linkTaps, pct, perKategori, rangeLabel, span, sum, ticks, weekly, weeklyText,
 } from "./stats";
+import "./insight.css";
 
 type Range = "7" | "30" | "90";
 const RANGES: { value: Range; label: string }[] = [
@@ -24,9 +26,9 @@ const SERIES = [
 ] as const;
 
 export function Ringkasan({
-  site, days, today, loading, onRefresh, onEditLink,
+  site, days, hours, today, loading, onRefresh, onEditLink,
 }: {
-  site: Site; days: Day[]; today: string; loading: boolean;
+  site: Site; days: Day[]; hours: HourRow[]; today: string; loading: boolean;
   onRefresh: () => void; onEditLink: (id: string) => void;
 }) {
   const [range, setRange] = useState<Range>("7");
@@ -96,6 +98,7 @@ export function Ringkasan({
   return (
     <div className="sec" data-loading={loading || undefined}>
       {head}
+      <Mingguan site={site} days={days} hours={hours} today={today} onEditLink={onEditLink} />
       <ul className="kpis" aria-label={`Angka ${n} hari terakhir`}>
         <Kpi label="Kunjungan" value={fmtCompact(views)} delta={<Delta cur={views} prev={pViews} vs={vs} />} />
         <Kpi label="Klik tautan" value={fmtCompact(clicks)} delta={<Delta cur={clicks} prev={pClicks} vs={vs} />} />
@@ -118,6 +121,8 @@ export function Ringkasan({
         <DailyChart days={cur} />
         {!views && !clicks && <p className="field-hint">Tidak ada aktivitas dalam {n} hari terakhir.</p>}
       </section>
+
+      <Heatmap hours={hours} from={addDays(today, 1 - n)} to={today} n={n} />
 
       <div className="two-col">
         <TopLinks site={site} cur={c} all={all} n={n} onEditLink={onEditLink} />
@@ -144,7 +149,8 @@ const perVisit = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 });
 function Delta({ cur, prev, vs, points }: { cur: number | null; prev: number | null; vs: string; points?: boolean }) {
   if (cur === null || prev === null) return <span className="delta" data-dir="flat">Belum bisa dibandingkan</span>;
   const diff = cur - prev;
-  const dir = diff > 0 ? "up" : diff < 0 ? "down" : "flat";
+  // A ratio that moved less than the 0,1 it is shown to reads as unchanged, never "+0×".
+  const dir = points && perVisit.format(Math.abs(diff)) === "0" ? "flat" : diff > 0 ? "up" : diff < 0 ? "down" : "flat";
   let text: string;
   if (dir === "flat") text = `Sama dengan ${vs}`;
   else if (points) text = `${diff > 0 ? "+" : "−"}${perVisit.format(Math.abs(diff))}× dari ${vs}`;
@@ -377,14 +383,9 @@ function TopLinks({ site, cur, all, n, onEditLink }: {
 /* ---------- Per category ---------- */
 
 function PerKategori({ site, cur, n }: { site: Site; cur: Counts; n: number }) {
-  const rows = site.kategori
-    .map((k) => ({
-      k,
-      links: site.link.filter((l) => l.kategori === k.id).length,
-      klik: site.link.reduce((s, l) => (l.kategori === k.id ? s + (cur[`l:${l.id}`] ?? 0) : s), 0),
-    }))
-    .sort((a, b) => b.klik - a.klik);
+  const rows = perKategori(site, cur);
   const max = Math.max(1, ...rows.map((r) => r.klik));
+  const multi = site.link.some((l) => lanesOf(l).length > 1);
   const orphan = Object.entries(cur).reduce(
     (s, [key, v]) => (isLinkKey(key) && !site.link.some((l) => `l:${l.id}` === key) ? s + v : s), 0);
 
@@ -403,7 +404,196 @@ function PerKategori({ site, cur, n }: { site: Site; cur: Counts; n: number }) {
           </li>
         ))}
       </ul>
+      {multi && <p className="field-hint">Tautan multi-jalur dihitung di tiap jalur.</p>}
       {orphan > 0 && <p className="field-hint">{fmt(orphan)} klik berasal dari tautan yang sudah dihapus.</p>}
+    </section>
+  );
+}
+
+/* ---------- Weekly report ---------- */
+
+function Mingguan({ site, days, hours, today, onEditLink }: {
+  site: Site; days: Day[]; hours: HourRow[]; today: string; onEditLink: (id: string) => void;
+}) {
+  const w = useMemo(() => weekly(site, days, hours, today), [site, days, hours, today]);
+  const [open, setOpen] = useState(false);
+  const kat = new Map(site.kategori.map((k) => [k.id, k]));
+  const vs = "7 hari sebelumnya";
+
+  return (
+    <section className="panel weekly" aria-labelledby="wk-h">
+      <div className="panel-head">
+        <div>
+          <h3 id="wk-h">Laporan mingguan</h3>
+          <p className="field-hint">{rangeLabel(w.from, w.to)} · dibanding {rangeLabel(w.pFrom, w.pTo)}</p>
+        </div>
+        <button type="button" className="btn" onClick={() => copyText(weeklyText(w, site.profil.nama), "Laporan disalin. Tempel di WhatsApp.")}>
+          <CopySimple size={18} weight="bold" aria-hidden />
+          Salin laporan
+        </button>
+      </div>
+
+      <dl className="wk-nums">
+        <div><dt>Kunjungan</dt><dd>{fmt(w.views)}</dd><dd><Delta cur={w.views} prev={w.pViews} vs={vs} /></dd></div>
+        <div><dt>Klik</dt><dd>{fmt(w.clicks)}</dd><dd><Delta cur={w.clicks} prev={w.pClicks} vs={vs} /></dd></div>
+        <div><dt>Klik per kunjungan</dt><dd>{fmtRatio(w.ratio)}</dd><dd><Delta cur={w.ratio} prev={w.pRatio} vs={vs} points /></dd></div>
+      </dl>
+
+      <div className="wk-cols">
+        <div>
+          <h4 className="wk-h">Tautan teratas</h4>
+          {w.top.length ? (
+            <ol className="wk-top">
+              {w.top.map((r) => (
+                <li key={r.link.id}>
+                  <span className="wk-title">{r.link.judul}</span>
+                  <span className="wk-plates">
+                    {lanesOf(r.link).map((id) => {
+                      const k = kat.get(id);
+                      return <Plate key={id} warna={k?.warna} ikon={k?.ikon} small>{k?.nama ?? "—"}</Plate>;
+                    })}
+                  </span>
+                  <b className="wk-n">{fmt(r.n)}<span className="sr-only"> klik</span></b>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="field-hint">Belum ada klik minggu ini.</p>
+          )}
+        </div>
+        <dl className="wk-facts">
+          <div>
+            <dt>Tautan baru</dt>
+            <dd>{w.baru.length ? w.baru.map((l) => l.judul).join(", ") : "Tidak ada"}</dd>
+          </div>
+          <div>
+            <dt>Tanpa klik</dt>
+            <dd className="wk-row">
+              <span>{fmt(w.tanpaKlik.length)} tautan</span>
+              {w.tanpaKlik.length > 0 && (
+                <button type="button" className="btn btn-quiet" aria-expanded={open} aria-controls="wk-zero"
+                  onClick={() => setOpen((o) => !o)}>
+                  {open ? "Tutup" : "Lihat"}
+                </button>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>Jam tersibuk</dt>
+            <dd>{w.jam ? busyLabel(w.jam) : "Belum ada data"}</dd>
+          </div>
+        </dl>
+      </div>
+      {open && (
+        <ul className="never-list" id="wk-zero" aria-label="Tautan tanpa klik minggu ini">
+          {w.tanpaKlik.map((l) => (
+            <li key={l.id}>
+              <Plate warna={kat.get(l.kategori)?.warna} ikon={kat.get(l.kategori)?.ikon} small>
+                <span className="sr-only">{kat.get(l.kategori)?.nama}</span>
+              </Plate>
+              <span className="cell-title">{l.judul}</span>
+              <button type="button" className="icon-btn" aria-label={`Ubah ${l.judul}`} onClick={() => onEditLink(l.id)}>
+                <PencilSimple size={18} weight="bold" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/* ---------- Busy hours ---------- */
+
+type Kind = HourRow["k"];
+const KINDS: { value: Kind; label: string }[] = [
+  { value: "tap", label: "Klik" },
+  { value: "view", label: "Kunjungan" },
+];
+const COLS = Array.from({ length: 24 }, (_, h) => h);
+
+/** 0 = no hits (neutral), 1–5 = sequential steps of the max. */
+const level = (v: number, max: number) => (v ? Math.max(1, Math.ceil((v / max) * 5)) : 0);
+
+function Heatmap({ hours, from, to, n }: { hours: HourRow[]; from: string; to: string; n: number }) {
+  const [k, setK] = useState<Kind>("tap");
+  const g = useMemo(() => hourGrid(hours, from, to, k), [hours, from, to, k]);
+  const max = Math.max(0, ...g.flat());
+  const top = busiest(g);
+  const [active, setActive] = useState<[number, number] | null>(null);
+  const [kbd, setKbd] = useState(false);
+  const unit = k === "tap" ? "klik" : "kunjungan";
+  const read = (d: number, h: number) => `${HARI_PANJANG[d]} ${hourLabel(h)}: ${fmt(g[d]![h]!)} ${unit}`;
+
+  const onKey = (e: KeyboardEvent) => {
+    const [d, h] = active ?? [0, 0];
+    const next: Record<string, [number, number]> = {
+      ArrowLeft: [d, Math.max(0, h - 1)], ArrowRight: [d, Math.min(23, h + 1)],
+      ArrowUp: [Math.max(0, d - 1), h], ArrowDown: [Math.min(6, d + 1), h],
+      Home: [d, 0], End: [d, 23],
+    };
+    if (e.key in next) {
+      e.preventDefault();
+      setKbd(true);
+      setActive(next[e.key]!);
+    }
+  };
+
+  return (
+    <section className="panel" aria-labelledby="heat-h">
+      <div className="panel-head">
+        <div>
+          <h3 id="heat-h">Peta jam sibuk</h3>
+          <p className="field-hint">{n} hari terakhir, jam di zona halaman</p>
+        </div>
+        <Segmented name="heat-k" label="Tampilkan" hideLabel className="heat-seg" value={k} onChange={(v) => { setK(v); setActive(null); }} options={KINDS} />
+      </div>
+
+      {hours.length === 0 ? (
+        <p className="heat-empty">Data per jam mulai tercatat sejak pembaruan ini dipasang. Peta terisi begitu ada kunjungan baru.</p>
+      ) : (
+        <>
+          <p className="heat-top">
+            Jam tersibuk: <b>{top ? busyLabel(top) : "–"}</b>
+            {top && <span className="field-hint"> · {fmt(top.n)} {unit}</span>}
+          </p>
+          <div className="heat" tabIndex={0} role="group"
+            aria-label={`Peta ${unit} per jam, Senin sampai Minggu. Panah membaca tiap jam.`}
+            onKeyDown={onKey} onFocus={() => !active && setActive(top ? [top.day, top.hour] : [0, 0])}
+            onBlur={() => { setActive(null); setKbd(false); }}
+            onPointerLeave={() => !kbd && setActive(null)}>
+            <span aria-hidden />
+            {COLS.map((h) => <span key={h} className="heat-x" aria-hidden>{h % 3 === 0 ? String(h).padStart(2, "0") : ""}</span>)}
+            {g.map((row, d) => [
+              <span key={`y${d}`} className="heat-y" aria-hidden>{HARI_SINGKAT[d]}</span>,
+              ...row.map((v, h) => (
+                <span key={`${d}-${h}`} className="heat-c" data-l={level(v, max)} aria-hidden
+                  data-on={active?.[0] === d && active[1] === h ? "" : undefined}
+                  onPointerEnter={() => { setKbd(false); setActive([d, h]); }}
+                  onPointerDown={() => setActive([d, h])} />
+              )),
+            ])}
+          </div>
+          <div className="heat-foot">
+            <p className="heat-read" aria-live="polite">{active ? read(active[0], active[1]) : "Arahkan atau ketuk kotak untuk melihat angkanya."}</p>
+            <div className="heat-legend" aria-hidden>
+              <span>0</span>
+              {[0, 1, 2, 3, 4, 5].map((l) => <span key={l} className="heat-c" data-l={l} />)}
+              <span>{fmt(max)}</span>
+            </div>
+          </div>
+          {/* Wrapped: a table ignores width: 1px, so its 24 columns would widen the page. */}
+          <div className="sr-only"><table>
+            <caption>{`Jumlah ${unit} per jam, ${n} hari terakhir`}</caption>
+            <thead><tr><th scope="col">Hari</th>{COLS.map((h) => <th key={h} scope="col">{hourLabel(h)}</th>)}</tr></thead>
+            <tbody>
+              {g.map((row, d) => (
+                <tr key={d}><th scope="row">{HARI_PANJANG[d]}</th>{row.map((v, h) => <td key={h}>{v}</td>)}</tr>
+              ))}
+            </tbody>
+          </table></div>
+        </>
+      )}
     </section>
   );
 }

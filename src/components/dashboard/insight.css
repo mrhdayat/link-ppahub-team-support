@@ -1,0 +1,154 @@
+/* Admin insight: weekly report, busy-hours map, version history, password. Panels are always the white sign
+   surface (day and night), so the heatmap ramp is validated against #f7f7f2 only. */
+
+/* ---------- Weekly report ---------- */
+
+.weekly { border-left-width: 12px; border-left-color: var(--yellow); }
+.weekly .panel-head p { margin: 2px 0 0; }
+/* Phone: one row per number (label · value, change below). Wider: three tiles. */
+.wk-nums { display: grid; gap: var(--space-2); margin: 0; }
+.wk-nums > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-small);
+  border-radius: var(--radius-plate);
+}
+.wk-nums dt { font-size: 0.875rem; font-weight: 800; }
+.wk-nums dd { margin: 0; }
+.wk-nums dd:nth-of-type(1) { font-size: 1.5rem; font-weight: 900; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.wk-nums dd:nth-of-type(2) { grid-column: 1 / -1; }
+@container (min-width: 700px) {
+  .wk-nums { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+  .wk-nums > div { grid-template-columns: minmax(0, 1fr); align-content: start; padding: var(--space-3); }
+  .wk-nums dd:nth-of-type(1) { font-size: 1.75rem; }
+}
+
+.wk-cols { display: grid; gap: var(--space-5); align-items: start; }
+@container (min-width: 700px) {
+  .wk-cols { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
+.wk-h {
+  margin: 0 0 var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.wk-top { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; counter-reset: wk; }
+.wk-top li {
+  counter-increment: wk;
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  grid-template-areas: "n title v" "n plates v";
+  align-items: center;
+  gap: 2px var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid #dcd9cf;
+}
+.wk-top li::before {
+  content: counter(wk);
+  grid-area: n;
+  align-self: start;
+  color: var(--ink-soft);
+  font-family: var(--font-hud), ui-monospace, monospace;
+  font-size: 0.8125rem;
+}
+.wk-title { grid-area: title; font-weight: 800; overflow-wrap: anywhere; }
+.wk-plates { grid-area: plates; display: flex; flex-wrap: wrap; gap: 4px; }
+.wk-n { grid-area: v; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+.wk-facts { display: grid; gap: var(--space-3); margin: 0; }
+.wk-facts dt {
+  color: var(--ink-soft);
+  font-family: var(--font-hud), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.wk-facts dd { margin: 2px 0 0; font-weight: 800; overflow-wrap: anywhere; }
+.wk-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+
+/* ---------- Busy-hours heatmap ---------- */
+
+.segmented.heat-seg label { flex: 1 0 auto; }
+
+:is(.heat, .heat-legend) {
+  /* Sequential sign-blue ramp, checked with the dataviz ordinal validator: monotone L, ΔL ≥ 0.06,
+     lightest step 2.08:1 on the panel. 0 is the neutral track colour, not part of the ramp. */
+  --h0: #e4e1d7;
+  --h1: #88b0e6;
+  --h2: #5a8fda;
+  --h3: #2f6cc8;
+  --h4: #0050b5;
+  --h5: #00306b;
+}
+.heat {
+  display: grid;
+  grid-template-columns: 2.25rem repeat(24, minmax(0, 1fr));
+  gap: 2px;
+  padding: 4px;
+  margin: -4px;
+  border-radius: 6px;
+  touch-action: pan-y;
+}
+.heat-x, .heat-y, .heat-legend {
+  color: var(--ink-soft);
+  font-family: var(--font-hud), ui-monospace, monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.heat-x { white-space: nowrap; overflow: visible; line-height: 1.4; }
+.heat-y { align-self: center; font-size: 12px; font-weight: 700; }
+.heat-c { display: block; min-height: 20px; border-radius: 2px; background: var(--h0); }
+.heat-c[data-l="1"] { background: var(--h1); }
+.heat-c[data-l="2"] { background: var(--h2); }
+.heat-c[data-l="3"] { background: var(--h3); }
+.heat-c[data-l="4"] { background: var(--h4); }
+.heat-c[data-l="5"] { background: var(--h5); }
+.heat-c[data-on] { outline: 3px solid var(--black); outline-offset: 1px; position: relative; z-index: 1; }
+@container (min-width: 700px) {
+  .heat-c { min-height: 26px; }
+}
+
+.heat-top, .heat-read, .heat-empty { margin: 0; }
+.heat-top b { font-weight: 900; }
+.heat-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.heat-read { min-height: 1.5em; font-size: 0.875rem; font-weight: 700; }
+.heat-legend { display: flex; align-items: center; gap: 2px; }
+.heat-legend .heat-c { width: 16px; min-height: 12px; }
+.heat-legend > span:first-child { margin-right: 4px; }
+.heat-legend > span:last-child { margin-left: 4px; }
+.heat-empty {
+  padding: var(--space-4);
+  border: 3px dashed var(--black);
+  border-radius: var(--radius-plate);
+}
+
+/* ---------- Version history ---------- */
+
+.hist { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.hist li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid #dcd9cf;
+}
+.hist li:first-child { padding-top: 0; }
+.hist-when { display: block; font-weight: 800; }
+.hist-meta {
+  display: block;
+  color: var(--ink-soft);
+  font-family: var(--font-hud), ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+.hist-diff { display: block; margin-top: 2px; font-size: 0.875rem; overflow-wrap: anywhere; }
+
+/* ---------- Password ---------- */
+
+.pw-form { display: grid; gap: var(--space-4); max-width: 28rem; }
+.pw-form input { width: 100%; }

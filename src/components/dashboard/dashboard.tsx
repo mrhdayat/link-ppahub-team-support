@@ -8,7 +8,7 @@ import {
 import { RambuPage } from "@/components/rambu/rambu-page";
 import { logout, save, type SaveResult } from "@/app/actions";
 import { getStats } from "@/app/admin/actions";
-import type { Day } from "@/lib/analytics";
+import type { Day, HourRow } from "@/lib/analytics";
 import { siteSchema, type Site } from "@/lib/site";
 import { EXPIRED, Toaster, sessionExpired, toast } from "./toast";
 import { Confirm } from "./modal";
@@ -45,8 +45,8 @@ const WITH_PREVIEW: Tab[] = ["tautan", "kategori", "profil"];
 
 const reason = (e: string) => e.replace(/[.\s]+$/, "");
 
-export function Dashboard({ initial, days: initialDays, today, initialTab }: {
-  initial: Site; days: Day[]; today: string; initialTab: Tab;
+export function Dashboard({ initial, days: initialDays, hours: initialHours, today, initialTab }: {
+  initial: Site; days: Day[]; hours: HourRow[]; today: string; initialTab: Tab;
 }) {
   const [tab, setTabState] = useState<Tab>(initialTab);
   const [site, setSiteState] = useState(initial);
@@ -56,6 +56,7 @@ export function Dashboard({ initial, days: initialDays, today, initialTab }: {
   const running = useRef(false);
   const [saving, setSaving] = useState(false);
   const [days, setDays] = useState(initialDays);
+  const [hours, setHours] = useState(initialHours);
   const [loadingStats, setLoadingStats] = useState(false);
   const [linkEdit, setLinkEdit] = useState<LinkEdit>(null);
   const [profilEdits, setProfilEdits] = useState<ProfilFields | null>(null);
@@ -132,6 +133,7 @@ export function Dashboard({ initial, days: initialDays, today, initialTab }: {
       const r = await getStats();
       if (r.ok) {
         setDays(r.days);
+        setHours(r.hours);
         if (!quiet) toast.success("Statistik diperbarui");
       } else if (EXPIRED.test(r.error)) sessionExpired(() => refreshStats());
       else toast.error(`Gagal memuat statistik: ${reason(r.error)}. Coba lagi.`);
@@ -269,7 +271,7 @@ export function Dashboard({ initial, days: initialDays, today, initialTab }: {
 
       <main className="dash-main">
         {tab === "ringkasan" && (
-          <Ringkasan site={site} days={days} today={today} loading={loadingStats}
+          <Ringkasan site={site} days={days} hours={hours} today={today} loading={loadingStats}
             onRefresh={() => void refreshStats()} onEditLink={editLink} />
         )}
         {tab === "tautan" && <Tautan site={site} days={days} commit={commit} edit={linkEdit} setEdit={setLinkEdit} />}
@@ -279,7 +281,13 @@ export function Dashboard({ initial, days: initialDays, today, initialTab }: {
         )}
         {tab === "pengaturan" && (
           <Pengaturan site={site} commit={commit} unsaved={unsaved} onLogout={() => setLeaving(true)}
-            onStatsReset={() => setDays([])} />
+            onStatsReset={() => { setDays([]); setHours([]); }}
+            onRestored={(s) => {
+              // The server already saved it: adopt it as confirmed, drop any Profil draft built on the old one.
+              confirmed.current = s;
+              setSite(s);
+              setProfilEdits(null);
+            }} />
         )}
       </main>
 

@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import type { Metadata } from "next";
 import { isAdmin } from "@/lib/auth";
 import { getSite } from "@/lib/store";
-import { readDays } from "@/lib/analytics";
+import { readDays, readHours } from "@/lib/analytics";
 import { clockIn } from "@/lib/site";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { DashboardSkeleton } from "@/components/dashboard/skeleton";
@@ -26,7 +26,7 @@ async function Gate({ searchParams }: { searchParams: PageProps<"/admin">["searc
   // isAdmin compares the cookie expiry to Date.now(), so it must run at request time, not in a prerender pass.
   await connection();
   if (!(await isAdmin())) redirect("/admin/login");
-  const [site, days, sp] = await Promise.all([getSite(), readDays(), searchParams]);
+  const [site, days, hours, sp] = await Promise.all([getSite(), readDays(), readHours(), searchParams]);
   const tab = typeof sp.tab === "string" && isTab(sp.tab) ? sp.tab : "ringkasan";
-  return <Dashboard initial={site} days={days} today={clockIn(site.status.zona, new Date()).date} initialTab={tab} />;
+  return <Dashboard initial={site} days={days} hours={hours} today={clockIn(site.status.zona, new Date()).date} initialTab={tab} />;
 }
