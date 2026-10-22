@@ -1,7 +1,7 @@
 // Self-check: `npx tsx src/lib/site.check.ts`
 import assert from "node:assert/strict";
 import { lastDays, linkTaps, totals, type Day } from "./analytics";
-import { DEFAULT_SITE, activeLabel, isSafeUrl, laneLayout, parseSite, siteSchema, statusAt } from "./site";
+import { DEFAULT_SITE, activeLabel, buka24, isSafeUrl, laneLayout, parseSite, siteSchema, statusAt } from "./site";
 
 // Only openable schemes pass.
 assert.ok(isSafeUrl("https://wa.me/62812"));
@@ -44,6 +44,12 @@ assert.equal(statusAt({ ...st, mode: "manual", manual: "kuning" }, wita(15, 10))
 // Stored categories from before icons existed get the generic one; the seed has an icon per category.
 assert.equal(siteSchema.parse({ ...DEFAULT_SITE, kategori: DEFAULT_SITE.kategori.map(({ ikon: _, ...k }) => k) }).kategori[0].ikon, "umum");
 assert.deepEqual(DEFAULT_SITE.kategori.map((k) => k.ikon), ["simpan", "listrik", "air", "truk"]);
+// 00–24 is open around the clock (green all day, except a day off).
+const allDay = { ...st, jamBuka: 0, jamTutup: 24 };
+assert.ok(buka24(allDay) && !buka24(st));
+assert.equal(statusAt(allDay, wita(15, 0)), "hijau");
+assert.equal(statusAt(allDay, wita(15, 23)), "hijau");
+assert.equal(statusAt(allDay, wita(18, 12)), "merah"); // Sunday is still a day off
 // Old stored data without a zone gets the default.
 assert.equal(siteSchema.parse({ ...DEFAULT_SITE, status: { ...st, zona: undefined } }).status.zona, "Asia/Makassar");
 

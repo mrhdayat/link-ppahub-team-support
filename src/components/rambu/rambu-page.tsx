@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ZONA, activeLabel, clockIn, laneLayout, statusAt, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
+import { ZONA, activeLabel, buka24, clockIn, laneLayout, statusAt, type Kategori, type Link, type Site, type StatusWarna } from "@/lib/site";
 import { X } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import { Arrow, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
@@ -36,7 +36,7 @@ function tapeItems(items: string[]): string[] {
 }
 
 function statusText(s: Site["status"], st: StatusWarna): string {
-  if (st === "hijau") return `dibuka sampai ${jam(s.jamTutup)}`;
+  if (st === "hijau") return s.mode === "otomatis" && buka24(s) ? "dibuka 24 jam" : `dibuka sampai ${jam(s.jamTutup)}`;
   if (st === "kuning") return s.mode === "manual" ? "antrean penuh" : `dibalas mulai ${jam(s.jamBuka)}`;
   return s.mode === "manual" ? "sedang libur" : "libur hari ini";
 }

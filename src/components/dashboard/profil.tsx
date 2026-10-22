@@ -3,7 +3,7 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { flushSync } from "react-dom";
 import { ArrowCounterClockwise, FloppyDisk, Plus } from "@phosphor-icons/react";
-import { STATUS, ZONA, siteSchema, type Site, type StatusWarna, type Zona } from "@/lib/site";
+import { STATUS, ZONA, buka24, siteSchema, type Site, type StatusWarna, type Zona } from "@/lib/site";
 import { Field, NumberInput, RowTools, Segmented, fid, focusLater, initialsOf, swap, wire } from "./controls";
 import type { Commit } from "./dashboard";
 
@@ -164,7 +164,16 @@ export function StatusSection({ site, update, errors, announce }: Props) {
         onChange={(zona) => setStatus({ zona })}
         options={(Object.keys(ZONA) as Zona[]).map((z) => ({ value: z, label: ZONA[z] }))} />
 
-      <div className="pair">
+      <div className="field">
+        <label className="switch">
+          <input type="checkbox" role="switch" checked={buka24(status)} aria-describedby={fid("status.24-hint")}
+            onChange={(ev) => setStatus(ev.target.checked ? { jamBuka: 0, jamTutup: 24 } : { jamBuka: 8, jamTutup: 17 })} />
+          <span>Buka 24 jam</span>
+        </label>
+        <p className="field-hint" id={fid("status.24-hint")}>Lampu hijau sepanjang hari dengan tulisan &ldquo;dibuka 24 jam&rdquo;. Hari libur tetap merah.</p>
+      </div>
+
+      {!buka24(status) && <div className="pair">
         <Field path="status.jamBuka" label="Jam buka" error={e("status.jamBuka")}>
           <NumberInput {...wire("status.jamBuka", e("status.jamBuka"))} min={0} max={23}
             value={status.jamBuka} onValue={(jamBuka) => setStatus({ jamBuka })} />
@@ -173,7 +182,7 @@ export function StatusSection({ site, update, errors, announce }: Props) {
           <NumberInput {...wire("status.jamTutup", e("status.jamTutup"))} min={1} max={24}
             value={status.jamTutup} onValue={(jamTutup) => setStatus({ jamTutup })} />
         </Field>
-      </div>
+      </div>}
 
       <fieldset className="field" data-invalid={e("status.hariLibur") ? "" : undefined}>
         <legend>Hari libur</legend>

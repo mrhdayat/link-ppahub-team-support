@@ -116,6 +116,9 @@ export function clockIn(zona: Zona, now: Date) {
   return { date: `${p.year}-${p.month}-${p.day}`, day, hour: Number(p.hour), minute: Number(p.minute) };
 }
 
+/** Open around the clock: 00.00 to 24.00. */
+export const buka24 = (s: Site["status"]) => s.jamBuka === 0 && s.jamTutup === 24;
+
 /** Traffic-light status for a moment in time, read on the owner's clock. */
 export function statusAt(s: Site["status"], now: Date): StatusWarna {
   if (s.mode === "manual") return s.manual;
