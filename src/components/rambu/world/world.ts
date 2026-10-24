@@ -109,3 +109,41 @@ export function sisaWaktu(minutes: number): string {
 
 /** Scrolled pixels → distance on the KM post: 100 px of road is 0,1 km. */
 export const kmDari = (px: number) => (Math.max(0, px) / 1000).toFixed(1).replace(".", ",");
+
+/** Today's sunrise and sunset as epoch ms. */
+export type Matahari = { terbit: number; terbenam: number };
+
+const RAD = Math.PI / 180;
+const J2000 = 946_728_000_000; // 2000-01-01T12:00Z, Julian day 2451545
+const DAY = 86_400_000;
+
+/**
+ * Sunrise equation (NOAA/Wikipedia form, ~1 min in the tropics): the local solar day nearest `now`.
+ * Used when Open-Meteo can't be reached.
+ */
+export function hitungMatahari(now: number, lat: number, lon: number): Matahari {
+  const n = Math.round((now - J2000) / DAY + lon / 360);
+  const j = n - lon / 360; // mean solar noon, days since J2000
+  const m = (357.5291 + 0.98560028 * j) % 360;
+  const c = 1.9148 * Math.sin(m * RAD) + 0.02 * Math.sin(2 * m * RAD) + 0.0003 * Math.sin(3 * m * RAD);
+  const l = (m + c + 282.9372) % 360; // ecliptic longitude: m + c + 180 + 102.9372
+  const transit = j + 0.0053 * Math.sin(m * RAD) - 0.0069 * Math.sin(2 * l * RAD);
+  const dek = Math.asin(Math.sin(l * RAD) * Math.sin(23.4397 * RAD));
+  const cosW = (Math.sin(-0.833 * RAD) - Math.sin(lat * RAD) * Math.sin(dek)) / (Math.cos(lat * RAD) * Math.cos(dek));
+  const w = Math.acos(Math.min(1, Math.max(-1, cosW))) / RAD / 360; // half the day, in days
+  return { terbit: Math.round(J2000 + (transit - w) * DAY), terbenam: Math.round(J2000 + (transit + w) * DAY) };
+}
+
+/** Open-Meteo `daily=sunrise,sunset&timeformat=unixtime` → Matahari; undefined when the shape is off. */
+export function bacaMatahari(j: unknown): Matahari | undefined {
+  const d = (j as { daily?: { sunrise?: unknown[]; sunset?: unknown[] } })?.daily;
+  const a = d?.sunrise?.[0];
+  const b = d?.sunset?.[0];
+  return typeof a === "number" && typeof b === "number" && a < b ? { terbit: a * 1000, terbenam: b * 1000 } : undefined;
+}
+
+/**
+ * Night at `now`? Times from any recent day work: they are folded onto `now`'s day, so a cache from
+ * yesterday is off by a minute or two, not a day. The theme pre-paint script in app/layout.tsx repeats this.
+ */
+export const malam = (now: number, m: Matahari) => (((now - m.terbit) % DAY) + DAY) % DAY >= m.terbenam - m.terbit;

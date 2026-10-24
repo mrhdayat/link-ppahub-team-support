@@ -5,19 +5,25 @@ import {
   ZONA, buka24, clockIn, isOfficeOnly, labelFor, laneLayout, lanesOf, linksIn, publik, statusAt,
   type Kategori, type Link, type Site, type StatusWarna,
 } from "@/lib/site";
-import { QrCode, X } from "@phosphor-icons/react/dist/ssr";
+import { PushPin, QrCode, ShareNetwork, X } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
+import { flushSync } from "react-dom";
 import { Arrow, Hauler, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
 import { norm, search as searchLinks, type Range } from "./search";
 import "./tokens.css";
 import "./rambu.css";
 // Dunia rambu (W1): weather/shift HUD cells, K3 strip, boom gate, headlight, road markings, seasonal theme.
 import { CuacaCell, RambuK3, ShiftCell, dunia } from "./world/hud-extras";
-import { Gate, KmJarak, Suasana } from "./world/effects";
+import { Gate, Hujan, KmJarak, Suasana } from "./world/effects";
+import { bacaMatahari, hitungMatahari, malam, type Laporan, type Matahari } from "./world/world";
 
 const THEME_KEY = "rambu-tema";
 const VIEW_KEY = "rambu-dilihat";
 const TAMPILAN_KEY = "rambu-tampilan";
+const JALUR_KEY = "rambu-jalur-saya"; // a lane id, or "semua"
+const SUN_KEY = "rambu-matahari"; // today's sunrise/sunset at the site; read by the pre-paint script in app/layout.tsx
+const SRC_KEY = "rambu-src"; // visit sources already counted this session
+const SRC = /^[a-z0-9-]{1,24}$/;
 
 /** Fire-and-forget tap counter; survives the page navigating away. */
 function hit(k: string) {
@@ -50,6 +56,14 @@ function Marked({ text, at }: { text: string; at?: Range[] }) {
   out.push(text.slice(from));
   return out;
 }
+
+/** "Jalur saya" marker on the pinned tab. */
+const Pin = () => (
+  <>
+    <PushPin className="tab-pin" weight="fill" aria-hidden />
+    <span className="sr-only"> (jalur saya)</span>
+  </>
+);
 
 /** Easter egg horn: two detuned square waves, quiet, about a third of a second. */
 function honk() {
@@ -85,6 +99,18 @@ function statusText(s: Site["status"], st: StatusWarna): string {
   if (st === "kuning") return s.mode === "manual" ? "antrean penuh" : `dibalas mulai ${jam(s.jamBuka)}`;
   return s.mode === "manual" ? "sedang libur" : "libur hari ini";
 }
+
+/** Stored value, or null when storage is blocked. */
+function baca(k: string) {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+}
+
+/** This page's address tagged with where the visit came from (?src=, counted then cleaned on arrival). */
+const halaman = (src: string, hash = "") => `${location.origin}${location.pathname}?src=${src}${hash}`;
 
 /** Status bar / browser chrome follows the visitor's day/night pick, not only the OS scheme. */
 function paintChrome(dark: boolean) {
@@ -122,6 +148,10 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
   // Arrival motion plays once; after this flips, re-mounted signs (tab, search, fold) appear instantly.
   const [booted, setBooted] = useState(false);
   const [qr, setQr] = useState<{ src: string; lane?: Kategori }>({ src: "" });
+  const [jalurSaya, setJalurSaya] = useState<string | null>(null);
+  const [laporan, setLaporan] = useState<Laporan | null>();
+  // CSS fallback for the lane change when the View Transitions API is missing: direction of the incoming lane.
+  const [masuk, setMasuk] = useState<1 | -1>();
   const search = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const tabsRef = useRef<HTMLElement>(null);
@@ -145,6 +175,22 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
         hit("view");
       }
     } catch {}
+    // ?src=<slug> (lane QR, shared link…): counted once per session, then dropped from the address bar.
+    const p = new URLSearchParams(location.search);
+    const src = p.get("src");
+    if (src !== null) {
+      try {
+        const seen = (sessionStorage.getItem(SRC_KEY) ?? "").split(" ");
+        if (SRC.test(src) && !seen.includes(src)) {
+          sessionStorage.setItem(SRC_KEY, [...seen, src].join(" ").trim());
+          hit(`src:${src}`);
+        }
+      } catch {}
+      p.delete("src");
+      const rest = p.toString();
+      history.replaceState(history.state, "", location.pathname + (rest ? `?${rest}` : "") + location.hash);
+    }
+    setJalurSaya(baca(JALUR_KEY));
     if (site.tampilKlik)
       fetch("/api/hits")
         .then((r) => (r.ok ? r.json() : {}))
@@ -162,15 +208,18 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
   // #jalur-<id> (a shared link or a lane QR) opens that lane and points it out.
   useEffect(() => {
     if (preview) return;
+    const known = (id: string | null) => lanes.some((l) => l.k.id === id);
     const fromHash = () => {
       // Only #jalur-<id> (or no hash) picks a lane; other fragments such as the skip link's #cari leave the tab alone.
       if (location.hash && !location.hash.startsWith("#jalur-")) return;
       const id = decodeURIComponent(location.hash.slice("#jalur-".length));
-      const known = lanes.some((l) => l.k.id === id);
-      setTab(known ? id : null);
-      setSorot(known ? id : null);
+      setTab(known(id) ? id : null);
+      setSorot(known(id) ? id : null);
     };
-    fromHash();
+    // Arriving without a lane or a search in the URL: open on the visitor's own lane ("Jalur saya").
+    const mine = baca(JALUR_KEY);
+    if (!location.hash && !new URLSearchParams(location.search).has("q") && known(mine)) setTab(mine);
+    else fromHash();
     addEventListener("hashchange", fromHash);
     return () => removeEventListener("hashchange", fromHash);
   }, [lanes, preview]);
@@ -223,6 +272,51 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
     return () => clearTimeout(t);
   }, [sorot]);
 
+  // Night follows the sun at the site until the visitor picks day or night with the toggle (that pick is stored and wins).
+  // Sun times: Open-Meteo, cached for the owner's day; computed locally when it can't be reached.
+  const { lat, lon } = site.cuaca;
+  useEffect(() => {
+    if (preview) return;
+    let sun: Matahari | undefined;
+    const ikut = () => {
+      if (!sun || baca(THEME_KEY)) return;
+      const d = malam(Date.now(), sun);
+      const html = document.documentElement;
+      if (html.dataset.theme === (d ? "dark" : "light")) return;
+      html.dataset.theme = d ? "dark" : "light";
+      setDark(d);
+      paintChrome(d);
+    };
+    const ctl = new AbortController();
+    const day = clockIn(status.zona, new Date()).date;
+    let c: (Matahari & { d: string; lat: number; lon: number }) | null = null;
+    try {
+      c = JSON.parse(baca(SUN_KEY) ?? "null");
+    } catch {}
+    if (c?.d === day && c.lat === lat && c.lon === lon) {
+      sun = c;
+      ikut();
+    } else {
+      fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset&timezone=Asia%2FMakassar&forecast_days=1&timeformat=unixtime`,
+        { signal: ctl.signal },
+      )
+        .then((r) => (r.ok ? r.json() : null))
+        .then(bacaMatahari, () => undefined)
+        .then((m) => {
+          if (ctl.signal.aborted) return;
+          sun = m ?? hitungMatahari(Date.now(), lat, lon);
+          try {
+            localStorage.setItem(SUN_KEY, JSON.stringify({ d: day, lat, lon, ...sun }));
+          } catch {}
+          ikut();
+        });
+    }
+    const t = setInterval(ikut, 5 * 60_000);
+    document.addEventListener("visibilitychange", ikut);
+    return () => (ctl.abort(), clearInterval(t), document.removeEventListener("visibilitychange", ikut));
+  }, [preview, lat, lon, status.zona]);
+
   const toggleTheme = () => {
     const next = !dark;
     setDark(next);
@@ -233,12 +327,36 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
     } catch {}
   };
 
+  // Lane change motion: like a car changing lanes, content leaves the way the tabs move (a later tab → left).
   const pickTab = (id: string | null) => {
     setBooted(true);
-    setTab(id);
+    const order = (x: string | null) => (x ? laneNo(x) : 0);
+    const arah = Math.sign(order(id) - order(tab)) as 1 | -1 | 0;
+    if (preview || !arah || reduced()) setTab(id);
+    else if (document.startViewTransition) {
+      const html = document.documentElement;
+      html.dataset.arah = arah > 0 ? "kiri" : "kanan";
+      document.startViewTransition(() => flushSync(() => setTab(id))).finished.finally(() => delete html.dataset.arah);
+    } else {
+      setMasuk(arah);
+      setTab(id);
+    }
     if (preview) return;
     if (id !== tab) buzz();
     history.replaceState(null, "", id ? `#jalur-${id}` : location.pathname + location.search);
+  };
+
+  // Pin the open lane (or Semua) as "Jalur saya"; tapping again on it unpins.
+  const sematkan = () => {
+    const id = tab ?? "semua";
+    const lepas = jalurSaya === id;
+    setJalurSaya(lepas ? null : id);
+    try {
+      if (lepas) localStorage.removeItem(JALUR_KEY);
+      else localStorage.setItem(JALUR_KEY, id);
+    } catch {}
+    buzz();
+    flash(lepas ? "Jalur saya dilepas" : `Jalur saya: ${tab ? laneName(tab) : "Semua"}. Halaman dibuka di sini lain kali.`);
   };
 
   // Count the tap, and bump the visible number right away so the visitor sees their own tap land.
@@ -277,7 +395,7 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
 
   const share = async () => {
     if (!preview) hit("share");
-    const url = location.href.split("#")[0];
+    const url = halaman("share");
     if (navigator.share) {
       try {
         await navigator.share({ title: profil.nama, url });
@@ -294,11 +412,26 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
     }
   };
 
+  // One sign, shared as its lane on this page: the share sheet where there is one, else WhatsApp.
+  const bagikan = async (l: Link, k: Kategori) => {
+    if (!preview) hit("share");
+    const url = halaman("share", `#jalur-${encodeURIComponent(k.id)}`);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: l.judul, text: `${l.judul} (dari ${profil.nama})`, url });
+        return;
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return;
+      }
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${l.judul} — ${url} (dari ${profil.nama})`)}`, "_blank", "noopener");
+  };
+
   // The page QR, or one lane's (its URL opens straight onto that lane).
   const showQr = async (lane?: Kategori) => {
     if (!preview) hit("qr");
     const { toDataURL } = await import("qrcode");
-    const url = location.href.split("#")[0] + (lane ? `#jalur-${encodeURIComponent(lane.id)}` : "");
+    const url = lane ? halaman(`qr-${lane.id}`.slice(0, 24), `#jalur-${encodeURIComponent(lane.id)}`) : halaman("qr");
     setQr({ src: await toDataURL(url, { margin: 1, width: 480, errorCorrectionLevel: "M" }), lane });
     dialog.current?.showModal();
   };
@@ -409,11 +542,18 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
           {office && <span className="sr-only"> (hanya bisa dibuka dari jaringan kantor)</span>}
           {ext && <span className="sr-only"> (tab baru)</span>}
         </a>
-        {l.panduan && (
-          <>
+        <span className="sign-acts">
+          <button type="button" className="bagi" onClick={() => bagikan(l, k)} aria-label={`Bagikan ${l.judul}`}>
+            <ShareNetwork weight="bold" aria-hidden />
+          </button>
+          {l.panduan && (
             <button type="button" className="info" popoverTarget={tip} aria-label={`Panduan ${l.judul}`}>
               i
             </button>
+          )}
+        </span>
+        {l.panduan && (
+          <>
             <div id={tip} popover="auto" className="panduan" role="dialog" aria-label={`Panduan ${l.judul}`}>
               <p className="panduan-title" dir="auto">
                 {l.judul}
@@ -469,10 +609,12 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
           <nav ref={tabsRef} className="tabs" aria-label="Jalur">
             <button type="button" className="tab" aria-pressed={!tab} onClick={() => pickTab(null)}>
               Semua <span className="tab-n">{routed.length}</span>
+              {jalurSaya === "semua" && <Pin />}
             </button>
             {lanes.map(({ k, links }) => (
               <button key={k.id} type="button" className="tab" data-warna={k.warna} aria-pressed={tab === k.id} onClick={() => pickTab(k.id)}>
                 <KategoriIkon ikon={k.ikon} /> {k.nama} <span className="tab-n">{links.length}</span>
+                {jalurSaya === k.id && <Pin />}
               </button>
             ))}
           </nav>
@@ -487,6 +629,7 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
           <span className="bracket" data-c="br" aria-hidden />
           <span className="scan" aria-hidden />
           {!preview && <Gate />}
+          {!preview && (laporan?.langit === "hujan" || laporan?.langit === "petir") && <Hujan lebat={laporan.lebat} />}
           <div className="hud-id">
             <span className="logo-sign">
               <Image src="/logo-ppa.png" alt="Logo PPA" width={96} height={96} priority />
@@ -524,7 +667,7 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
             </div>
             {/* Dunia rambu: next shift change + site weather */}
             <ShiftCell shift={site.shift} own={own} />
-            <CuacaCell cuaca={site.cuaca} />
+            <CuacaCell cuaca={site.cuaca} onLaporan={setLaporan} />
           </dl>
         </section>
         <RambuK3 teks={k3} />
@@ -561,13 +704,23 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
                 Panah bawah untuk menelusuri hasil, Esc untuk menghapus.
               </span>
             </div>
-            <div className="tampilan" role="group" aria-label="Tampilan">
-              <button type="button" aria-pressed={!ringkas} onClick={() => pickTampilan(false)}>
-                Kartu
-              </button>
-              <button type="button" aria-pressed={ringkas} onClick={() => pickTampilan(true)}>
-                Ringkas
-              </button>
+            <div className="finder-alat">
+              {!preview && (
+                <button type="button" className="sematkan" aria-pressed={jalurSaya === (tab ?? "semua")} onClick={sematkan} aria-describedby="sematkan-hint">
+                  <PushPin weight={jalurSaya === (tab ?? "semua") ? "fill" : "bold"} aria-hidden /> Jalur saya
+                </button>
+              )}
+              <span id="sematkan-hint" className="sr-only">
+                Jalur yang sedang dibuka jadi jalur awal setiap kali mampir.
+              </span>
+              <div className="tampilan" role="group" aria-label="Tampilan">
+                <button type="button" aria-pressed={!ringkas} onClick={() => pickTampilan(false)}>
+                  Kartu
+                </button>
+                <button type="button" aria-pressed={ringkas} onClick={() => pickTampilan(true)}>
+                  Ringkas
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -575,125 +728,128 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
           {searching ? `${hits.length} tujuan ditemukan` : ""}
         </p>
 
-        {showGantry && (
-          <section className="gantry" aria-label="Tujuan utama">
-            <div className="gantry-beam" aria-hidden />
-            <ul className="gantry-boards" data-n={gantry.length}>
-              {gantry.map((l) => {
-                const ext = isExternal(l.url);
-                return (
-                  <li key={l.id}>
-                    <a
-                      className="board"
-                      href={l.url}
-                      target={ext ? "_blank" : undefined}
-                      rel={ext ? "noopener" : undefined}
-                      onClick={() => tapped(l.id)}
-                      onAuxClick={() => tapped(l.id)}
-                    >
-                      <span className="board-title" dir="auto">
-                        {l.judul}
-                      </span>
-                      {l.catatan && (
-                        <span className="board-note" dir="auto">
-                          {l.catatan}
+        {/* The lane content: one box, so a tab change can slide it like a car changing lanes. */}
+        <div className="isi" key={tab ?? ""} data-masuk={masuk} style={masuk ? ({ "--arah": masuk } as CSSProperties) : undefined}>
+          {showGantry && (
+            <section className="gantry" aria-label="Tujuan utama">
+              <div className="gantry-beam" aria-hidden />
+              <ul className="gantry-boards" data-n={gantry.length}>
+                {gantry.map((l) => {
+                  const ext = isExternal(l.url);
+                  return (
+                    <li key={l.id}>
+                      <a
+                        className="board"
+                        href={l.url}
+                        target={ext ? "_blank" : undefined}
+                        rel={ext ? "noopener" : undefined}
+                        onClick={() => tapped(l.id)}
+                        onAuxClick={() => tapped(l.id)}
+                      >
+                        <span className="board-title" dir="auto">
+                          {l.judul}
                         </span>
-                      )}
-                      <Arrow dir="down" />
-                      {site.tampilKlik && taps[l.id] > 0 && <span className="taps">{fmt.format(taps[l.id])}× klik</span>}
-                      {ext && <span className="sr-only"> (tab baru)</span>}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-            <span className="post" data-side="l" aria-hidden />
-            <span className="post" data-side="r" aria-hidden />
-          </section>
-        )}
+                        {l.catatan && (
+                          <span className="board-note" dir="auto">
+                            {l.catatan}
+                          </span>
+                        )}
+                        <Arrow dir="down" />
+                        {site.tampilKlik && taps[l.id] > 0 && <span className="taps">{fmt.format(taps[l.id])}× klik</span>}
+                        {ext && <span className="sr-only"> (tab baru)</span>}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+              <span className="post" data-side="l" aria-hidden />
+              <span className="post" data-side="r" aria-hidden />
+            </section>
+          )}
 
-        {searching && hits.length > 0 && (
-          <section className="lane hasil" aria-labelledby="plate-hasil" onKeyDown={roam}>
-            <h2 id="plate-hasil" className="plate" data-warna="yellow">
-              <span>Hasil pencarian</span> <span className="plate-n">{hits.length}</span>
-            </h2>
-            <ul className="signs" data-compact={(!ringkas && laneLayout(hits.length).compact) || undefined} data-ringkas={ringkas || undefined}>
-              {hits.map((h, i) => {
-                const k = katById.get(h.link.kategori)!;
-                const lane = lanes.find((x) => x.k.id === k.id)?.links ?? [];
-                const km = `${laneNo(k.id)}.${lane.indexOf(h.link) + 1}`;
-                return sign(h.link, k, i, km, !ringkas && laneLayout(hits.length).compact, h);
-              })}
-            </ul>
-          </section>
-        )}
+          {searching && hits.length > 0 && (
+            <section className="lane hasil" aria-labelledby="plate-hasil" onKeyDown={roam}>
+              <h2 id="plate-hasil" className="plate" data-warna="yellow">
+                <span>Hasil pencarian</span> <span className="plate-n">{hits.length}</span>
+              </h2>
+              <ul className="signs" data-compact={(!ringkas && laneLayout(hits.length).compact) || undefined} data-ringkas={ringkas || undefined}>
+                {hits.map((h, i) => {
+                  const k = katById.get(h.link.kategori)!;
+                  const lane = lanes.find((x) => x.k.id === k.id)?.links ?? [];
+                  const km = `${laneNo(k.id)}.${lane.indexOf(h.link) + 1}`;
+                  return sign(h.link, k, i, km, !ringkas && laneLayout(hits.length).compact, h);
+                })}
+              </ul>
+            </section>
+          )}
 
-        {shownLanes.map(({ k, links }) => {
-          const no = laneNo(k.id);
-          const layout = laneLayout(links.length);
-          // Ringkas: one line per sign, every sign shown, no fold.
-          const compact = !ringkas && layout.compact;
-          const visible = ringkas ? links.length : layout.visible;
-          const expanded = open.has(k.id);
-          const shown = expanded ? links : links.slice(0, visible);
-          const hidden = links.length - visible;
-          return (
-            <section key={k.id} id={`jalur-${k.id}`} className="lane" aria-labelledby={`plate-${k.id}`} data-sorot={sorot === k.id || undefined}>
-              <div className="lane-head">
-                <h2 id={`plate-${k.id}`} className="plate" data-warna={k.warna}>
-                  <KategoriIkon ikon={k.ikon} />
-                  <span>
-                    Jalur <bdi>{k.nama}</bdi>
-                  </span>{" "}
-                  <span className="plate-n">{lanes.find((x) => x.k.id === k.id)?.links.length ?? links.length}</span>
-                </h2>
-                {!preview && (
-                  <button type="button" className="plate-qr" onClick={() => showQr(k)} aria-label={`Kode QR jalur ${k.nama}`}>
-                    <QrCode weight="bold" aria-hidden />
+          {shownLanes.map(({ k, links }) => {
+            const no = laneNo(k.id);
+            const layout = laneLayout(links.length);
+            // Ringkas: one line per sign, every sign shown, no fold.
+            const compact = !ringkas && layout.compact;
+            const visible = ringkas ? links.length : layout.visible;
+            const expanded = open.has(k.id);
+            const shown = expanded ? links : links.slice(0, visible);
+            const hidden = links.length - visible;
+            return (
+              <section key={k.id} id={`jalur-${k.id}`} className="lane" aria-labelledby={`plate-${k.id}`} data-sorot={sorot === k.id || undefined}>
+                <div className="lane-head">
+                  <h2 id={`plate-${k.id}`} className="plate" data-warna={k.warna}>
+                    <KategoriIkon ikon={k.ikon} />
+                    <span>
+                      Jalur <bdi>{k.nama}</bdi>
+                    </span>{" "}
+                    <span className="plate-n">{lanes.find((x) => x.k.id === k.id)?.links.length ?? links.length}</span>
+                  </h2>
+                  {!preview && (
+                    <button type="button" className="plate-qr" onClick={() => showQr(k)} aria-label={`Kode QR jalur ${k.nama}`}>
+                      <QrCode weight="bold" aria-hidden />
+                    </button>
+                  )}
+                </div>
+                <ul className="signs" data-compact={compact || undefined} data-ringkas={ringkas || undefined}>
+                  {shown.map((l, i) => sign(l, k, i, `${no}.${i + 1}`, compact))}
+                </ul>
+                {hidden > 0 && (
+                  <button
+                    type="button"
+                    className="fold"
+                    aria-expanded={expanded}
+                    onClick={(e) => {
+                      const btn = e.currentTarget;
+                      setBooted(true);
+                      setOpen((o) => {
+                        const n = new Set(o);
+                        if (n.has(k.id)) n.delete(k.id);
+                        else n.add(k.id);
+                        return n;
+                      });
+                      // Opening: focus lands on the first revealed sign, so Tab continues there. Closing: keep the button on screen.
+                      requestAnimationFrame(() => {
+                        const first = document.querySelector<HTMLElement>(`#jalur-${k.id} .signs > li:nth-child(${visible + 1}) a`);
+                        if (!expanded && first) first.focus();
+                        else btn.scrollIntoView({ block: "nearest" });
+                      });
+                    }}
+                  >
+                    {expanded ? "Ringkas jalur ini" : `Tampilkan ${hidden} tujuan lainnya`}
                   </button>
                 )}
-              </div>
-              <ul className="signs" data-compact={compact || undefined} data-ringkas={ringkas || undefined}>
-                {shown.map((l, i) => sign(l, k, i, `${no}.${i + 1}`, compact))}
-              </ul>
-              {hidden > 0 && (
-                <button
-                  type="button"
-                  className="fold"
-                  aria-expanded={expanded}
-                  onClick={(e) => {
-                    const btn = e.currentTarget;
-                    setBooted(true);
-                    setOpen((o) => {
-                      const n = new Set(o);
-                      if (n.has(k.id)) n.delete(k.id);
-                      else n.add(k.id);
-                      return n;
-                    });
-                    // Opening: focus lands on the first revealed sign, so Tab continues there. Closing: keep the button on screen.
-                    requestAnimationFrame(() => {
-                      const first = document.querySelector<HTMLElement>(`#jalur-${k.id} .signs > li:nth-child(${visible + 1}) a`);
-                      if (!expanded && first) first.focus();
-                      else btn.scrollIntoView({ block: "nearest" });
-                    });
-                  }}
-                >
-                  {expanded ? "Ringkas jalur ini" : `Tampilkan ${hidden} tujuan lainnya`}
-                </button>
-              )}
-            </section>
-          );
-        })}
+              </section>
+            );
+          })}
 
-        {searching && hits.length === 0 && (
-          <p className="empty">
-            Tujuan tidak ditemukan. Coba kata lain, atau{" "}
-            <button type="button" className="link-btn" onClick={() => (setQuery(""), pickTab(null))}>
-              lihat semua jalur
-            </button>
-            .
-          </p>
-        )}
+          {searching && hits.length === 0 && (
+            <p className="empty">
+              Tujuan tidak ditemukan. Coba kata lain, atau{" "}
+              <button type="button" className="link-btn" onClick={() => (setQuery(""), pickTab(null))}>
+                lihat semua jalur
+              </button>
+              .
+            </p>
+          )}
+        </div>
 
         {site.whatsapp && (
           <section className="stop" aria-label="Chat">
@@ -740,6 +896,11 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
             </span>
           </div>
           <p>Ujung jalan. Putar balik untuk kembali ke atas.</p>
+          {site.tim?.length > 0 && (
+            <a className="act km-tim" href="/tim">
+              Kenali tim
+            </a>
+          )}
         </footer>
       </main>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { kmDari } from "./world";
 import "./world.css";
 
@@ -96,4 +96,15 @@ export function KmJarak({ preview }: { preview: boolean }) {
     return () => (removeEventListener("scroll", onScroll), cancelAnimationFrame(raf));
   }, [preview]);
   return <b>{km}</b>;
+}
+
+/** Rain over the HUD while the site reports it: thin streaks behind the text, denser for heavy rain. CSS-only motion. */
+export function Hujan({ lebat }: { lebat: boolean }) {
+  return (
+    <span className="hujan" data-lebat={lebat || undefined} aria-hidden>
+      {Array.from({ length: lebat ? 26 : 13 }, (_, i) => (
+        <i key={i} style={{ "--x": `${(i * 37 + 5) % 100}%`, "--t": `${-((i * 0.37) % 1).toFixed(2)}s` } as CSSProperties} />
+      ))}
+    </span>
+  );
 }
