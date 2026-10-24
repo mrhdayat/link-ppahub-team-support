@@ -1,6 +1,6 @@
 // Self-check: `npx tsx src/components/rambu/world/world.check.ts`
 import assert from "node:assert/strict";
-import { awasHujan, bacaBmkg, bacaCuaca, gabung, kmDari, kondisi, kondisiBmkg, localStamp, sisaWaktu, waspada } from "./world";
+import { awasHujan, bacaBmkg, bacaCuaca, bacaMatahari, gabung, hitungMatahari, kmDari, kondisi, kondisiBmkg, localStamp, malam, sisaWaktu, waspada } from "./world";
 
 // WMO codes read as Indonesian site weather.
 assert.equal(kondisi(0).teks, "cerah");
@@ -66,4 +66,33 @@ console.log("world.check ok");
   assert.equal(awasHujan(onlyOm), false);
   assert.equal(gabung(undefined, undefined), undefined);
   console.log("world.check bmkg ok");
+}
+
+// Sunrise/sunset fallback: within 10 minutes of Open-Meteo / almanac times.
+{
+  const near = (got: number, iso: string) => assert.ok(Math.abs(got - Date.parse(iso)) <= 10 * 60_000, `${new Date(got).toISOString()} vs ${iso}`);
+  // Site (Mangkalapi, -3.43, 115.53) on 2026-10-24, asked at 10:00 WITA; Open-Meteo: 05:55:48 and 18:08:13 WITA.
+  const site = hitungMatahari(Date.parse("2026-10-24T02:00:00Z"), -3.4337, 115.5287);
+  near(site.terbit, "2026-10-23T21:55:48Z");
+  near(site.terbenam, "2026-10-24T10:08:13Z");
+  // Late evening still lands on the same local day's times, or the next one's: either answers "night" right.
+  const late = hitungMatahari(Date.parse("2026-10-24T15:30:00Z"), -3.4337, 115.5287);
+  assert.equal(malam(Date.parse("2026-10-24T15:30:00Z"), late), true);
+  // London, midsummer 2024: 03:43 and 20:21 UTC.
+  const lon = hitungMatahari(Date.parse("2024-06-21T12:00:00Z"), 51.5, -0.12);
+  near(lon.terbit, "2024-06-21T03:43:00Z");
+  near(lon.terbenam, "2024-06-21T20:21:00Z");
+
+  // Night: before sunrise or from sunset on, folded onto any day.
+  const m = { terbit: Date.parse("2026-10-23T21:55:48Z"), terbenam: Date.parse("2026-10-24T10:08:13Z") };
+  assert.equal(malam(Date.parse("2026-10-24T02:00:00Z"), m), false, "10:00 WITA");
+  assert.equal(malam(Date.parse("2026-10-24T10:30:00Z"), m), true, "18:30 WITA");
+  assert.equal(malam(Date.parse("2026-10-23T20:00:00Z"), m), true, "04:00 WITA, before sunrise");
+  assert.equal(malam(Date.parse("2026-10-26T03:00:00Z"), m), false, "two days later, a stale cache still reads midday as day");
+  assert.equal(malam(Date.parse("2026-10-26T12:00:00Z"), m), true, "two days later, 20:00 WITA");
+
+  assert.deepEqual(bacaMatahari({ daily: { sunrise: [1_761_256_548], sunset: [1_761_300_493] } }), { terbit: 1_761_256_548_000, terbenam: 1_761_300_493_000 });
+  assert.equal(bacaMatahari({ daily: { sunrise: ["05:55"], sunset: [1] } }), undefined);
+  assert.equal(bacaMatahari(null), undefined);
+  console.log("world.check matahari ok");
 }

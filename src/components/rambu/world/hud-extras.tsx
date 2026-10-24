@@ -34,9 +34,9 @@ const getJson = (url: string, signal: AbortSignal) =>
 /**
  * Site weather, no API keys: BMKG (official, by village code) for condition, temperature and rain in mm,
  * Open-Meteo (by coordinates) for the rain chance. Either one alone is enough; cached per tab for 30 minutes.
- * Fails silently: no cell, no error.
+ * Fails silently: no cell, no error. `onLaporan` hears each reading (null = none), e.g. for the rain over the HUD.
  */
-export function CuacaCell({ cuaca }: { cuaca: Site["cuaca"] }) {
+export function CuacaCell({ cuaca, onLaporan }: { cuaca: Site["cuaca"]; onLaporan?: (l: Laporan | null) => void }) {
   const { aktif, nama, lat, lon, adm4, sumber } = cuaca;
   // undefined = loading, null = failed
   const [c, setC] = useState<Laporan | null>();
@@ -73,6 +73,8 @@ export function CuacaCell({ cuaca }: { cuaca: Site["cuaca"] }) {
     }, 400);
     return () => (clearTimeout(t), ctl.abort());
   }, [aktif, lat, lon, adm4, sumber]);
+
+  useEffect(() => onLaporan?.(aktif && c ? c : null), [aktif, c, onLaporan]);
 
   if (!aktif || c === null) return null;
   const awas = !!c && awasHujan(c);

@@ -179,3 +179,17 @@
 
 /* Data credit (BMKG asks for it): small, quiet, still ≥ 4.5:1. */
 .hud-data .cuaca-sumber { margin-top: 6px; font-size: 12px; font-weight: 500; opacity: 0.85; }
+
+/* ── Rain over the HUD (while the site reports rain): thin streaks behind the text ── */
+
+/* Each <i> is a full-height carrier, so translateY(100%) is the HUD's own height. */
+.hujan { position: absolute; inset: 0 -12%; display: none; pointer-events: none; transform: skewX(-12deg); }
+.hujan i { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; }
+.hujan i::before { content: ""; position: absolute; top: -26px; width: 2px; height: 22px; border-radius: 1px; background: var(--blue); opacity: 0.22; }
+.hujan[data-lebat] i::before { height: 28px; opacity: 0.32; }
+@media (prefers-reduced-motion: no-preference) {
+  .hujan { display: block; }
+  .hujan i { animation: hujan 1s linear var(--t) infinite; }
+  .hujan[data-lebat] i { animation-duration: 0.7s; }
+}
+@keyframes hujan { from { transform: translateY(0); } to { transform: translateY(calc(100% + 30px)); } }

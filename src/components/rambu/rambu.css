@@ -504,7 +504,7 @@
 
 /* ── 5b. Sign extras: other lanes, office tag, guide, lane QR, search marks ── */
 
-.signs > li { position: relative; min-width: 0; }
+.signs > li { position: relative; min-width: 0; display: grid; } /* the sign fills its row, so its buttons sit on it */
 .rambu mark { background: var(--yellow); color: var(--black); border-radius: 2px; box-shadow: 0 0 0 2px var(--yellow); }
 
 .tag[data-label="kantor"] { background: var(--black); color: #ffffff; border-color: #ffffff; letter-spacing: 0.02em; white-space: nowrap; }
@@ -518,12 +518,10 @@
   line-height: 1.4;
 }
 
-/* ⓘ: a blue info sign beside the link (a sibling, never inside it), sitting on the sign's bottom-right corner. */
-.info {
-  position: absolute;
-  right: 6px;
-  bottom: 6px;
-  z-index: 1;
+/* Share + ⓘ: small signs beside the link (siblings, never inside it), sitting on the sign's bottom-right corner. */
+.sign-acts { position: absolute; right: 6px; bottom: 6px; z-index: 1; display: flex; }
+.info, .bagi {
+  position: relative;
   display: grid;
   place-items: center;
   width: var(--tap-min);
@@ -535,7 +533,8 @@
   color: #ffffff !important;
   font: 900 20px/1 Georgia, "Times New Roman", serif;
 }
-.info::before {
+.bagi svg { width: 20px; height: 20px; }
+.info::before, .bagi::before {
   content: "";
   position: absolute;
   inset: 5px;
@@ -545,10 +544,12 @@
   border-radius: 6px;
   box-shadow: 0 0 0 2px var(--black);
 }
-.info:active { transform: translate(2px, 2px); }
-/* keep the sign's own corner content clear of the button */
-li[data-info] .sign:not([data-compact]) .sign-km { margin-right: 40px; }
-li[data-info] .sign[data-compact] { padding-bottom: 50px; }
+.bagi::before { background: var(--green); }
+.info:active, .bagi:active { transform: translate(2px, 2px); }
+/* keep the sign's own corner content clear of the buttons */
+.signs > li .sign:not([data-compact]) .sign-km { margin-right: 40px; }
+.signs > li[data-info] .sign:not([data-compact]) .sign-km { margin-right: 84px; }
+.signs > li .sign[data-compact] { padding-bottom: 50px; }
 
 .panduan {
   width: min(340px, calc(100vw - 32px));
@@ -599,6 +600,30 @@ li[data-info] .sign[data-compact] { padding-bottom: 50px; }
 
 /* View toggle (Kartu / Ringkas) */
 .finder { display: grid; gap: var(--space-3); }
+.finder-alat { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.finder-alat .tampilan { margin-left: auto; }
+/* "Jalur saya": pins the open lane as the one the page opens on. */
+.sematkan {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap-min);
+  padding: 0 12px;
+  background: var(--white);
+  color: var(--black) !important;
+  border: var(--border-small);
+  border-radius: var(--radius-plate);
+  box-shadow: var(--shadow-sm), var(--glow);
+  font-family: var(--font-hud), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 110ms var(--ease-out), box-shadow 110ms var(--ease-out);
+}
+.sematkan svg { width: 18px; height: 18px; }
+.sematkan[aria-pressed="true"] { background: var(--black); color: var(--yellow) !important; }
+.sematkan:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
+.tab-pin { width: 14px; height: 14px; flex-shrink: 0; }
 .tampilan { justify-self: end; display: flex; border: var(--border-small); border-radius: var(--radius-plate); box-shadow: var(--shadow-sm), var(--glow); overflow: hidden; }
 .tampilan button {
   min-height: var(--tap-min);
@@ -633,8 +658,10 @@ li[data-info] .sign[data-compact] { padding-bottom: 50px; }
 .signs[data-ringkas] .juga, .signs[data-ringkas] .sign-km { display: none; }
 .signs[data-ringkas] .taps { position: static; border-radius: 4px; white-space: nowrap; }
 .signs[data-ringkas] .sign:active { transform: translate(4px, 4px); }
-.signs[data-ringkas] li[data-info] .sign { padding-right: 52px; }
-.signs[data-ringkas] .info { top: 4px; bottom: 4px; height: auto; }
+.signs[data-ringkas] li .sign { padding-right: 52px; }
+.signs[data-ringkas] li[data-info] .sign { padding-right: 96px; }
+.signs[data-ringkas] .sign-acts { top: 4px; bottom: 4px; }
+.signs[data-ringkas] .sign-acts > button { height: auto; }
 
 /* ── 6. STOP chat + reply limit ── */
 
@@ -787,11 +814,19 @@ li[data-info] .sign[data-compact] { padding-bottom: 50px; }
 .uturn[data-show] { opacity: 1; translate: 0 0; visibility: visible; transition-delay: 0s; }
 .uturn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
 
+/* Lane content box (tab changes slide it); same rhythm as the road. */
+.isi { display: grid; gap: var(--space-6); min-width: 0; }
+
+.km-tim { display: inline-grid; place-items: center; min-height: var(--tap-min); padding: 0 var(--space-4); font-size: 16px; text-decoration: none; }
+
+/* Rain layer sits under the HUD's text. */
+.hud-id, .hud-data { position: relative; }
+
 /* ── Pointer hover (mouse only) ── */
 
 @media (hover: hover) and (pointer: fine) {
   .sign:hover { transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--black), var(--glow); }
-  .tab:hover:not([aria-pressed="true"]), .act:hover, .fold:hover, .mode:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--black), var(--glow); }
+  .tab:hover:not([aria-pressed="true"]), .act:hover, .fold:hover, .mode:hover, .sematkan:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--black), var(--glow); }
   .board:hover { transform: translateY(3px); }
   .stop-sign:hover { transform: translate(3px, 0); }
   .tape:hover .tape-run > span { animation-play-state: paused; }
@@ -850,6 +885,28 @@ li[data-info] .sign[data-compact] { padding-bottom: 50px; }
 @keyframes ikon-denyut { 40% { transform: scale(1.18); } }
 @keyframes ikon-lompat { 35% { transform: translateY(-22%); } 60% { transform: none; } 78% { transform: translateY(-8%); } }
 @keyframes klakson { to { transform: translateX(100vw); } }
+
+/*
+ * Lane change: the content box slides out the way the car moves (a later tab → left) and the next lane comes in
+ * from the other side. View Transitions where available (html[data-arah] during one), else .isi[data-masuk].
+ * Only the box moves; header and U-turn are lifted above it so the sliding lanes never cover them.
+ */
+.rambu:not([data-preview]) .isi { view-transition-name: lajur; }
+.rambu:not([data-preview]) .topbar { view-transition-name: rambu-atas; }
+.rambu:not([data-preview]) .uturn { view-transition-name: rambu-putar; }
+::view-transition-group(rambu-atas), ::view-transition-group(rambu-putar) { z-index: 1; }
+::view-transition-old(rambu-atas), ::view-transition-old(rambu-putar) { display: none; }
+::view-transition-old(root), ::view-transition-new(root), ::view-transition-group(lajur),
+::view-transition-new(rambu-atas), ::view-transition-new(rambu-putar) { animation: none; }
+:root[data-arah="kiri"] { --arah: 1; }
+:root[data-arah="kanan"] { --arah: -1; }
+::view-transition-old(lajur) { animation: lajur-keluar 180ms var(--ease-out) both; }
+::view-transition-new(lajur) { animation: lajur-masuk 280ms var(--ease-out) both; }
+@media (prefers-reduced-motion: no-preference) {
+  .isi[data-masuk] { animation: lajur-masuk 280ms var(--ease-out); }
+}
+@keyframes lajur-keluar { to { opacity: 0; transform: translateX(calc(var(--arah, 1) * -40px)); } }
+@keyframes lajur-masuk { from { opacity: 0; transform: translateX(calc(var(--arah, 1) * 40px)); } }
 
 /* PRD: all motion off under reduced motion, transitions included (state still changes, instantly). */
 @media (prefers-reduced-motion: reduce) {
