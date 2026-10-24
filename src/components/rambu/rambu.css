@@ -230,6 +230,7 @@
 }
 .hud-bio { margin: 6px 0 0; font-size: 15px; line-height: 1.45; max-width: 36ch; text-wrap: pretty; }
 
+.hud { container: hud / inline-size; }
 .hud-data {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -952,8 +953,9 @@
 @media (min-width: 400px) {
   .hud-id { grid-template-columns: auto 1fr; justify-items: start; text-align: left; gap: var(--space-4); }
 }
-/* Three cells in a row only once the status line ("dibuka 24 jam" + lamps) fits on one line. */
-@media (min-width: 460px) {
+/* Three cells in a row only once the status line ("dibuka 24 jam" + lamps) fits on one line.
+   Measured on the HUD itself, so the narrow admin preview column wraps like a phone does. */
+@container hud (min-width: 420px) {
   .hud-data { grid-template-columns: 1.8fr 1fr 1fr; }
   .hud-status { grid-column: auto; border-bottom: 0; }
   .hud-status + .hud-cell { border-left: var(--border-small); }

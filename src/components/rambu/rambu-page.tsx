@@ -42,7 +42,9 @@ const LABEL_TEXT = { baru: "BARU", populer: "POPULER", promo: "PROMO" } as const
 const GROUND = { light: "#e7e3d8", dark: "#1c1c1c" } as const; // --ground, for the browser chrome
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** A 10ms tick on phones that can; never with reduced motion. Callers skip it in the admin preview. */
-const buzz = () => !reduced() && navigator.vibrate?.(10);
+// Only after the visitor has touched the page: a lane opened for them on load (Jalur saya, #jalur-) must not buzz,
+// and browsers block (and log) vibrate() without a user gesture anyway.
+const buzz = () => !reduced() && navigator.userActivation?.isActive && navigator.vibrate?.(10);
 
 /** Text with the search's matched parts wrapped in <mark>. */
 function Marked({ text, at }: { text: string; at?: Range[] }) {
