@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { RambuPage } from "@/components/rambu/rambu-page";
-import { getSite } from "@/lib/store";
+import { getPublicSite, getSite } from "@/lib/store";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { profil } = await getSite();
@@ -12,5 +12,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  return <RambuPage site={await getSite()} />;
+  return <RambuPage site={await getPublicSite()} />;
 }

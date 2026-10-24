@@ -2,7 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { ensureSchema, sql } from "./db";
-import { DEFAULT_SITE, parseSite, type Site } from "./site";
+import { DEFAULT_SITE, parseSite, publik, type Site } from "./site";
 
 // One document holds the whole page. Neon when DATABASE_URL is set, a local JSON file otherwise.
 // ponytail: local file only works on a persistent disk (dev / VPS); serverless deploys need DATABASE_URL.
@@ -44,6 +44,11 @@ async function readHistoryFile(): Promise<Version[]> {
 
 // ponytail: file history is read-modify-write without a lock; one admin on one dev/VPS process.
 /** Saves the CONFIG, first keeping the one it replaces (skipped when nothing changed). `note` labels that kept copy. */
+/** What visitors may see: archived links removed on the server, before anything crosses to the client. */
+export async function getPublicSite(): Promise<Site> {
+  return publik(await getSite());
+}
+
 export async function saveSite(site: Site, note?: string): Promise<void> {
   const value = JSON.stringify(site);
   if (sql) {

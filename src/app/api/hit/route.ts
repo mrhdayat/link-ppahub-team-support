@@ -1,5 +1,5 @@
 import { EVENT_KEYS, isLinkKey, recordHit } from "@/lib/analytics";
-import { getSite } from "@/lib/store";
+import { getPublicSite } from "@/lib/store";
 
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|discord|headless/i;
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   if (limited(ip)) return new Response(null, { status: 429 });
 
   const k = (await req.text()).trim().slice(0, 48);
-  const site = await getSite();
+  const site = await getPublicSite(); // archived links take no taps
   const known =
     (EVENT_KEYS as readonly string[]).includes(k) || (isLinkKey(k) && site.link.some((l) => `l:${l.id}` === k));
   if (!known) return new Response(null, { status: 400 });
