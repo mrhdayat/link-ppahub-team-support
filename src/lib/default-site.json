@@ -685,12 +685,36 @@
       "panduan": "",
       "utama": false,
       "label": "baru"
+    },
+    {
+      "id": "tr-monitoring-rpl",
+      "judul": "Monitoring RPL Truck",
+      "url": "https://docs.google.com/spreadsheets/d/1lkYS8Thn3Sab_8DzmGloG--FYNtxmQkC1IzqCuN3Uuo/edit?gid=1775342732#gid=1775342732",
+      "kategori": "truck",
+      "kategoriLain": [],
+      "catatan": "Spreadsheet",
+      "kataKunci": "rpl",
+      "panduan": "",
+      "dibuat": "2026-10-24",
+      "utama": false
+    },
+    {
+      "id": "hv-monitoring-rpl",
+      "judul": "Monitoring RPL High Voltage",
+      "url": "https://docs.google.com/spreadsheets/d/1PnX4PBXZCFsnfffpxj2rZEom9SvGMphA1e3jdUMzhgI/edit?gid=1045091496#gid=1045091496",
+      "kategori": "high-voltage",
+      "kategoriLain": [],
+      "catatan": "Spreadsheet",
+      "kataKunci": "rpl",
+      "panduan": "",
+      "dibuat": "2026-10-24",
+      "utama": false
     }
   ],
   "safetyTalk": [],
   "shift": [
-    "06:00",
-    "18:00"
+    "05:00",
+    "17:45"
   ],
   "cuaca": {
     "aktif": true,
