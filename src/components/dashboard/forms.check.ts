@@ -6,7 +6,7 @@ import { dropKategori } from "./kategori";
 
 const k = (id: string) => ({ id, nama: id.toUpperCase(), warna: "green" as const, ikon: "umum" as const });
 const l = (id: string, kategori: string, kategoriLain: string[] = []): Link =>
-  ({ id, judul: id, url: "https://x.id", kategori, kategoriLain, catatan: "", kataKunci: "", panduan: "", utama: false });
+  ({ id, judul: id, url: "https://x.id", kategori, kategoriLain, catatan: "", kataKunci: "", panduan: "", arsip: false, utama: false });
 const site: Site = {
   ...DEFAULT_SITE,
   kategori: [k("a"), k("b"), k("c")],

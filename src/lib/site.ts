@@ -53,6 +53,8 @@ export const linkSchema = z.object({
   panduan: z.string().trim().max(280).default(""),
   // Date the link was added (owner's zone); drives the automatic BARU label.
   dibuat: date.optional().catch(undefined),
+  // Archived: kept (and restorable) in the admin, never shown to visitors.
+  arsip: z.boolean().default(false),
   utama: z.boolean().default(false),
   label: z.enum(LABELS).optional().catch(undefined),
   labelSampai: z
@@ -60,6 +62,18 @@ export const linkSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal label: YYYY-MM-DD")
     .optional()
     .or(z.literal("").transform(() => undefined)),
+});
+
+export const anggotaSchema = z.object({
+  id,
+  nama: z.string().trim().min(1, "Nama wajib diisi").max(40),
+  peran: z.string().trim().max(40).default(""),
+  // Lane the person belongs to (category id); empty = whole team.
+  jalur: z.string().trim().max(24).default(""),
+  // Direct image URL (https); empty = initials sign.
+  foto: z.union([z.literal(""), z.string().trim().max(2048).refine((u) => u.startsWith("https://") && isSafeUrl(u), "Foto harus link https://")]).default(""),
+  wa: z.union([z.literal(""), z.string().trim().regex(/^https:\/\/wa\.me\/\d{8,15}$/, "Format WhatsApp: https://wa.me/62…")]).default(""),
+  telp: z.union([z.literal(""), z.string().trim().regex(/^tel:\+?\d{6,15}$/, "Format telepon: tel:+62…")]).default(""),
 });
 
 export const siteSchema = z
@@ -102,12 +116,15 @@ export const siteSchema = z
       })
       .default({ aktif: true, nama: "Mangkalapi · PPA", lat: -3.4337, lon: 115.5287, adm4: "63.10.12.2003", sumber: "gabungan" }),
     tema: z.enum(TEMA).default("otomatis"),
+    // Team page (/tim): people, their role and lane, and how to reach them.
+    tim: z.array(anggotaSchema).max(60).default([]),
   })
   .superRefine((s, ctx) => {
     const ids = new Set(s.kategori.map((k) => k.id));
     if (ids.size !== s.kategori.length) ctx.addIssue({ code: "custom", path: ["kategori"], message: "ID kategori tidak boleh kembar" });
     s.link.forEach((l, i) => {
       if (!ids.has(l.kategori)) ctx.addIssue({ code: "custom", path: ["link", i, "kategori"], message: `Kategori "${l.kategori}" tidak ada` });
+      if (l.utama && l.arsip) ctx.addIssue({ code: "custom", path: ["link", i, "utama"], message: "Tautan arsip tidak bisa jadi tautan utama" });
       l.kategoriLain.forEach((k, j) => {
         if (!ids.has(k)) ctx.addIssue({ code: "custom", path: ["link", i, "kategoriLain", j], message: `Kategori "${k}" tidak ada` });
       });
@@ -125,6 +142,7 @@ export type Warna = (typeof WARNA)[number];
 export type Ikon = (typeof IKON)[number];
 export type StatusWarna = (typeof STATUS)[number];
 export type Tema = (typeof TEMA)[number];
+export type Anggota = z.infer<typeof anggotaSchema>;
 
 // The real page content; shown until the admin saves, and what `npm run db:setup` seeds into Neon.
 export const DEFAULT_SITE: Site = siteSchema.parse(seed);
@@ -139,6 +157,9 @@ export function parseSite(raw: unknown): Site {
 export function activeLabel(l: Link, today: string): Link["label"] {
   return l.label && (!l.labelSampai || today <= l.labelSampai) ? l.label : undefined;
 }
+
+/** What visitors see: archived links removed (the admin preview uses this too). */
+export const publik = (site: Site): Site => (site.link.some((l) => l.arsip) ? { ...site, link: site.link.filter((l) => !l.arsip) } : site);
 
 /** Every lane a link shows in: its own category first, then the extra ones (no repeats). */
 export const lanesOf = (l: Link): string[] => [...new Set([l.kategori, ...l.kategoriLain])];

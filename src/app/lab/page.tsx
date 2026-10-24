@@ -18,6 +18,7 @@ const link = (i: number, kategori: string, patch: Partial<Link> = {}): Link => (
   catatan: "",
   kataKunci: "",
   panduan: "",
+  arsip: false,
   utama: false,
   ...patch,
 });
@@ -27,6 +28,10 @@ const WORST: Site = {
   shift: ["06:00", "14:00", "22:00"],
   cuaca: { aktif: true, nama: "Site dengan nama sangat panjang", lat: -3.4337, lon: 115.5287, adm4: "63.10.12.2003", sumber: "gabungan" },
   tema: "otomatis",
+  tim: [
+    { id: "t1", nama: "Aleksandra Wiśniewska-Kowalczyk", peran: "Koordinator lapangan shift malam", jalur: "toko", foto: "", wa: "https://wa.me/6281200000000", telp: "tel:+6281200000000" },
+    { id: "t2", nama: "Jo", peran: "", jalur: "", foto: "", wa: "", telp: "" },
+  ],
   profil: {
     nama: "Aleksandra Wiśniewska-Kowalczyk · Studio",
     inisial: "AW",

@@ -1,7 +1,7 @@
 // Self-check: `npx tsx src/lib/site.check.ts`
 import assert from "node:assert/strict";
 import { lastDays, linkTaps, totals, type Day } from "./analytics";
-import { DEFAULT_SITE, activeLabel, buka24, isOfficeOnly, labelFor, lanesOf, linksIn, nextShift, safetyTalkFor, temaFor, isSafeUrl, laneLayout, parseSite, siteSchema, statusAt } from "./site";
+import { DEFAULT_SITE, activeLabel, publik, buka24, isOfficeOnly, labelFor, lanesOf, linksIn, nextShift, safetyTalkFor, temaFor, isSafeUrl, laneLayout, parseSite, siteSchema, statusAt } from "./site";
 
 // Only openable schemes pass.
 assert.ok(isSafeUrl("https://wa.me/62812"));
@@ -81,6 +81,20 @@ assert.equal(statusAt(allDay, wita(18, 12)), "merah"); // Sunday is still a day 
   const old = siteSchema.parse({ ...DEFAULT_SITE, safetyTalk: undefined, shift: undefined, cuaca: undefined, tema: undefined });
   assert.deepEqual(old.shift, ["06:00", "18:00"]);
   assert.equal(old.tema, "otomatis");
+}
+// Archive: hidden from visitors, never on the gantry; team members validated.
+{
+  const l0 = { ...DEFAULT_SITE.link[0], utama: false };
+  const s3 = siteSchema.parse({ ...DEFAULT_SITE, link: [{ ...l0, arsip: true }, { ...l0, id: "aktif" }] });
+  assert.deepEqual(publik(s3).link.map((l) => l.id), ["aktif"]);
+  assert.equal(publik(DEFAULT_SITE), DEFAULT_SITE, "nothing archived: same object");
+  assert.equal(bad({ link: [{ ...l0, utama: true, arsip: true }] }), false, "archived can't be utama");
+  const ok = (a: object) => siteSchema.safeParse({ ...DEFAULT_SITE, tim: [{ id: "a1", nama: "Budi", ...a }] }).success;
+  assert.ok(ok({ peran: "Foreman HV", jalur: "high-voltage", wa: "https://wa.me/6281234567890", telp: "tel:+6281234567890", foto: "https://example.com/a.jpg" }));
+  assert.ok(!ok({ foto: "http://example.com/a.jpg" }), "photo must be https");
+  assert.ok(!ok({ wa: "https://wa.me/abc" }));
+  assert.ok(!ok({ telp: "0812" }));
+  assert.deepEqual(siteSchema.parse({ ...DEFAULT_SITE, tim: undefined }).tim, []);
 }
 // Old stored data without a zone gets the default.
 assert.equal(siteSchema.parse({ ...DEFAULT_SITE, status: { ...st, zona: undefined } }).status.zona, "Asia/Makassar");

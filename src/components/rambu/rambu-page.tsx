@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import {
-  ZONA, buka24, clockIn, isOfficeOnly, labelFor, laneLayout, lanesOf, linksIn, statusAt,
+  ZONA, buka24, clockIn, isOfficeOnly, labelFor, laneLayout, lanesOf, linksIn, publik, statusAt,
   type Kategori, type Link, type Site, type StatusWarna,
 } from "@/lib/site";
 import { QrCode, X } from "@phosphor-icons/react/dist/ssr";
@@ -95,7 +95,9 @@ function paintChrome(dark: boolean) {
  * Rambu Navigasi public page. `preview` = rendered inside the admin editor:
  * no sticky/fixed chrome, no device storage, no global shortcuts.
  */
-export function RambuPage({ site, preview = false }: { site: Site; preview?: boolean }) {
+export function RambuPage({ site: raw, preview = false }: { site: Site; preview?: boolean }) {
+  // Archived links never reach visitors (nor the admin preview of what they see).
+  const site = useMemo(() => publik(raw), [raw]);
   const { profil, status, kategori } = site;
 
   // Lanes: categories that actually have links, in CONFIG order. A link sits in every lane of lanesOf().
