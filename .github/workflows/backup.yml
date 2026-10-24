@@ -27,7 +27,7 @@ jobs:
           jq -e '(.link | type == "array") and (.link | length > 0)' config.json > /dev/null \
             || { echo "::error::respons bukan CONFIG (tidak ada array link)"; exit 1; }
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: repo
           fetch-depth: 1
