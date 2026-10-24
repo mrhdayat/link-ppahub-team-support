@@ -152,3 +152,9 @@
 
 .pw-form { display: grid; gap: var(--space-4); max-width: 28rem; }
 .pw-form input { width: 100%; }
+
+/* ---------- Sources & devices: label on its own line, then bar · count · share ---------- */
+
+.hbars[data-stack] li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+.hbars[data-stack] .hbar-l { grid-column: 1 / -1; font-weight: 800; overflow-wrap: anywhere; }
+.hbars[data-stack] .hbar-v .field-hint { display: inline-block; min-width: 3.5ch; text-align: right; }

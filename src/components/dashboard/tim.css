@@ -1,0 +1,20 @@
+/* Admin "Tim" tab: member rows with a photo or initials thumb, and the form's photo preview. */
+
+.tm-main { grid-template-columns: 44px minmax(0, 1fr); align-items: center; column-gap: var(--space-3); }
+.tm-main .foto, .tm-foto .foto {
+  display: block;
+  object-fit: cover;
+  border: var(--border-small);
+  border-radius: var(--radius-plate);
+  background: #e4e1d7;
+}
+.tm-text { display: grid; gap: 4px; min-width: 0; }
+.tm-kontak { display: inline-flex; align-items: center; gap: 4px; }
+.inisial { display: block; flex: none; }
+.inisial text { font-family: var(--font-sign), system-ui, sans-serif; font-size: 22px; font-weight: 900; fill: var(--black); }
+.tm-foto { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: var(--space-3); }
+
+/* Six sections in the phone's bottom bar (the base stylesheet lays out five). */
+@media (max-width: 899px) {
+  .dash-nav ul:has(> li:nth-child(6)) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}

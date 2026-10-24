@@ -1,0 +1,139 @@
+/* Team page (/tim). Rides on rambu.css (.rambu, .road, .plate, .act, .lane); this file only adds the duty boards. */
+
+.tim .road { max-width: 560px; }
+
+.tim-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: env(safe-area-inset-top, 0px) var(--space-4) var(--space-3);
+  background: var(--ground);
+  border-bottom: var(--border);
+}
+.tim-hazard {
+  height: 10px;
+  margin-inline: calc(-1 * var(--space-4));
+  margin-bottom: var(--space-3);
+  background: repeating-linear-gradient(-45deg, var(--yellow) 0 14px, var(--black) 14px 28px);
+}
+.tim-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 6px 14px;
+  font-size: 15px;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm), var(--glow);
+}
+.tim-back svg { width: 24px; height: 24px; flex: none; }
+.tim-back:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
+.tim-top-row { max-width: calc(560px - 2 * var(--space-4)); margin-inline: auto; }
+.tim-dot { padding-inline: 0.3em; }
+
+.tim-head { display: grid; gap: var(--space-3); }
+.tim-title { font-size: 24px; padding: 10px 16px; }
+.tim-lead { margin: 0; font-size: 15px; line-height: 1.45; max-width: 40ch; text-wrap: pretty; }
+
+/* ── Duty board ── */
+
+.petugas-list { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.petugas {
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: 22px var(--space-4) var(--space-4);
+  background: var(--white);
+  color: var(--black);
+  border: var(--border);
+  border-radius: var(--radius-sign);
+  box-shadow: var(--shadow-md), var(--glow);
+  overflow: hidden;
+}
+/* Lane colour band across the top, like the reflective strip on a site ID board. */
+.petugas::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  background: var(--sign, var(--yellow));
+  border-bottom: var(--border-small);
+}
+.petugas .foto {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: var(--border-small);
+  border-radius: var(--radius-plate);
+  background: #e4e1d7;
+}
+.inisial { display: block; flex: none; }
+.inisial text {
+  font-family: var(--font-sign), system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  fill: var(--black);
+}
+.petugas-id { min-width: 0; }
+.petugas-nama { margin: 0; font-size: 21px; font-weight: 900; line-height: 1.1; overflow-wrap: anywhere; }
+.petugas-peran {
+  margin: 4px 0 0;
+  font-family: var(--font-hud), monospace;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
+}
+.petugas-kontak { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--space-3); }
+.petugas-kontak .act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 6px 10px;
+  font-size: 16px;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm), var(--glow);
+}
+.petugas-kontak .act svg { width: 22px; height: 22px; flex: none; }
+.petugas-kontak .act:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--black), var(--glow); }
+
+/* ── Empty ── */
+
+.tim-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  background: var(--white);
+  color: var(--black);
+  border: var(--border);
+  border-radius: var(--radius-sign);
+  box-shadow: var(--shadow-md), var(--glow);
+  text-align: center;
+}
+.tim-empty h2 { margin: 0; font-size: 22px; font-weight: 900; }
+.tim-empty p { margin: 0; font-size: 15px; }
+.tim-empty .inisial text { font-size: 26px; }
+
+.tim-foot { display: grid; justify-items: center; padding-top: var(--space-2); }
+
+@media (hover: hover) and (pointer: fine) {
+  .tim-back:hover, .petugas-kontak .act:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--black), var(--glow); }
+}
+
+@media (min-width: 460px) {
+  .petugas { grid-template-columns: 88px minmax(0, 1fr); }
+  .petugas .foto, .petugas .inisial { width: 88px; height: 88px; }
+  .tim-title { font-size: 28px; }
+}
+
+@media (prefers-contrast: more), (forced-colors: active) {
+  .petugas, .tim-back { outline: 2px solid CanvasText; }
+}

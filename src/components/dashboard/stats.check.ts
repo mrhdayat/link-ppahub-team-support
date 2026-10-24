@@ -1,11 +1,12 @@
 // Run: npx tsx src/components/dashboard/stats.check.ts
 import assert from "node:assert/strict";
-import type { Day, HourRow } from "@/lib/analytics";
-import { DEFAULT_SITE, siteSchema, type Site } from "@/lib/site";
+import { SRC_MAX, deviceOf, isLinkKey as serverIsLinkKey, isSrcKey, srcFits, type Day, type HourRow } from "@/lib/analytics";
+import { DEFAULT_SITE, anggotaSchema, siteSchema, type Site } from "@/lib/site";
 import {
-  addDays, ago, bucket, busiest, busyLabel, change, diffSummary, hourGrid, linkTaps, perKategori, span, sum, ticks,
-  weekdayOf, weekly, weeklyText,
+  addDays, ago, asalKunjungan, bucket, busiest, busyLabel, change, diffSummary, hourGrid, isLinkKey, linkTaps, perKategori, span, sum, ticks,
+  perangkat, weekdayOf, weekly, weeklyText,
 } from "./stats";
+import { inisial, keTelp, keWa, kelompokTim, nomorID, tampilNomor } from "@/components/tim/tim";
 
 assert.equal(addDays("2026-03-01", -1), "2026-02-28");
 assert.equal(addDays("2026-12-31", 1), "2027-01-01");
@@ -104,6 +105,75 @@ const cur: Site = {
 };
 assert.deepEqual(diffSummary(site, cur), ["+1 tautan", "−1 tautan", "1 tautan berubah", "kategori “Alpha” → “Alfa”", "profil berubah"]);
 assert.deepEqual(diffSummary(site, { ...site, tampilKlik: !site.tampilKlik }), ["pengaturan lain berubah"]);
+
+// Sources (#26): lane QR by lane name, unknown lane by id, other slugs as-is, the rest is "Langsung".
+const asal = asalKunjungan(site, { view: 20, "src:qr-a": 6, "src:qr": 3, "src:share": 3, "src:wa-grup": 1, "src:qr-gone": 1, "src:x": 0, "l:x": 9 });
+assert.deepEqual(asal.rows.map((r) => [r.label, r.n]), [
+  ["QR jalur Alfa", 6], ["Dibagikan", 3], ["QR halaman", 3], ["Lainnya: wa-grup", 1], ["QR jalur gone", 1], ["Langsung/tanpa sumber", 6],
+]);
+assert.equal(asal.tagged, 14);
+assert.equal(asal.rows[0]!.share, 30);
+assert.equal(asal.rows.reduce((s, r) => s + r.share, 0), 100);
+// More tagged than views (old days): no negative "Langsung", shares of the tagged.
+const asal2 = asalKunjungan(site, { view: 1, "src:qr": 2 });
+assert.deepEqual(asal2.rows.map((r) => [r.key, r.n, r.share]), [["src:qr", 2, 100]]);
+assert.deepEqual(asalKunjungan(site, {}).rows, []);
+assert.deepEqual(asalKunjungan(site, { view: 4 }).rows.map((r) => [r.key, r.share]), [["langsung", 100]]);
+
+// Devices (#28): fixed order, shares of the device total.
+const dev = perangkat({ view: 9, "dev:mobile": 6, "dev:desktop": 2 });
+assert.deepEqual(dev.rows.map((r) => [r.key, r.n, r.share]), [["mobile", 6, 75], ["tablet", 0, 0], ["desktop", 2, 25]]);
+assert.equal(perangkat({}).total, 0);
+// New key families never count as link clicks, on either side.
+for (const k of ["src:qr", "dev:mobile"]) assert.ok(!isLinkKey(k) && !serverIsLinkKey(k));
+assert.equal(linkTaps({ "l:x": 2, "src:qr": 5, "dev:mobile": 5, view: 5 }), 2);
+
+const UA = {
+  iphone: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+  androidPhone: "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+  firefoxPhone: "Mozilla/5.0 (Android 14; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0",
+  androidTab: "Mozilla/5.0 (Linux; Android 13; SM-X700) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+  ipadOld: "Mozilla/5.0 (iPad; CPU OS 12_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1 Mobile/15E148 Safari/604.1",
+  ipadDesktopUa: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+  windows: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+};
+assert.equal(deviceOf(UA.iphone), "mobile");
+assert.equal(deviceOf(UA.androidPhone), "mobile");
+assert.equal(deviceOf(UA.firefoxPhone), "mobile");
+assert.equal(deviceOf(UA.androidTab), "tablet");
+assert.equal(deviceOf(UA.ipadOld), "tablet");
+assert.equal(deviceOf(UA.ipadDesktopUa), "desktop"); // documented limit: iPadOS desktop UA
+assert.equal(deviceOf(UA.windows), "desktop");
+assert.equal(deviceOf(""), "desktop");
+
+// src keys: slug shape, and at most SRC_MAX distinct slugs a day (known ones keep counting).
+assert.ok(isSrcKey("src:qr") && isSrcKey("src:qr-high-voltage") && isSrcKey(`src:qr-${"a".repeat(24)}`));
+for (const k of ["src:", "src:QR", "src:a b", "src:a_b", `src:${"a".repeat(28)}`, "qr"]) assert.ok(!isSrcKey(k), k);
+const full = Array.from({ length: SRC_MAX }, (_, i) => `src:s${i}`);
+assert.ok(srcFits(full.slice(1), "src:new"));
+assert.ok(!srcFits(full, "src:new"));
+assert.ok(srcFits(full, "src:s7"));
+assert.ok(srcFits([...full.slice(1), "view", "l:x"], "src:new")); // other keys don't use up the room
+
+// Team page (#14): whole team first (incl. members of a deleted lane), then lanes in category order, empty lanes skipped.
+const orang = (id: string, jalur: string) => anggotaSchema.parse({ id, nama: `Orang ${id}`, jalur });
+const grup = kelompokTim({ kategori: site.kategori, tim: [orang("1", "b"), orang("2", ""), orang("3", "b"), orang("4", "gone")] });
+assert.deepEqual(grup.map((g) => [g.id, g.anggota.map((a) => a.id)]), [["", ["2", "4"]], ["b", ["1", "3"]]]);
+assert.deepEqual(kelompokTim({ kategori: site.kategori, tim: [] }), []);
+assert.equal(inisial("budi santoso wibowo"), "BS");
+assert.equal(inisial("  Ani "), "AN");
+// Phone numbers: 08…, +62…, 62…, stored forms; normalised to what the schema accepts.
+for (const n of ["0812-3456-7890", "+62 812 3456 7890", "6281234567890", "https://wa.me/6281234567890", "tel:+6281234567890", "(0812) 3456.7890"])
+  assert.equal(nomorID(n), "6281234567890", n);
+for (const n of ["12345", "0812", "+1 415 555 0100", "abc", "08123456789012345"]) assert.equal(nomorID(n), null, n);
+assert.equal(keWa("0812 3456 7890"), "https://wa.me/6281234567890");
+assert.equal(keTelp("0812 3456 7890"), "tel:+6281234567890");
+assert.equal(keWa(" "), "");
+assert.equal(keTelp("nope"), null);
+assert.equal(tampilNomor("https://wa.me/6281234567890"), "+6281234567890");
+assert.equal(tampilNomor(""), "");
+const ok = anggotaSchema.safeParse({ id: "a", nama: "A", wa: keWa("081234567"), telp: keTelp("0511 123456") });
+assert.ok(ok.success, "normalised numbers fit anggotaSchema");
 
 const now = Date.parse("2026-10-22T03:00:00Z");
 assert.equal(ago("2026-10-22T02:59:30Z", now), "baru saja");
