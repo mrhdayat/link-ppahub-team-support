@@ -6,8 +6,9 @@ import type { Counts, Day, HourRow } from "@/lib/analytics";
 import { lanesOf, type Site } from "@/lib/site";
 import { Plate, Segmented, copyText, publicUrl } from "./controls";
 import {
-  HARI_PANJANG, HARI_SINGKAT, addDays, bucket, busiest, busyLabel, dayLabel, fmt, fmtCompact, fmtRatio, hourGrid, hourLabel,
-  isLinkKey, linkTaps, pct, perKategori, rangeLabel, span, sum, ticks, weekly, weeklyText,
+  HARI_PANJANG, HARI_SINGKAT, addDays, asalKunjungan, bucket, busiest, busyLabel, dayLabel, fmt, fmtCompact, fmtRatio, hourGrid, hourLabel,
+  isLinkKey, linkTaps, pct, perKategori, perangkat, rangeLabel, span, sum, ticks, weekly, weeklyText,
+  type Bar,
 } from "./stats";
 import "./insight.css";
 
@@ -127,6 +128,11 @@ export function Ringkasan({
       <div className="two-col">
         <TopLinks site={site} cur={c} all={all} n={n} onEditLink={onEditLink} />
         <PerKategori site={site} cur={c} n={n} />
+      </div>
+
+      <div className="two-col">
+        <Asal site={site} cur={c} n={n} />
+        <Perangkat cur={c} n={n} />
       </div>
     </div>
   );
@@ -406,6 +412,79 @@ function PerKategori({ site, cur, n }: { site: Site; cur: Counts; n: number }) {
       </ul>
       {multi && <p className="field-hint">Tautan multi-jalur dihitung di tiap jalur.</p>}
       {orphan > 0 && <p className="field-hint">{fmt(orphan)} klik berasal dari tautan yang sudah dihapus.</p>}
+    </section>
+  );
+}
+
+/* ---------- Where visits came from (#26) ---------- */
+
+function Bars({ rows, unit }: { rows: Bar[]; unit: string }) {
+  const max = Math.max(1, ...rows.map((r) => r.n));
+  return (
+    <ul className="hbars" data-stack="">
+      {rows.map((r) => (
+        <li key={r.key}>
+          <span className="hbar-l" dir="auto">{r.label}</span>
+          <span className="hbar" aria-hidden><span style={{ width: `${(r.n / max) * 100}%` }} /></span>
+          <span className="hbar-v"><b>{fmt(r.n)}</b><span className="sr-only"> {unit},</span> <span className="field-hint">{pct(r.share)}</span></span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const ASAL_TOP = 6;
+
+function Asal({ site, cur, n }: { site: Site; cur: Counts; n: number }) {
+  const { rows, views, tagged } = asalKunjungan(site, cur);
+  const [more, setMore] = useState(false);
+  // Junk ?src= values can add up to 50 slugs a day: fold the tail, keep "Langsung" in view.
+  const src = rows.filter((r) => r.key !== "langsung");
+  const shown = [...(more ? src : src.slice(0, ASAL_TOP)), ...rows.filter((r) => r.key === "langsung")];
+  return (
+    <section className="panel" aria-labelledby="asal-h">
+      <div className="panel-head">
+        <h3 id="asal-h">Asal kunjungan</h3>
+        <span className="field-hint">{n} hari terakhir</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="field-hint">Belum ada kunjungan dalam {n} hari terakhir.</p>
+      ) : (
+        <>
+          <Bars rows={shown} unit="kunjungan" />
+          {src.length > ASAL_TOP && (
+            <button type="button" className="btn btn-quiet" aria-expanded={more} onClick={() => setMore((m) => !m)}>
+              {more ? `Tampilkan ${ASAL_TOP} teratas` : `Tampilkan semua sumber (${src.length})`}
+            </button>
+          )}
+          {!tagged && (
+            <p className="field-hint">Belum ada kunjungan lewat kode QR atau tautan yang dibagikan. Sumber tercatat sejak pembaruan ini.</p>
+          )}
+          {tagged > 0 && <p className="field-hint">Porsi dari {fmt(Math.max(views, tagged))} kunjungan.</p>}
+        </>
+      )}
+    </section>
+  );
+}
+
+/* ---------- Devices (#28) ---------- */
+
+function Perangkat({ cur, n }: { cur: Counts; n: number }) {
+  const { rows, total } = perangkat(cur);
+  return (
+    <section className="panel" aria-labelledby="dev-h">
+      <div className="panel-head">
+        <h3 id="dev-h">Perangkat</h3>
+        <span className="field-hint">{n} hari terakhir</span>
+      </div>
+      {total === 0 ? (
+        <p className="field-hint">Belum ada data perangkat. Jenis perangkat tercatat untuk kunjungan sejak pembaruan ini.</p>
+      ) : (
+        <>
+          <Bars rows={rows} unit="kunjungan" />
+          <p className="field-hint">Dari {fmt(total)} kunjungan. iPad yang tampil sebagai situs desktop terhitung Komputer.</p>
+        </>
+      )}
     </section>
   );
 }

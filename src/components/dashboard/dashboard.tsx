@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import {
-  ArrowSquareOut, ChartBar, Eye, EyeSlash, GearSix, IdentificationCard, LinkSimple, SignOut, Tag,
+  ArrowSquareOut, ChartBar, Eye, EyeSlash, GearSix, IdentificationCard, LinkSimple, SignOut, Tag, UsersThree,
 } from "@phosphor-icons/react";
 import { RambuPage } from "@/components/rambu/rambu-page";
 import { logout, save, type SaveResult } from "@/app/actions";
@@ -17,6 +17,7 @@ import { Tautan, type LinkEdit } from "./tautan";
 import { KategoriTab } from "./kategori";
 import { ProfilTab, PROFIL_KEYS, type ProfilFields } from "./profil";
 import { Pengaturan } from "./pengaturan";
+import { TimTab } from "./tim";
 import { isTab, type Tab } from "./tabs";
 import "@/components/rambu/tokens.css";
 import "./dashboard.css";
@@ -39,6 +40,7 @@ const NAV: { tab: Tab; label: string; short: string; Icon: typeof ChartBar }[] =
   { tab: "tautan", label: "Tautan", short: "Tautan", Icon: LinkSimple },
   { tab: "kategori", label: "Kategori", short: "Kategori", Icon: Tag },
   { tab: "profil", label: "Profil & status", short: "Profil", Icon: IdentificationCard },
+  { tab: "tim", label: "Tim", short: "Tim", Icon: UsersThree },
   { tab: "pengaturan", label: "Pengaturan", short: "Atur", Icon: GearSix },
 ];
 const WITH_PREVIEW: Tab[] = ["tautan", "kategori", "profil"];
@@ -279,6 +281,7 @@ export function Dashboard({ initial, days: initialDays, hours: initialHours, tod
         {tab === "profil" && (
           <ProfilTab site={site} edits={profilEdits} setEdits={setProfilEdits} dirty={profilDirty} commit={commit} />
         )}
+        {tab === "tim" && <TimTab site={site} commit={commit} />}
         {tab === "pengaturan" && (
           <Pengaturan site={site} commit={commit} unsaved={unsaved} onLogout={() => setLeaving(true)}
             onStatsReset={() => { setDays([]); setHours([]); }}

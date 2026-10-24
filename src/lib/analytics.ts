@@ -4,7 +4,9 @@ import { ensureSchema, sql } from "./db";
 import { clockIn, type Zona } from "./site";
 
 // First-party, aggregate-only counters: one number per (day, key). No IPs, no cookies, no user agents stored.
-// Keys: "view" (page opened), "wa" (STOP chat), "share", "qr", "l:<linkId>" (a sign/board was tapped).
+// Keys: "view" (page opened), "wa" (STOP chat), "share", "qr", "l:<linkId>" (a sign/board was tapped),
+// "src:<slug>" (where a session came from: ?src= on the page URL), "dev:mobile|tablet|desktop" (device class of a view,
+// read from the User-Agent on the server and then dropped).
 
 export type Counts = Record<string, number>;
 export type Day = { day: string; counts: Counts };
@@ -18,6 +20,25 @@ const HOUR_FILE = path.join(process.cwd(), "data", HOUR);
 
 export const EVENT_KEYS = ["view", "wa", "share", "qr"] as const;
 export const isLinkKey = (k: string) => /^l:[\w-]{1,40}$/.test(k);
+// 27 = "qr-" + a 24-character lane id, so every lane QR (src=qr-<laneId>) fits.
+export const isSrcKey = (k: string) => /^src:[a-z0-9-]{1,27}$/.test(k);
+/** Distinct src slugs counted per day; new ones past this are ignored, so junk ?src= values can't grow the table. */
+export const SRC_MAX = 50;
+/** Room for `k` among the src keys already counted today. */
+export const srcFits = (today: string[], k: string) => today.includes(k) || today.filter(isSrcKey).length < SRC_MAX;
+
+export type Device = "mobile" | "tablet" | "desktop";
+/**
+ * Device class from a User-Agent. Tablets first: iPad, Android without "Mobile" (Google's tablet convention),
+ * Kindle/Silk, and anything that says Tablet. Then phones: "Mobi" (covers Mobile/Mobi), iPhone, iPod, Android.
+ * Known limit: iPadOS 13+ sends a desktop Safari UA ("Macintosh"); touch support is only visible in the browser,
+ * so those iPads count as desktop.
+ */
+export function deviceOf(ua: string): Device {
+  if (/iPad|Tablet|Kindle|Silk|PlayBook|Android(?!.*Mobi)/i.test(ua)) return "tablet";
+  if (/Mobi|iPhone|iPod|Android|Windows Phone|Opera Mini/i.test(ua)) return "mobile";
+  return "desktop";
+}
 
 async function readFileStore(name = "analytics.json"): Promise<Record<string, Counts>> {
   try {
@@ -61,6 +82,18 @@ export async function recordHit(k: string, zona: Zona, now = new Date()): Promis
     await writeFile(HOUR_FILE, JSON.stringify(hours));
   });
   await queue;
+}
+
+/** Whether a src key may be counted today: already counted, or still under SRC_MAX distinct slugs. */
+export async function srcAllowed(k: string, zona: Zona, now = new Date()): Promise<boolean> {
+  const { date: day } = clockIn(zona, now);
+  // ponytail: check-then-write, so a burst of new slugs can pass SRC_MAX by a few; the cap is about junk, not exactness.
+  if (sql) {
+    await ensureSchema();
+    const rows = (await sql`select k from hits where day = ${day} and k like 'src:%'`) as { k: string }[];
+    return srcFits(rows.map((r) => r.k), k);
+  }
+  return srcFits(Object.keys((await readFileStore())[day] ?? {}), k);
 }
 
 /** Every stored hour, oldest day first. Empty until the first hit after this table shipped. */

@@ -106,6 +106,43 @@ export function perKategori(site: Site, c: Counts) {
     .sort((a, b) => b.klik - a.klik);
 }
 
+/* ---------- Where visits came from (#26) and devices (#28) ---------- */
+
+export type Bar = { key: string; label: string; n: number; share: number };
+const shareOf = (n: number, of: number) => (of ? (n / of) * 100 : 0);
+
+/**
+ * Visits per source in `c`: one "src:<slug>" per tagged session. qr = the page QR, qr-<laneId> = a lane QR,
+ * share = a shared link, anything else is shown by its slug. "Langsung" = views no source tagged (never below 0).
+ * Shares are of the views (or of the tagged sessions, if older days hold more of those than views).
+ */
+export function asalKunjungan(site: Site, c: Counts): { rows: Bar[]; views: number; tagged: number } {
+  const lane = new Map(site.kategori.map((k) => [k.id, k.nama]));
+  const label = (slug: string) => {
+    if (slug === "qr") return "QR halaman";
+    if (slug === "share") return "Dibagikan";
+    if (slug.startsWith("qr-")) return `QR jalur ${lane.get(slug.slice(3)) ?? slug.slice(3)}`;
+    return `Lainnya: ${slug}`;
+  };
+  const src = Object.entries(c).filter(([k, n]) => k.startsWith("src:") && n > 0);
+  const views = c.view ?? 0;
+  const tagged = src.reduce((s, [, n]) => s + n, 0);
+  const of = Math.max(views, tagged);
+  const rows = src
+    .map(([k, n]) => ({ key: k, label: label(k.slice(4)), n, share: shareOf(n, of) }))
+    .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label, "id"));
+  const direct = Math.max(0, views - tagged);
+  if (direct) rows.push({ key: "langsung", label: "Langsung/tanpa sumber", n: direct, share: shareOf(direct, of) });
+  return { rows, views, tagged };
+}
+
+const DEVICES = [["mobile", "HP"], ["tablet", "Tablet"], ["desktop", "Komputer"]] as const;
+/** Views per device class, always all three rows in a fixed order. */
+export function perangkat(c: Counts): { rows: Bar[]; total: number } {
+  const total = DEVICES.reduce((s, [k]) => s + (c[`dev:${k}`] ?? 0), 0);
+  return { rows: DEVICES.map(([k, label]) => ({ key: k, label, n: c[`dev:${k}`] ?? 0, share: shareOf(c[`dev:${k}`] ?? 0, total) })), total };
+}
+
 /* ---------- Weekly report (#36) ---------- */
 
 export type Weekly = {
