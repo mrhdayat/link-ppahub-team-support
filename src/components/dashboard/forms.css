@@ -97,3 +97,111 @@
 .lokasi-level { display: grid; gap: 4px; font-weight: 700; font-size: 0.875rem; }
 .lokasi-level select { min-height: var(--tap-min); font-size: 1rem; }
 .lokasi-bmkg code { font-family: var(--font-hud), monospace; font-weight: 700; }
+
+/* ---------- Link tools (#1, #19, #27, #30, #31, #32) ---------- */
+
+/* Filters: the two chips share a line on phones; five columns once there's room. */
+.filters button.chip { grid-column: auto; }
+@container (min-width: 760px) {
+  .filters { grid-template-columns: minmax(10rem, 1.4fr) minmax(10rem, 1fr) minmax(9rem, 1fr) auto auto; }
+}
+
+/* Archived: a dashed, greyed sign that's still readable (ink on #ece9e0 ≈ 14:1). */
+.row[data-arsip] { background: #ece9e0; border-style: dashed; }
+.row[data-arsip] .row-judul { color: var(--ink-soft); }
+.d-tag[data-tone="arsip"] { background: var(--black); color: var(--white); }
+
+/* Phones: six row tools fit on one line when they take the full row width. */
+@container (max-width: 639px) {
+  .rows .row { grid-template-areas: "pos main" "actions actions"; }
+  .rows .row .row-actions { gap: 4px; }
+}
+
+/* 30-day taps, inline with the click count. */
+.spark { flex: none; overflow: visible; }
+.spark polyline { fill: none; stroke: var(--black); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.spark circle { fill: var(--yellow); stroke: var(--black); stroke-width: 1.5; }
+
+/* Pick mode: a 44px checkbox cell replaces the position number; per-row tools step aside. */
+.rows[data-picking] .row { grid-template-columns: var(--tap-min) minmax(0, 1fr); grid-template-areas: "pos main"; }
+.row-pick {
+  grid-area: pos;
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin: -6px 0;
+  cursor: pointer;
+}
+.row-pick input { width: 24px; height: 24px; margin: 0; accent-color: var(--black); cursor: pointer; }
+.pick-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+
+.bulk-bar {
+  position: sticky;
+  bottom: calc(var(--nav-h) + var(--safe-b) + var(--space-2));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  background: var(--yellow);
+  color: var(--black);
+  border: var(--border);
+  border-radius: var(--radius-sign);
+  box-shadow: var(--shadow-md);
+  animation: bulk-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (min-width: 900px) { .bulk-bar { bottom: var(--space-4); } }
+.bulk-count { flex: 1 1 100%; margin: 0; font-weight: 800; }
+.bulk-bar .btn { flex: 1 1 auto; background: var(--white); }
+.bulk-bar .btn[data-danger] { background: var(--red); }
+@container (min-width: 760px) {
+  .bulk-count { flex: 0 1 auto; margin-right: auto; }
+  .bulk-bar .btn { flex: 0 0 auto; }
+}
+@keyframes bulk-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* Link form: Ambil judul beside the title box; notes under the URL. */
+.lf-judul { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+.lf-judul .btn { padding-inline: 12px; }
+.lf-notes { display: grid; gap: 6px; }
+.lf-notes:empty, .lf-note:empty { display: none; }
+.lf-note { margin: 0; font-size: 0.875rem; font-weight: 600; line-height: 1.4; }
+.lf-note[data-error] { color: #b3141b; font-weight: 800; }
+.lf-dup {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--yellow);
+  border: var(--border-small);
+  border-radius: var(--radius-plate);
+}
+.lf-dup-actions { display: flex; gap: var(--space-4); }
+.lf-dup-actions .text-btn { color: var(--black); min-height: var(--tap-min); padding-block: 0; }
+.lf-arsip {
+  margin: 0;
+  padding: 8px 12px;
+  background: #ece9e0;
+  border: 3px dashed var(--black);
+  border-radius: var(--radius-plate);
+  font-weight: 700;
+}
+
+/* CSV import preview */
+.csv-src { display: grid; gap: var(--space-3); }
+.csv-src textarea { font-family: var(--font-hud), ui-monospace, monospace; font-size: 0.875rem; }
+.csv-preview { display: grid; gap: var(--space-3); }
+.csv-sum { margin: 0; font-weight: 700; }
+.csv-sum:focus { outline: none; }
+.csv-table { max-height: 24rem; overflow: auto; border: var(--border-small); border-radius: var(--radius-plate); background: var(--white); }
+.csv-table table { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: 0.875rem; }
+.csv-table th, .csv-table td { padding: 6px 8px; border-bottom: 2px solid #d9d5ca; text-align: left; vertical-align: top; }
+.csv-table th { position: sticky; top: 0; background: var(--black); color: var(--white); font-family: var(--font-hud), ui-monospace, monospace; font-size: 0.75rem; }
+.csv-table td:first-child { font-family: var(--font-hud), ui-monospace, monospace; }
+.csv-table tr[data-skip] td { color: var(--ink-soft); background: #f3f1ea; }
+.csv-url { display: block; color: var(--ink-soft); font-family: var(--font-hud), ui-monospace, monospace; font-size: 0.75rem; overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bulk-bar { animation: none; }
+}
