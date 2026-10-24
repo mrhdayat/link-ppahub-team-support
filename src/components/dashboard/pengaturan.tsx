@@ -2,17 +2,20 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  ArrowClockwise, ArrowCounterClockwise, ClockCounterClockwise, CopySimple, DownloadSimple, Key, QrCode, SignOut, UploadSimple,
+  ArrowClockwise, ArrowCounterClockwise, ClockCounterClockwise, CopySimple, DownloadSimple, FileCsv, Key, QrCode, SignOut, UploadSimple,
 } from "@phosphor-icons/react";
 import { changePassword, logout } from "@/app/actions";
 import { listHistory, resetStats, restoreVersion, type VersionInfo } from "@/app/admin/actions";
-import { ZONA, siteSchema, type Site } from "@/lib/site";
-import { Field, copyText, download, publicUrl, wire } from "./controls";
+import { fetchSheetCsv } from "@/app/admin/link-actions";
+import { ZONA, clockIn, siteSchema, type Site } from "@/lib/site";
+import { Field, Segmented, copyText, download, newId, publicUrl, wire } from "./controls";
+import { importRows, parseCsv, type ImportRow } from "./url-tools";
 import { Confirm } from "./modal";
 import { EXPIRED, sessionExpired, toast } from "./toast";
 import { ago } from "./stats";
 import type { Commit } from "./dashboard";
 import "./insight.css";
+import "./forms.css";
 
 /** "link.3.url" → "tautan ke-4, kolom url": where in the file the problem is, in words. */
 function where(path: PropertyKey[]): string {
@@ -155,6 +158,8 @@ export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset, onRe
         {importErr && <p className="field-error" id="imp-err">Berkas ditolak. {importErr}.</p>}
       </section>
 
+      <ImporCsv site={site} commit={commit} />
+
       <Riwayat site={site} unsaved={unsaved} onRestored={onRestored} />
 
       <section className="panel" aria-labelledby="set-stats">
@@ -199,6 +204,181 @@ export function Pengaturan({ site, commit, unsaved, onLogout, onStatsReset, onRe
         <p>Semua angka kunjungan dan klik dihapus permanen. Ini tidak bisa diurungkan.</p>
       </Confirm>
     </div>
+  );
+}
+
+/* ---------- Links from CSV / Google Sheets (#32) ---------- */
+
+type Sumber = "tempel" | "berkas" | "sheets";
+const STATUS_NAME: Record<ImportRow["status"], string> = { baru: "Baru", duplikat: "Duplikat", error: "Error" };
+const LINK_MAX = 200;
+
+function ImporCsv({ site, commit }: { site: Site; commit: Commit }) {
+  const file = useRef<HTMLInputElement>(null);
+  const [sumber, setSumber] = useState<Sumber>("tempel");
+  const [text, setText] = useState("");
+  const [sheet, setSheet] = useState("");
+  const [error, setError] = useState("");
+  const [rows, setRows] = useState<ImportRow[] | null>(null);
+  const [skipDup, setSkipDup] = useState(true);
+  const [target, setTarget] = useState("");
+  const [busy, setBusy] = useState<"" | "sheet" | "import">("");
+
+  function read(csv: string) {
+    const r = importRows(parseCsv(csv), site, clockIn(site.status.zona, new Date()).date, newId);
+    setError(r.error ? `${r.error}.` : r.rows.length ? "" : "Tidak ada baris tautan di bawah baris judul kolom.");
+    setRows(r.error || !r.rows.length ? null : r.rows);
+    if (!r.error && r.rows.length) requestAnimationFrame(() => document.getElementById("csv-preview")?.focus());
+  }
+
+  async function readFile(f: File) {
+    if (f.size > 1_000_000) return setError("Berkas lebih dari 1 MB.");
+    read(await f.text());
+  }
+
+  async function readSheet() {
+    setBusy("sheet");
+    setError("");
+    try {
+      const r = await fetchSheetCsv(sheet);
+      if (r.ok) read(r.text);
+      else if (EXPIRED.test(r.error)) sessionExpired(() => void readSheet());
+      else setError(`${r.error.replace(/\.$/, "")}.`);
+    } catch {
+      setError("Server tidak terjangkau. Coba lagi.");
+    } finally {
+      setBusy("");
+    }
+  }
+
+  const take = rows?.filter((r) => r.status === "baru" || (r.status === "duplikat" && !skipDup)) ?? [];
+  const count = (s: ImportRow["status"]) => rows?.filter((r) => r.status === s).length ?? 0;
+  const unknown = [...new Set(take.filter((r) => !r.link.kategori).map((r) => r.katRaw || "(kosong)"))];
+  const over = site.link.length + take.length > LINK_MAX;
+  const katName = (id: string) => site.kategori.find((k) => k.id === id)?.nama ?? id;
+
+  async function doImport() {
+    if (!take.length || (unknown.length && !target) || over) return;
+    setBusy("import");
+    const links = take.map((r) => (r.link.kategori ? r.link : { ...r.link, kategori: target }));
+    const r = await commit((s) => ({ ...s, link: [...s.link, ...links.filter((l) => !s.link.some((x) => x.id === l.id))] }));
+    setBusy("");
+    if (!r.ok) return;
+    const skipped = [count("duplikat") && skipDup && `${count("duplikat")} duplikat dilewati`, count("error") && `${count("error")} error dilewati`];
+    toast.success([`${links.length} tautan diimpor`, ...skipped.filter(Boolean)].join(" · "));
+    setRows(null);
+    setText("");
+    setSheet("");
+  }
+
+  return (
+    <section className="panel" aria-labelledby="set-csv">
+      <h3 className="panel-title" id="set-csv">Impor tautan dari CSV / Spreadsheet</h3>
+      <p className="field-hint">
+        Baris pertama berisi nama kolom: <b>judul</b>, <b>url</b>, kategori, catatan, kata kunci, panduan, label (Indonesia atau Inggris).
+        Tautan ditambahkan ke yang sudah ada; tidak ada yang diganti.
+      </p>
+      <Segmented name="csv-sumber" label="Sumber" value={sumber} onChange={(v) => {
+        setSumber(v);
+        setError("");
+      }} options={[{ value: "tempel", label: "Tempel teks" }, { value: "berkas", label: "Berkas .csv" }, { value: "sheets", label: "Google Sheets" }]} />
+
+      {sumber === "tempel" && (
+        <form className="csv-src" onSubmit={(e) => {
+          e.preventDefault();
+          read(text);
+        }}>
+          <Field path="csv.teks" label="Teks CSV">
+            <textarea {...wire("csv.teks", error || undefined)} rows={5} value={text} spellCheck={false}
+              placeholder={"judul,url,kategori\nAbsensi,https://forms.gle/…,Absensi"} onChange={(e) => setText(e.target.value)} />
+          </Field>
+          <div className="row-actions">
+            <button type="submit" className="btn" disabled={!text.trim()}>Baca CSV</button>
+          </div>
+        </form>
+      )}
+      {sumber === "berkas" && (
+        <div className="row-actions">
+          <button type="button" className="btn" onClick={() => file.current?.click()}>
+            <FileCsv size={18} weight="bold" aria-hidden />
+            Pilih berkas .csv
+          </button>
+          <input ref={file} type="file" accept=".csv,text/csv" hidden onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (f) void readFile(f);
+          }} />
+        </div>
+      )}
+      {sumber === "sheets" && (
+        <form className="csv-src" onSubmit={(e) => {
+          e.preventDefault();
+          void readSheet();
+        }}>
+          <Field path="csv.sheet" label="Link Google Sheets" hint="tab yang dibuka di link ikut terbaca">
+            <input {...wire("csv.sheet", error || undefined, true)} type="url" inputMode="url" autoCapitalize="off" spellCheck={false}
+              placeholder="https://docs.google.com/spreadsheets/d/…" value={sheet} onChange={(e) => setSheet(e.target.value.trim())} />
+          </Field>
+          <div className="row-actions">
+            <button type="submit" className="btn" disabled={!sheet || busy === "sheet"}>{busy === "sheet" ? "Mengambil…" : "Ambil dari Sheets"}</button>
+          </div>
+          <p className="field-hint">Sheet harus bisa dibuka siapa saja yang punya link (Bagikan → Akses umum → Pelihat).</p>
+        </form>
+      )}
+      <div aria-live="polite">{error && <p className="field-error" id={sumber === "tempel" ? "f-csv-teks-err" : "f-csv-sheet-err"}>{error}</p>}</div>
+
+      {rows && (
+        <div className="csv-preview">
+          <p className="csv-sum" id="csv-preview" tabIndex={-1}>
+            {rows.length} baris: <b>{count("baru")}</b> baru · <b>{count("duplikat")}</b> duplikat · <b>{count("error")}</b> error
+          </p>
+          {count("duplikat") > 0 && (
+            <label className="switch">
+              <input type="checkbox" role="switch" checked={skipDup} onChange={(e) => setSkipDup(e.target.checked)} />
+              <span>Lewati duplikat</span>
+            </label>
+          )}
+          {unknown.length > 0 && (
+            <Field path="csv.target" label="Kategori untuk yang belum cocok" hint={unknown.join(", ")}>
+              <select {...wire("csv.target", undefined, true)} value={target} onChange={(e) => setTarget(e.target.value)}>
+                <option value="">Pilih kategori</option>
+                {site.kategori.map((k) => <option key={k.id} value={k.id}>{k.nama}</option>)}
+              </select>
+            </Field>
+          )}
+          <div className="csv-table" role="region" aria-label="Pratinjau impor" tabIndex={0}>
+            <table>
+              <thead>
+                <tr><th scope="col">Baris</th><th scope="col">Status</th><th scope="col">Tautan</th><th scope="col">Kategori</th><th scope="col">Keterangan</th></tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.line} data-status={r.status} data-skip={!take.includes(r) || undefined}>
+                    <td>{r.line}</td>
+                    <td><span className="d-tag" data-tone={r.status === "baru" ? "yellow" : r.status === "error" ? undefined : "arsip"} data-error={r.status === "error" || undefined}>{STATUS_NAME[r.status]}</span></td>
+                    <td><b>{r.link.judul || "—"}</b><span className="csv-url">{r.link.url || "—"}</span></td>
+                    <td>{r.link.kategori ? katName(r.link.kategori) : <i>{target ? katName(target) : `${r.katRaw || "kosong"}?`}</i>}</td>
+                    <td>
+                      {r.status === "duplikat" ? `Sudah ada: ${r.note}` : r.note}
+                      {r.changes.length > 0 && <span className="csv-url">Dirapikan: {r.changes.join(", ")}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {over && <p className="field-error">Melebihi {LINK_MAX} tautan ({site.link.length} sudah ada). Kurangi baris atau hapus tautan lama.</p>}
+          <div className="row-actions">
+            <button type="button" className="btn btn-primary" disabled={!take.length || (unknown.length > 0 && !target) || over || busy === "import"}
+              onClick={() => void doImport()}>
+              <UploadSimple size={18} weight="bold" aria-hidden />
+              {busy === "import" ? "Mengimpor…" : `Impor ${take.length} tautan`}
+            </button>
+            <button type="button" className="btn" onClick={() => setRows(null)}>Batal</button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 
