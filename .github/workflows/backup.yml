@@ -1,0 +1,54 @@
+name: Backup mingguan
+
+on:
+  schedule:
+    - cron: "0 23 * * 1" # Monday 23:00 UTC = Tuesday 07:00 WITA
+  workflow_dispatch:
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://link-ppahub-team-support.vercel.app' }}
+      BACKUP_TOKEN: ${{ secrets.BACKUP_TOKEN }}
+    steps:
+      - name: Download CONFIG
+        run: |
+          test -n "$BACKUP_TOKEN" || { echo "::error::secret BACKUP_TOKEN belum diset"; exit 1; }
+          curl -sSf --max-time 30 -H "authorization: Bearer $BACKUP_TOKEN" "${SITE_URL%/}/api/backup" -o config.json
+          jq -e '(.link | type == "array") and (.link | length > 0)' config.json > /dev/null \
+            || { echo "::error::respons bukan CONFIG (tidak ada array link)"; exit 1; }
+
+      - uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 1
+
+      - name: Commit to branch "backups"
+        working-directory: repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin backups > /dev/null; then
+            git fetch --depth=1 origin backups
+            git checkout -B backups FETCH_HEAD
+          else
+            git checkout --orphan backups
+            git rm -rfq --ignore-unmatch .
+          fi
+          mkdir -p backups
+          cp ../config.json "backups/config-$(date -u +%F).json"
+          # Keep the newest 26 (about half a year of weeks); names sort by date.
+          ls backups/config-*.json | sort -r | tail -n +27 | xargs -r git rm -q --ignore-unmatch
+          git add backups
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
+          git commit -qm "backup: config $(date -u +%F)"
+          git push origin backups

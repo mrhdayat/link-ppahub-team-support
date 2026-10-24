@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "db:setup": "tsx --env-file-if-exists=.env.local scripts/db-setup.ts",
-    "check": "tsx src/lib/site.check.ts && tsx src/components/dashboard/stats.check.ts && tsx src/components/dashboard/forms.check.ts && tsx src/components/rambu/search.check.ts && tsx src/components/rambu/world/world.check.ts"
+    "check": "tsx src/lib/site.check.ts && tsx src/components/dashboard/stats.check.ts && tsx src/components/dashboard/forms.check.ts && tsx src/components/rambu/search.check.ts && tsx src/components/rambu/world/world.check.ts && tsx src/app/api/backup/token.check.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

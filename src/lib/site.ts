@@ -1,6 +1,9 @@
 import { z } from "zod";
 import seed from "./default-site.json";
 
+// Our CSP has no 'unsafe-eval'; Zod's JIT probe (new Function) would trip it in the browser.
+z.config({ jitless: true });
+
 // Rambu Navigasi CONFIG. One document; the admin edits it, the public page renders it.
 
 // Only schemes a visitor can safely open. Blocks javascript:, data:, etc.
