@@ -4,28 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { kmDari } from "./world";
 import "./world.css";
 
-const GATE_KEY = "rambu-palang";
 const REACH = 280; // px from the beam centre where a sign stops reflecting
 const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/** Boom barrier that lifts once per browser session. Decorative overlay: never blocks taps or delays content. */
-export function Gate() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem(GATE_KEY) || still()) return;
-      sessionStorage.setItem(GATE_KEY, "1");
-      setShow(true);
-    } catch {}
-  }, []);
-  if (!show) return null;
-  return (
-    <div className="palang" aria-hidden onAnimationEnd={(e) => e.target === e.currentTarget && setShow(false)}>
-      <span className="palang-lengan" />
-      <span className="palang-tiang" />
-    </div>
-  );
-}
 
 /**
  * Night atmosphere: dashed road-edge markings (scroll-driven in CSS) and a headlight that follows the

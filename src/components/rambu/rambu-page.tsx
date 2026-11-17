@@ -12,9 +12,9 @@ import { Arrow, Hauler, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
 import { norm, search as searchLinks, type Range } from "./search";
 import "./tokens.css";
 import "./rambu.css";
-// Dunia rambu (W1): weather/shift HUD cells, K3 strip, boom gate, headlight, road markings, seasonal theme.
+// Dunia rambu (W1): weather/shift HUD cells, K3 strip, headlight, road markings, seasonal theme.
 import { CuacaCell, RambuK3, ShiftCell, dunia } from "./world/hud-extras";
-import { Gate, Hujan, KmJarak, Suasana } from "./world/effects";
+import { Hujan, KmJarak, Suasana } from "./world/effects";
 import { bacaMatahari, hitungMatahari, malam, type Laporan, type Matahari } from "./world/world";
 
 const THEME_KEY = "rambu-tema";
@@ -630,7 +630,6 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
           <span className="bracket" data-c="bl" aria-hidden />
           <span className="bracket" data-c="br" aria-hidden />
           <span className="scan" aria-hidden />
-          {!preview && <Gate />}
           {!preview && (laporan?.langit === "hujan" || laporan?.langit === "petir") && <Hujan lebat={laporan.lebat} />}
           <div className="hud-id">
             <span className="logo-sign">
