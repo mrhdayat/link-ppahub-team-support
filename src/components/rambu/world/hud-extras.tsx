@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { nextShift, safetyTalkFor, temaFor, type Site } from "@/lib/site";
-import { awasHujan, bacaBmkg, bacaCuaca, gabung, sisaWaktu, type Langit, type Laporan } from "./world";
+import { bacaBmkg, bacaCuaca, gabung, sisaWaktu, type Langit, type Laporan } from "./world";
 import "./world.css";
 
 /**
@@ -77,12 +77,8 @@ export function CuacaCell({ cuaca, onLaporan }: { cuaca: Site["cuaca"]; onLapora
   useEffect(() => onLaporan?.(aktif && c ? c : null), [aktif, c, onLaporan]);
 
   if (!aktif || c === null) return null;
-  const awas = !!c && awasHujan(c);
-  // Number and unit never split across lines (NBSP).
-  const mm = (n: number) => `${String(n).replace(".", ",")}\u00a0mm`;
-  const pct = (n: number | undefined) => `${n ?? "--"}%`;
   return (
-    <div className="hud-cell hud-wide hud-cuaca" data-waspada={awas || undefined}>
+    <div className="hud-cell hud-wide hud-cuaca">
       <dt>
         Cuaca · <bdi>{nama}</bdi>
       </dt>
@@ -91,17 +87,6 @@ export function CuacaCell({ cuaca, onLaporan }: { cuaca: Site["cuaca"]; onLapora
         {c ? <LangitIkon langit={c.langit} /> : <span className="cuaca-ikon" />}
         <span>{c ? `${Math.round(c.suhu)}°C ${c.teks}` : "--°C"}</span>
       </dd>
-      {(!c || c.hujan) && (
-        <dd className="cuaca-hujan">
-          Peluang hujan {pct(c?.hujan?.[0])} · besok {pct(c?.hujan?.[1])}
-        </dd>
-      )}
-      {c?.mm && (
-        <dd className="cuaca-hujan">
-          Curah hujan {mm(c.mm[0])} · besok {mm(c.mm[1])}
-        </dd>
-      )}
-      {awas && <dd className="cuaca-waspada">Waspada hujan — siaga dewatering</dd>}
       {c && <dd className="cuaca-sumber">Sumber: {c.sumber.join(" · ")}</dd>}
     </div>
   );

@@ -19,9 +19,6 @@ export function kondisi(kode: number): { teks: string; langit: Langit; lebat: bo
   return k("berawan", "mendung"); // snow codes and anything new: never on site, say something calm
 }
 
-/** Rain warning: heavy rain now, or ≥ 60% chance today or tomorrow. */
-export const waspada = (c: Cuaca) => kondisi(c.kode).lebat || Math.max(...c.hujan) >= 60;
-
 /** Open-Meteo forecast JSON → the few numbers the HUD shows; undefined when the shape is off. */
 export function bacaCuaca(j: unknown): Cuaca | undefined {
   const o = j as { current?: { temperature_2m?: unknown; weather_code?: unknown }; daily?: { precipitation_probability_max?: unknown[] } };
@@ -95,10 +92,6 @@ export function gabung(b?: Bmkg, o?: Cuaca): Laporan | undefined {
   const k = b ? kondisiBmkg(b.kode, b.teks) : kondisi(o!.kode);
   return { suhu: b ? b.suhu : o!.suhu, teks: k.teks, langit: k.langit, lebat: k.lebat, hujan: o ? o.hujan : null, mm: b ? b.mm : null, sumber };
 }
-
-/** Rain warning: heavy rain now, ≥ 60% chance, or ≥ 20 mm forecast in a day (BMKG "hujan sedang" and up). */
-export const awasHujan = (l: Laporan) =>
-  l.lebat || (!!l.hujan && Math.max(...l.hujan) >= 60) || (!!l.mm && Math.max(...l.mm) >= 20);
 
 /** "1 j 25 m lagi", "25 m lagi", "2 j lagi". */
 export function sisaWaktu(minutes: number): string {

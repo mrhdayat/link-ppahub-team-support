@@ -1,6 +1,6 @@
 // Self-check: `npx tsx src/components/rambu/world/world.check.ts`
 import assert from "node:assert/strict";
-import { awasHujan, bacaBmkg, bacaCuaca, bacaMatahari, gabung, hitungMatahari, kmDari, kondisi, kondisiBmkg, localStamp, malam, sisaWaktu, waspada } from "./world";
+import { bacaBmkg, bacaCuaca, bacaMatahari, gabung, hitungMatahari, kmDari, kondisi, kondisiBmkg, localStamp, malam, sisaWaktu } from "./world";
 
 // WMO codes read as Indonesian site weather.
 assert.equal(kondisi(0).teks, "cerah");
@@ -13,10 +13,6 @@ assert.equal(kondisi(99).lebat, true);
 assert.equal(kondisi(61).lebat, false);
 assert.equal(kondisi(71).teks, "berawan", "unknown codes stay calm");
 
-// Warning: heavy rain now, or ≥ 60% today or tomorrow.
-assert.equal(waspada({ suhu: 30, kode: 2, hujan: [20, 40] }), false);
-assert.equal(waspada({ suhu: 30, kode: 2, hujan: [20, 60] }), true);
-assert.equal(waspada({ suhu: 30, kode: 95, hujan: [0, 0] }), true);
 
 // Forecast parsing tolerates missing pieces, refuses a broken shape.
 const ok = { current: { temperature_2m: 28.4, weather_code: 63 }, daily: { precipitation_probability_max: [70, null] } };
@@ -60,10 +56,8 @@ console.log("world.check ok");
   const om = { suhu: 31, kode: 2, hujan: [30, 45] as [number, number] };
   const both = gabung(b, om)!;
   assert.deepEqual([both.suhu, both.teks, both.hujan, both.mm, both.sumber], [34, "hujan sedang", [30, 45], [8, 22.4], ["BMKG", "Open-Meteo"]]);
-  assert.equal(awasHujan(both), true, "22.4 mm tomorrow is a warning");
   const onlyOm = gabung(undefined, om)!;
   assert.deepEqual([onlyOm.suhu, onlyOm.teks, onlyOm.mm, onlyOm.sumber], [31, "berawan", null, ["Open-Meteo"]]);
-  assert.equal(awasHujan(onlyOm), false);
   assert.equal(gabung(undefined, undefined), undefined);
   console.log("world.check bmkg ok");
 }

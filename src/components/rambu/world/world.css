@@ -1,21 +1,11 @@
-/* Dunia rambu: HUD extras, K3 strip, boom gate, night headlight, road-edge markings, seasonal themes. */
+/* Dunia rambu: HUD extras, K3 strip, night headlight, road-edge markings, seasonal themes. */
 
 /* ── HUD extras: full-width rows under Status / Jam / Rute ── */
 
 .hud-data > .hud-cell.hud-wide { grid-column: 1 / -1; border-left: 0; border-top: var(--border-small); }
 .hud-cuaca { --cuaca-bg: var(--white); }
-.hud-cuaca[data-waspada] { --cuaca-bg: var(--yellow); background: var(--yellow); }
 .hud-data .hud-cuaca dd + dd { margin-top: 6px; }
-.hud-data .cuaca-hujan { font-weight: 500; }
 .cuaca-ikon { width: 26px; height: 26px; flex: none; }
-.cuaca-waspada::before {
-  content: "";
-  flex: none;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--black);
-  background: repeating-linear-gradient(-45deg, var(--black) 0 3px, transparent 3px 6px);
-}
 
 /* ── Rambu K3 strip ── */
 

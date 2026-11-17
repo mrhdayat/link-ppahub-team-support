@@ -478,9 +478,9 @@ export function CuacaSection({ site, update, errors }: Props) {
 
 const SUMBER_NAME: Record<Site["cuaca"]["sumber"], string> = { gabungan: "Gabungan", bmkg: "BMKG", "open-meteo": "Open-Meteo" };
 const SUMBER_HINT: Record<Site["cuaca"]["sumber"], string> = {
-  gabungan: "Kondisi, suhu, dan curah hujan (mm) dari BMKG; peluang hujan (%) dari Open-Meteo. Kalau satu tidak menjawab, yang lain tetap tampil.",
-  bmkg: "Hanya BMKG: data resmi per desa (kondisi, suhu, curah hujan mm).",
-  "open-meteo": "Hanya Open-Meteo: memakai koordinat di bawah, termasuk peluang hujan (%).",
+  gabungan: "Kondisi dan suhu dari BMKG, cadangan dari Open-Meteo. Kalau satu tidak menjawab, yang lain tetap tampil.",
+  bmkg: "Hanya BMKG: data resmi per desa (kondisi dan suhu).",
+  "open-meteo": "Hanya Open-Meteo: memakai koordinat di bawah.",
 };
 const LEVELS = [
   { label: "Provinsi", len: 2 },
