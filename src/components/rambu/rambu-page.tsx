@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import {
   ZONA, buka24, clockIn, isOfficeOnly, labelFor, laneLayout, lanesOf, linksIn, publik, statusAt,
-  type Kategori, type Link, type Site, type StatusWarna,
+  type Kategori, type Link, type Site, type StatusWarna, type Zona,
 } from "@/lib/site";
-import { PushPin, QrCode, ShareNetwork, X } from "@phosphor-icons/react/dist/ssr";
+import { Phone, PushPin, QrCode, ShareNetwork, X } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import { flushSync } from "react-dom";
 import { Arrow, Hauler, KategoriIkon, Octagon, SunMoon, UTurn } from "./signs";
@@ -149,7 +149,7 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Arrival motion plays once; after this flips, re-mounted signs (tab, search, fold) appear instantly.
   const [booted, setBooted] = useState(false);
-  const [qr, setQr] = useState<{ src: string; lane?: Kategori }>({ src: "" });
+  const [qr, setQr] = useState<{ src: string; lane?: Kategori; link?: Link }>({ src: "" });
   const [jalurSaya, setJalurSaya] = useState<string | null>(null);
   const [laporan, setLaporan] = useState<Laporan | null>();
   // CSS fallback for the lane change when the View Transitions API is missing: direction of the incoming lane.
@@ -429,12 +429,12 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
     window.open(`https://wa.me/?text=${encodeURIComponent(`${l.judul} — ${url} (dari ${profil.nama})`)}`, "_blank", "noopener");
   };
 
-  // The page QR, or one lane's (its URL opens straight onto that lane).
-  const showQr = async (lane?: Kategori) => {
+  // The page QR, one lane's (its URL opens straight onto that lane), or one link's own destination.
+  const showQr = async (lane?: Kategori, link?: Link) => {
     if (!preview) hit("qr");
     const { toDataURL } = await import("qrcode");
-    const url = lane ? halaman(`qr-${lane.id}`.slice(0, 24), `#jalur-${encodeURIComponent(lane.id)}`) : halaman("qr");
-    setQr({ src: await toDataURL(url, { margin: 1, width: 480, errorCorrectionLevel: "M" }), lane });
+    const url = link ? link.url : lane ? halaman(`qr-${lane.id}`.slice(0, 24), `#jalur-${encodeURIComponent(lane.id)}`) : halaman("qr");
+    setQr({ src: await toDataURL(url, { margin: 1, width: 480, errorCorrectionLevel: "M" }), lane, link });
     dialog.current?.showModal();
   };
 
@@ -548,6 +548,11 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
           <button type="button" className="bagi" onClick={() => bagikan(l, k)} aria-label={`Bagikan ${l.judul}`}>
             <ShareNetwork weight="bold" aria-hidden />
           </button>
+          {!preview && (
+            <button type="button" className="bagi qr-tautan" onClick={() => showQr(undefined, l)} aria-label={`Kode QR ${l.judul}`}>
+              <QrCode weight="bold" aria-hidden />
+            </button>
+          )}
           {l.panduan && (
             <button type="button" className="info" popoverTarget={tip} aria-label={`Panduan ${l.judul}`}>
               i
@@ -668,9 +673,33 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
             </div>
             {/* Dunia rambu: next shift change + site weather */}
             <ShiftCell shift={site.shift} own={own} />
+            <div className="hud-cell hud-wide">
+              <dt>Jam Indonesia</dt>
+              <dd className="jam3">
+                {(Object.keys(ZONA) as Zona[]).map((z) => {
+                  const c = now && clockIn(z, now);
+                  return (
+                    <span key={z} data-own={z === status.zona || undefined}>
+                      {c ? `${pad(c.hour)}:${pad(c.minute)}` : "--:--"} {ZONA[z]}
+                    </span>
+                  );
+                })}
+              </dd>
+            </div>
             <CuacaCell cuaca={site.cuaca} onLaporan={setLaporan} />
           </dl>
         </section>
+        {/* ponytail: ERT number hardcoded; move to site config + admin field if it ever changes. */}
+        <a className="ert" href="tel:+628125109555">
+          <Phone weight="fill" aria-hidden />
+          <span>
+            <span className="ert-label">Darurat · ERT</span>
+            <span className="ert-no">0812-5109-555</span>
+          </span>
+          <span className="ert-cta" aria-hidden>
+            Telepon
+          </span>
+        </a>
         <RambuK3 teks={k3} />
 
         {lanes.length > 0 && (
@@ -932,13 +961,13 @@ export function RambuPage({ site: raw, preview = false }: { site: Site; preview?
               if (e.target === e.currentTarget && out) e.currentTarget.close();
             }}
           >
-            <h2 id="qr-title">{qr.lane ? <>Jalur <bdi>{qr.lane.nama}</bdi></> : "Pindai untuk mampir"}</h2>
-            <p>{qr.lane ? "Pindai untuk langsung membuka jalur ini." : "Arahkan kamera HP ke kode ini untuk membuka halaman."}</p>
-            {/* PNG data URL generated by the qrcode package from this page's own URL; no visitor input reaches it. */}
+            <h2 id="qr-title">{qr.link ? <bdi>{qr.link.judul}</bdi> : qr.lane ? <>Jalur <bdi>{qr.lane.nama}</bdi></> : "Pindai untuk mampir"}</h2>
+            <p>{qr.link ? "Pindai untuk langsung membuka tautan ini." : qr.lane ? "Pindai untuk langsung membuka jalur ini." : "Arahkan kamera HP ke kode ini untuk membuka halaman."}</p>
+            {/* PNG data URL generated by the qrcode package from this page's URL or an admin-set link URL; no visitor input reaches it. */}
             {/* eslint-disable-next-line @next/next/no-img-element -- generated data URL */}
-            {qr.src && <img className="qr-code" src={qr.src} alt={qr.lane ? `Kode QR jalur ${qr.lane.nama}` : "Kode QR halaman ini"} width={240} height={240} />}
+            {qr.src && <img className="qr-code" src={qr.src} alt={qr.link ? `Kode QR ${qr.link.judul}` : qr.lane ? `Kode QR jalur ${qr.lane.nama}` : "Kode QR halaman ini"} width={240} height={240} />}
             <div className="qr-actions">
-              <a className="act" href={qr.src || undefined} download={`qr-${qr.lane ? `jalur-${qr.lane.id}` : "halaman"}.png`}>
+              <a className="act" href={qr.src || undefined} download={`qr-${qr.link ? `tautan-${qr.link.id}` : qr.lane ? `jalur-${qr.lane.id}` : "halaman"}.png`}>
                 Unduh PNG
               </a>
               <button type="button" className="act" data-warna="yellow" onClick={() => dialog.current?.close()}>

@@ -546,10 +546,11 @@
   box-shadow: 0 0 0 2px var(--black);
 }
 .bagi::before { background: var(--green); }
+.qr-tautan::before { background: var(--black); }
 .info:active, .bagi:active { transform: translate(2px, 2px); }
 /* keep the sign's own corner content clear of the buttons */
-.signs > li .sign:not([data-compact]) .sign-km { margin-right: 40px; }
-.signs > li[data-info] .sign:not([data-compact]) .sign-km { margin-right: 84px; }
+.signs > li .sign:not([data-compact]) .sign-km { margin-right: 84px; }
+.signs > li[data-info] .sign:not([data-compact]) .sign-km { margin-right: 128px; }
 .signs > li .sign[data-compact] { padding-bottom: 50px; }
 
 .panduan {
